@@ -1,0 +1,13 @@
+// ==UserScript==
+// @name         HMap
+// @namespace    ryderone
+// @version      1.0.0
+// @description  Attempt to rebuild the Die2Nite map in HTML5
+// @author       RyderOne
+// @match        http://www.die2nite.com/*
+// @match        http://www.dieverdammten.de/*
+// @match        http://www.hordes.fr/*
+// @match        http://www.zombinoia.com/*
+// @grant        none
+// @require      http://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js
+// ==/UserScript==
