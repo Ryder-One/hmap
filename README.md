@@ -15,7 +15,7 @@ This code is open source because this is the rule that moderators use to allow a
 If Motion Twin sees an offense in this project and officially ask me to remove the code and delete this project I will do it.
 
 If Motion Twin officially give me their blessing to continue this project, then I will remove this disclamer and licence 
-the code under an open source licence.
+the code under an open source licence. The assets will always be the exclusive copyright of Motion Twin.
 
  ## How to use
  
