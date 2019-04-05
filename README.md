@@ -21,8 +21,10 @@ the code under an open source licence.
  
  At the moment the project is just a userscript, you can use your favorite userscript extension to install it.
  
- It has been tested with tampermonkey. You can learn how to use it here : https://tampermonkey.net/faq.php
+ https://github.com/Ryder-One/hmap/releases/latest/download/hmap.user.js
  
+ It has been tested with tampermonkey. You can learn how to use it here : https://tampermonkey.net/faq.php
+  
  ## Known issues
  
  The map is still in a very early stage, so there is a lot of issues. Please read carefully this list before posting
