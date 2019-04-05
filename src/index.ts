@@ -12,13 +12,14 @@ const style = document.createElement('style');
 style.appendChild(document.createTextNode('\
 @font-face {\
     font-family: visitor2;\
-    src: url(\'assets/visitor2.ttf\') format(\'ttf\');\
+    src: url(\'https://github.com/Ryder-One/hmap/blob/dfd537424bac4b6bf7c85efcba93ffd3862edc2c/assets/visitor2.ttf?raw=true\') format(\'ttf\');\
 }\
 '));
 document.head.appendChild(style);
 
 // @ts-ignore https://github.com/Microsoft/TypeScript/issues/13569
-const visitor2 = new FontFace('visitor2', 'url(assets/visitor2.ttf)');
+const visitor2 = new FontFace('visitor2',
+    'url(https://github.com/Ryder-One/hmap/blob/dfd537424bac4b6bf7c85efcba93ffd3862edc2c/assets/visitor2.ttf?raw=true)');
 visitor2.load().then(function(loadedFont: any) {
     // @ts-ignore same reason
     document.fonts.add(loadedFont);

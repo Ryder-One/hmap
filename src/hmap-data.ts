@@ -1,5 +1,6 @@
-import { HMapPoint, HMapSize} from './hmap';
+import { HMapPoint, HMapSize } from './hmap';
 import { HMapNeighbour, HMapPosition, HMapNeighbours } from './neighbours';
+import { HMapRandom } from './random';
 
 // declared in host page
 declare var haxe: any;
@@ -33,8 +34,8 @@ export interface HMapDataJSON {
     _y: number;                     // current Y position
     _town: boolean;                 // ???
     _up: boolean;                   // ???
-    _view: Array<number|null>;      // fog of war : null is not discovered, number is building id
-    _users: null|Array<any>;        // list of users when in town
+    _view: Array<number | null>;      // fog of war : null is not discovered, number is building id
+    _users: null | Array<any>;        // list of users when in town
     _editor: boolean;               // ???
     _map: boolean;                  // ???
     _mid: number;                   // map id
@@ -59,14 +60,113 @@ export class HMapData {
     public town: HMapPoint;
 
     get size(): HMapSize { return { width: this.data._w, height: this.data._h }; }
-    get position(): HMapPoint { return { x : this.data._x, y: this.data._y }; }
-    get index(): number { return this.getIndex({ x : this.data._x, y: this.data._y }); }
+    get position(): HMapPoint { return { x: this.data._x, y: this.data._y }; }
+    get index(): number { return this.getIndex({ x: this.data._x, y: this.data._y }); }
     get actionPoints(): number { return this.data._r._m; }
     get numberOfHumans(): number { return this.data._r._h; }
     get zoneId(): number { return this.data._r._zid; }
     get numberOfZombies(): number { return this.data._r._z; }
     get hour(): number { return this.data._hour; }
     get hasControl(): boolean { return !this.data._r._state; }
+    get scoutArray(): Array<number> { return this.data._r._neig; }
+
+    /**
+     * create a fake JSON to debug the map
+     */
+    static fakeData(): HMapDataJSON {
+        const mapSize = HMapRandom.getRandomInteger(10, 25);
+
+        const town = {
+            x: HMapRandom.getRandomInteger(3, mapSize - 3),
+            y: HMapRandom.getRandomInteger(3, mapSize - 3)
+        };
+
+        const fakeData: HMapDataJSON = {
+            _details: new Array(),
+            _city: 'Oh yeah',
+            _hour: 17,
+            _path: null,
+            _slow: true,
+            _b: new Array(),
+            _e: new Array(),
+            _h: mapSize,
+            _r: {
+                _neigDrops: new Array(),
+                _neig: new Array(),
+                _state: false,
+                _c: 1,
+                _h: 1,
+                _m: 6,
+                _t: 0,
+                _z: 0,
+                _zid: HMapRandom.getRandomInteger(111111, 999999)
+            },
+            _w: mapSize,
+            _x: town.x,
+            _y: town.y,
+            _town: false,
+            _up: false,
+            _view: new Array(),
+            _users: null,
+            _editor: false,
+            _map: false,
+            _mid: HMapRandom.getRandomInteger(111111, 999999)
+        };
+
+        let index = 0, townIndex = 0;
+        for (let y = 0; y < mapSize; y++) {
+            for (let x = 0; x < mapSize; x++) {
+                    let view = false;
+                if ((x < town.x + 5 || x > town.x - 5) && (y < town.y + 5 || y > town.y - 5)) {
+                    view = true;
+                }
+                const bid = (town.x === x && town.y === y) ?
+                    1 : (HMapRandom.getRandomInteger(0, 10) === 5 ?  HMapRandom.getRandomInteger(2, 62) : 0 );
+
+                fakeData._details.push({
+                    _c: bid,
+                    _s: false,
+                    _t: 0,
+                    _z: HMapRandom.getRandomInteger(0, 3) === 2 ? HMapRandom.getRandomInteger(0, 10) : 0,
+                    _nvt: false
+                });
+                if (view === true) {
+                    fakeData._view.push(bid);
+                } else {
+                    fakeData._view.push(null);
+                }
+
+                if (bid === 1) {
+                    townIndex = index;
+                }
+                index++;
+            }
+        }
+
+        fakeData._r._neig = new Array();
+        if (townIndex - mapSize > 0) {
+            fakeData._r._neig.push(fakeData._details[townIndex - mapSize]._z);
+        } else {
+            fakeData._r._neig.push(0);
+        }
+        if (townIndex + 1 < (mapSize * mapSize) ) {
+            fakeData._r._neig.push(fakeData._details[townIndex + 1]._z);
+        } else {
+            fakeData._r._neig.push(0);
+        }
+        if (townIndex + mapSize < (mapSize * mapSize) ) {
+            fakeData._r._neig.push(fakeData._details[townIndex + mapSize]._z);
+        } else {
+            fakeData._r._neig.push(0);
+        }
+        if (townIndex - 1 > 0 ) {
+            fakeData._r._neig.push(fakeData._details[townIndex - 1]._z);
+        } else {
+            fakeData._r._neig.push(0);
+        }
+        console.log(fakeData);
+        return fakeData;
+    }
 
     /**
      * @param rawData Binary data coming from HTML page
@@ -97,11 +197,11 @@ export class HMapData {
     /**
      * JSON patching separated to enable dev mode
      */
-    patchDataJSON(data: HMapPatchDataJSON ) {
+    patchDataJSON(data: HMapPatchDataJSON) {
         this.data._r = data;
 
         // update the details and the view
-        const indexNewPosition = this.getIndex({x: this.data._x, y: this.data._y});
+        const indexNewPosition = this.getIndex({ x: this.data._x, y: this.data._y });
         this.data._details[indexNewPosition]._c = this.data._r._c;
         this.data._details[indexNewPosition]._t = this.data._r._t;
         this.data._details[indexNewPosition]._z = this.data._r._z;
@@ -120,7 +220,7 @@ export class HMapData {
      * Get the map index from the coordinates
      */
     getIndex(position: HMapPoint): number {
-        return position.x + ( position.y * this.size.width );
+        return position.x + (position.y * this.size.width);
     }
 
     /**
@@ -139,7 +239,7 @@ export class HMapData {
      * Return true if the coordinates are in map bounds
      */
     inBounds(pos: HMapPoint): boolean {
-        return pos.x >= 0 && pos.y >= 0 && pos.x < this.size.width && pos.y < this.size.height ;
+        return pos.x >= 0 && pos.y >= 0 && pos.x < this.size.width && pos.y < this.size.height;
     }
 
     /**
@@ -158,7 +258,7 @@ export class HMapData {
 
         for (let X = this.position.x - 1; X <= this.position.x + 1; X++) {
             for (let Y = this.position.y - 1; Y <= this.position.y + 1; Y++) {
-                const outbounds = !this.inBounds({ x: X, y: Y});
+                const outbounds = !this.inBounds({ x: X, y: Y });
 
                 let p: HMapPosition;
 
@@ -188,11 +288,11 @@ export class HMapData {
                     }
                 }
 
-                const N = new HMapNeighbour(X, Y, p, outbounds, this.getIndex({x: X, y: Y}), false, 0);
+                const N = new HMapNeighbour(X, Y, p, outbounds, this.getIndex({ x: X, y: Y }), false, 0);
 
                 if (!N.outbounds) {
                     N.building = (this.data._details[N.index]._c !== null) ? this.data._details[N.index]._c : 0;
-                    N.view = this.isPositionDiscovered({x: X, y: Y});
+                    N.view = this.isPositionDiscovered({ x: X, y: Y });
                 }
                 this.neighbours.addNeighbour(N);
             }
@@ -208,7 +308,7 @@ export class HMapData {
                 return this.getCoordinates(index);
             }
         }
-        return { x : 0 , y: 0 }; // this case is not possible but it makes typescript happy
+        return { x: 0, y: 0 }; // this case is not possible but it makes typescript happy
     }
 
     /**
@@ -254,7 +354,7 @@ export class HMapData {
         let returnStr = '';
         for (let n = 0, p = message.length; n < p; n++) {
             const k = message.charCodeAt(n) ^ keyArray[(n + message.length) % keyArray.length];
-            returnStr += String.fromCharCode((k !== 0 ) ? k : message.charCodeAt(n));
+            returnStr += String.fromCharCode((k !== 0) ? k : message.charCodeAt(n));
         }
         return returnStr;
     }

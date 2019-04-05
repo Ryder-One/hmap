@@ -53,6 +53,14 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
                 this.drawImageRot(imagesLoader.getImg('moveArrowLight'), arrow.ax, arrow.ay, 82, 27, arrow.a); // increase luminosity
             }
         }
+
+        // scout
+        if (mapData.scoutArray && mapData.scoutArray.length === 4) {
+            this.ctx.fillText( '' + mapData.scoutArray[0], 148, 30);
+            this.ctx.fillText( '' + mapData.scoutArray[1], 270, 152);
+            this.ctx.fillText( '' + mapData.scoutArray[2], 148, 270);
+            this.ctx.fillText( '' + mapData.scoutArray[3], 30, 152);
+        }
     }
 
     /**

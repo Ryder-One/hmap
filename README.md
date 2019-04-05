@@ -4,7 +4,7 @@ An HTML5 map for Die2Nite
 
 All the assets are copyrighted by MotionTwin
 
-## DISCLAMER
+## DISCLAIMER
 
 I made this map because we have no news from Motion Twin (MT) for a couple years now, and the end - death - of flash
 is already announced. I like the game and I can see the community worrying days after days. Some are already leaving because 

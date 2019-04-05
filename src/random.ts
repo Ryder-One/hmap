@@ -3,6 +3,14 @@ import { HMapPoint } from './hmap';
 export class HMapRandom {
     public seed: number;
 
+    /**
+     * Get a random integer between min and max
+     * @warning Not using the seed.
+     */
+    static getRandomInteger(min: number, max: number): number {
+        return Math.floor(Math.random() * (max - min) ) + min;
+    }
+
     constructor(seed = 0) {
         this.seed = seed;
     }

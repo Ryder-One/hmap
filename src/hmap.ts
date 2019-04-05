@@ -60,11 +60,7 @@ export class HMap {
 
         if (this.devMode === true) { // if we are in dev mode, serve a json
 
-            this.jQ.getJSON('mapData.json.pti', {
-                format: 'json'
-            }).done((_mapData) => {
-                this.setJSONData(_mapData); // it will start the drawing automatically
-            });
+            this.setJSONData(HMapData.fakeData()); // it will start the drawing automatically
 
         } else {
             // We will look for the flashmap, take the data, and bootstrap our map
@@ -284,7 +280,7 @@ export class HMap {
                 // fake the move with already known data
                 const fakeData = {
                     _neigDrops: [],
-                    _neig: [],
+                    _neig: new Array(),
                     _state: false,
                     _c: (this.mapData!.data._details[newIndex]._c) ? this.mapData!.data._details[newIndex]._c : 0,
                     _h: 0,
@@ -293,6 +289,28 @@ export class HMap {
                     _z: (this.mapData!.data._details[newIndex]._z) ? this.mapData!.data._details[newIndex]._z : 0,
                     _zid: 42424545
                 };
+
+                if (newIndex - this.mapData!.size.height > 0) {
+                    fakeData._neig.push(this.mapData!.data._details[newIndex - this.mapData!.size.height]._z);
+                } else {
+                    fakeData._neig.push(0);
+                }
+                if (newIndex + 1 < (this.mapData!.size.width * this.mapData!.size.height) ) {
+                    fakeData._neig.push(this.mapData!.data._details[newIndex + 1]._z);
+                } else {
+                    fakeData._neig.push(0);
+                }
+                if (newIndex + this.mapData!.size.height < (this.mapData!.size.height * this.mapData!.size.height) ) {
+                    fakeData._neig.push(this.mapData!.data._details[newIndex + this.mapData!.size.height]._z);
+                } else {
+                    fakeData._neig.push(0);
+                }
+                if (newIndex - 1 > 0 ) {
+                    fakeData._neig.push(this.mapData!.data._details[newIndex - 1]._z);
+                } else {
+                    fakeData._neig.push(0);
+                }
+                console.log(fakeData);
 
                 // patch the store with new data
                 this.mapData!.patchDataJSON(fakeData);
