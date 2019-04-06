@@ -15,7 +15,7 @@ This code is open source because this is the rule that moderators use to allow a
 If Motion Twin sees an offense in this project and officially ask me to remove the code and delete this project I will do it.
 
 If Motion Twin officially give me their blessing to continue this project, then I will remove this disclamer and licence 
-the code under an open source licence.
+the code under an open source licence. The assets will always be the exclusive copyright of Motion Twin.
 
  ## How to use
  
@@ -33,7 +33,6 @@ the code under an open source licence.
   * The explorable ruins are not made at all
   * All the tools (grid, expeditions courses, ..) are not made
   * The kills are not displayed on the map
-  * The scout has no detection
   * The paranoid effects are not made (static effect, distortion effect, blur..)
   * The fog of war is not as good as the original
  
@@ -54,4 +53,4 @@ the code under an open source licence.
  
  You can test the code locally with test-map.html
  
-
+ Please if you have something interesting to share, do a pull request instead of forking silently the project. 
