@@ -6,8 +6,10 @@
         "build-ts": "tsc",
         "browserify": "browserify dist/ -o dist/hmap.user.js",
         "copy-headers": "echo \"$(cat header-userscript)\n$(cat dist/hmap.user.js)\" > dist/hmap.user.js",
-        "build": "npm run build-ts && npm run browserify && npm run copy-headers",
-        "lint": "tslint --project tslint.json ./src/*.ts"
+        "lint": "tslint --project tslint.json ./src/*.ts",
+        "version" : "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
+        "build": "npm run build-ts && npm run browserify && npm run copy-headers && npm run version"
+     
     },
     "author": "RyderOne",
     "dependencies": {

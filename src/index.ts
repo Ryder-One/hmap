@@ -42,10 +42,11 @@ visitor2.load().then(function(loadedFont: any) {
             const checkJsMapExists = setInterval(function() {
                 if (js && js.JsMap && js.JsMap.sh) { // when js.JsMap.sh does not exists, that can mean we are not outside
                     clearInterval(checkJsMapExists);
-
                     map.setupInterceptor();
-
                     map.fetchMapData();
+                } else if (js && js.JsMap) {
+                    console.log('JS MAP is there', js.JsMap);
+                    clearInterval(checkJsMapExists);
                 } else if (++counterCheckJsMap > 100) { // timeout 10s on haxe loading
                     clearInterval(checkJsMapExists);
                     console.warn('HMap::bootstrap - JsMap not detected : exiting', js, js.JsMap);

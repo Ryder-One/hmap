@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HMap
 // @namespace    ryderone
-// @version      1.0.0
+// @version      __VERSION__
 // @description  Attempt to rebuild the Die2Nite map in HTML5
 // @author       RyderOne
 // @match        http://www.die2nite.com/*
