@@ -13,7 +13,7 @@ export abstract class AbstractHMapLayer {
     protected map: HMapTypeMap;
 
     get ctx(): CanvasRenderingContext2D {
-        return this.canvas.getContext('2d', {alpha: false})!; // assuming the canvas is always defined, the ctx should be always defined
+        return this.canvas.getContext('2d')!; // assuming the canvas is always defined, the ctx should be always defined
     }
 
     constructor(jQ: JQueryStatic, map: HMapTypeMap) {

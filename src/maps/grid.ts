@@ -19,7 +19,37 @@ export class HMapGridMap extends HMapAbstractMap {
         this.jQ('.swf').css('display', 'flex').css('flex-direction', 'column').css('height', 'auto');
         if (!this.jQ('#hmap').length) {
             this.jQ('.swf').append('<div id="hmap"></div>');
-            this.jQ('#hmap').css('height', '300px');
+            this.jQ('#hmap').css('height', '300px').css('position', 'relative');
+
+            this.jQ('#hmap').append('<div id="hmap-menu"></div>');
+            this.jQ('#hmap-menu')
+                .css('position', 'absolute')
+                .css('bottom', '0px')
+                .css('z-index', '10')
+                .css('display', 'none');
+
+            this.jQ('#hmap-menu').append('<div id="hmap-close-button">Close</div>');
+            this.jQ('#hmap-close-button')
+                .css('padding', '0px 5px')
+                .css('margin', '2px')
+                .css('border', '1px solid black')
+                .css('background-color', '#a13119')
+                .css('font-size', '13px')
+                .css('font-weight', '700')
+                .css('font-family', 'agency-fb')
+                .css('color', '#eccb94')
+                .css('cursor', 'pointer')
+                .css('display', 'flex')
+                .css('align-items', 'center')
+                .css('user-select', 'none');
+
+            this.jQ('#hmap-close-button').on('click', this.onMapButtonClick.bind(this));
+
+            this.jQ('#hmap-close-button').on('mouseenter', () => {
+                this.jQ('#hmap-close-button').css('outline', '1px solid #eccb94');
+            }).on('mouseleave', () => {
+                this.jQ('#hmap-close-button').css('outline', '0px');
+            });
         }
 
         const GridLayer = new HMapGridLayer(this.jQ, this);
@@ -51,6 +81,7 @@ export class HMapGridMap extends HMapAbstractMap {
 
         // when preloading the pictures is finished, starts drawing
         this.imagesLoader.preloadPictures(firstCtx, () => {
+            this.jQ('#hmap-menu').css('display', 'block');
             this.startAnimation();
         });
     }
@@ -69,5 +100,9 @@ export class HMapGridMap extends HMapAbstractMap {
     private onMouseLeave(e: MouseEvent) {
         this.mouse = { x: 0, y: 0 };
         this.mouseOverIndex = -1;
+    }
+
+    private onMapButtonClick() {
+        this.hmap.switchMapAndReload('desert');
     }
 }

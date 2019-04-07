@@ -1,6 +1,6 @@
 import { HMapDesertMap } from './maps/desert';
 import { HMapGridMap } from './maps/grid';
-import { HMapTypeMap } from './maps/abstract';
+import { HMapTypeMap, HMapTypeMapStr } from './maps/abstract';
 
 export interface HMapPoint {
     x: number;
@@ -34,22 +34,14 @@ export class HMap {
         }
     }
 
-
     /**
      * Get the map data and launch the drawing of the map
      */
     fetchMapData() {
         console.log('fetchMapData');
 
-        if (this.location === 'doors') { // in town
-            this.map = new HMapGridMap(this.jQ, this.devMode);
-            this.map.mode = 'global'; // in town, we can see the global mode, not perso
-        } else if (this.location === 'desert') {
-            this.map = new HMapDesertMap(this.jQ, this.devMode);
-        } else if (this.location === 'ruin') {
-            return; // @TODO
-        } else {
-            throw new Error('HMap::fetchMapData - could not detect location');
+        if (this.map === undefined) {
+            this.autoBuildMap();
         }
 
         if (this.devMode === true) { // if we are in dev mode, serve a json
@@ -138,10 +130,40 @@ export class HMap {
     getCurrentLocation(): HMapLocation {
         if (window.location.href.indexOf('door') !== -1) {
             return 'doors';
-        } else if (this.jQ('#sideMap').length) {
+        } else if (window.location.href.indexOf('outside') !== -1) {
             return 'desert';
         } else {
+            console.log(window.location.href);
             return 'unknown';
+        }
+    }
+
+    /**
+     * Switch the map to a new type and reload
+     */
+    switchMapAndReload(type: HMapTypeMapStr) {
+        this.jQ('#hmap').remove();
+        if (type === 'desert') {
+            this.map = new HMapDesertMap(this.jQ, this, this.devMode);
+        } else if (type === 'grid') {
+            this.map = new HMapGridMap(this.jQ, this, this.devMode);
+        }
+        this.fetchMapData();
+    }
+
+    /**
+     * Choose the right type of map when it hasn't already been set
+     */
+    private autoBuildMap() {
+        if (this.location === 'doors') { // in town
+            this.map = new HMapGridMap(this.jQ, this, this.devMode);
+            this.map.mode = 'global'; // in town, we can see the global mode, not perso
+        } else if (this.location === 'desert') {
+            this.map = new HMapDesertMap(this.jQ, this, this.devMode);
+        } else if (this.location === 'ruin') {
+            return; // @TODO
+        } else {
+            throw new Error('HMap::fetchMapData - could not detect location');
         }
     }
 }

@@ -154,7 +154,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
 
         this.ctx.fillStyle = '#d7ff5b';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText( text, Math.floor(xPopup + 5) + 0.5, Math.floor(yPopup + popupHeight / 2) + 0.5);
+        this.ctx.fillText( text, Math.floor(xPopup + 5), Math.floor(yPopup + popupHeight / 2 - 1));
         this.ctx.restore();
     }
 }

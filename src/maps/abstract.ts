@@ -7,12 +7,15 @@ import { HMapImagesLoader } from '../imagesLoader';
 import { HMapGridLayer } from '../layers/grid';
 import { HMapDesertMap } from './desert';
 import { HMapGridMap } from './grid';
+import { HMap } from '../hmap';
 
+export type HMapTypeMapStr = 'grid' | 'desert';
 export type HMapTypeMap = HMapGridMap | HMapDesertMap;
 
 export abstract class HMapAbstractMap {
     protected jQ: JQueryStatic;
     protected devMode = false;
+    protected hmap: HMap;
 
     protected layers = new Map<HMapLayerType, HMapBackgroundLayer|HMapForegroundLayer|HMapBufferLayer|HMapGridLayer>();
 
@@ -21,9 +24,11 @@ export abstract class HMapAbstractMap {
     public imagesLoader = new HMapImagesLoader();
     public mapData?: HMapData;
 
-    constructor(jQ: JQueryStatic, devMode?: boolean) {
+    constructor(jQ: JQueryStatic, hmap: HMap, devMode?: boolean) {
 
         this.jQ = jQ;
+        this.hmap = hmap;
+
         if (devMode !== undefined) {
             this.devMode = devMode;
         }

@@ -4,6 +4,7 @@ import { HMapBackgroundLayer } from '../layers/background';
 import { HMapForegroundLayer } from '../layers/foreground';
 import { HMapBufferLayer } from '../layers/buffer';
 import { HMapNeighbour } from '../neighbours';
+import { HMap } from '../hmap';
 
 declare var haxe: any;
 declare var js: any;
@@ -17,6 +18,9 @@ export class HMapDesertMap extends HMapAbstractMap {
 
     private parallax: HMapParallax = { x: 0, y: 0 };
 
+    // boolean to prevent double move event
+    private moving?: boolean;
+
     public registredArrows = new Array<HMapArrow>();
 
     // variables to do the translation on arrow click
@@ -25,19 +29,49 @@ export class HMapDesertMap extends HMapAbstractMap {
 
     private originalOnData?: CallableFunction;
 
-    constructor(jQ: JQueryStatic, devMode?: boolean) {
-        super(jQ, devMode);
-    }
-
     /**
-     * Append the HTML with jQuery. It is safe to recall this method (it wont append layers twice)
+     * Append the HTML with jQuery.
      */
     public buildLayers(): void {
         // inject some HTML to make room for the map
         this.jQ('.swf').css('display', 'flex').css('flex-direction', 'column').css('height', 'auto');
         if (!this.jQ('#hmap').length) {
             this.jQ('.swf').append('<div id="hmap"></div>');
-            this.jQ('#hmap').css('height', '300px');
+            this.jQ('#hmap').css('height', '300px').css('position', 'relative');
+
+            this.jQ('#hmap').append('<div id="hmap-menu"></div>');
+            this.jQ('#hmap-menu')
+                .css('position', 'absolute')
+                .css('bottom', '0px')
+                .css('z-index', '10')
+                .css('display', 'none');
+
+            this.jQ('#hmap-menu').append('<div id="hmap-minimap-button"></div>');
+            this.jQ('#hmap-minimap-button')
+                .css('padding', '0px 5px')
+                .css('margin', '2px')
+                .css('border', '1px solid black')
+                .css('background-color', '#a13119')
+                .css('font-size', '13px')
+                .css('font-weight', '700')
+                .css('font-family', 'agency-fb')
+                .css('color', '#eccb94')
+                .css('cursor', 'pointer')
+                .css('display', 'flex')
+                .css('align-items', 'center')
+                .css('user-select', 'none');
+
+            this.jQ('#hmap-minimap-button').append('<img id="hmap-minimap-icon" src="https://u.cubeupload.com/ryderone/minimap.png"> Map');
+            this.jQ('#hmap-minimap-button').on('click', this.onMapButtonClick.bind(this));
+
+            this.jQ('#hmap-minimap-icon').css('margin-right', '3px');
+
+            this.jQ('#hmap-minimap-button').on('mouseenter', () => {
+                this.jQ('#hmap-minimap-button').css('outline', '1px solid #eccb94');
+            }).on('mouseleave', () => {
+                this.jQ('#hmap-minimap-button').css('outline', '0px');
+            });
+
         }
 
         this.layers.set('background', new HMapBackgroundLayer(this.jQ, this));
@@ -102,6 +136,7 @@ export class HMapDesertMap extends HMapAbstractMap {
 
         // when preloading the pictures is finished, starts drawing
         this.imagesLoader.preloadPictures(firstCtx, () => {
+            this.jQ('#hmap-menu').css('display', 'block');
             this.startAnimation();
         });
     }
@@ -110,6 +145,12 @@ export class HMapDesertMap extends HMapAbstractMap {
      * Function called when the user click on a directionnal arrow
      */
     private move(direction: HMapArrowDirection) {
+
+        // since the move is happening in a setTimeout, we have to do this boolean trick
+        if (this.moving === true) {
+            return;
+        }
+        this.moving = true;
 
         let x: number, y: number;
         if (direction === 'right') {
@@ -123,7 +164,7 @@ export class HMapDesertMap extends HMapAbstractMap {
         }
 
         this.startTranslate = Date.now();
-        this.translateTo = { x: -100 * x, y: -100 * y};
+        this.translateTo = { x: -100 * x, y: -100 * y };
 
         // this is a real timeout (300ms), not a fake async method
         setTimeout(() => {
@@ -132,7 +173,7 @@ export class HMapDesertMap extends HMapAbstractMap {
             this.mapData!.movePosition(x, y);
 
             // reset the animation
-            this.translateTo = { x: 0, y: 0};
+            this.translateTo = { x: 0, y: 0 };
 
             if (this.devMode === false) {
                 const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
@@ -151,7 +192,7 @@ export class HMapDesertMap extends HMapAbstractMap {
                         const stopVar = data.indexOf('\',', startVar);
                         const tempMapData = data.substring(startVar, stopVar);
 
-                        this.partialDataReceived({raw: tempMapData});
+                        this.partialDataReceived({ raw: tempMapData });
 
                         this.originalOnData!(data); // we are sure it has been set
                     }
@@ -181,24 +222,25 @@ export class HMapDesertMap extends HMapAbstractMap {
                 } else {
                     fakeData._neig.push(0);
                 }
-                if (newIndex + 1 < (this.mapData!.size.width * this.mapData!.size.height) ) {
+                if (newIndex + 1 < (this.mapData!.size.width * this.mapData!.size.height)) {
                     fakeData._neig.push(this.mapData!.data._details[newIndex + 1]._z);
                 } else {
                     fakeData._neig.push(0);
                 }
-                if (newIndex + this.mapData!.size.height < (this.mapData!.size.height * this.mapData!.size.height) ) {
+                if (newIndex + this.mapData!.size.height < (this.mapData!.size.height * this.mapData!.size.height)) {
                     fakeData._neig.push(this.mapData!.data._details[newIndex + this.mapData!.size.height]._z);
                 } else {
                     fakeData._neig.push(0);
                 }
-                if (newIndex - 1 > 0 ) {
+                if (newIndex - 1 > 0) {
                     fakeData._neig.push(this.mapData!.data._details[newIndex - 1]._z);
                 } else {
                     fakeData._neig.push(0);
                 }
 
-                this.partialDataReceived({JSON: fakeData});
+                this.partialDataReceived({ JSON: fakeData });
             }
+            this.moving = false;
         }, 300);
     }
 
@@ -219,9 +261,9 @@ export class HMapDesertMap extends HMapAbstractMap {
             for (let i = 0, j = this.registredArrows.length; i < j; i++) {
                 const arrowRegistred = this.registredArrows[i];
                 if (mouseX > arrowRegistred.rx &&
-                    mouseX < ( arrowRegistred.rx + arrowRegistred.w) &&
+                    mouseX < (arrowRegistred.rx + arrowRegistred.w) &&
                     mouseY > arrowRegistred.ry &&
-                    mouseY < ( arrowRegistred.ry + arrowRegistred.h) ) {
+                    mouseY < (arrowRegistred.ry + arrowRegistred.h)) {
                     arrowRegistred.over = true;
                     overOne = true;
                     break; // we cannot be over two arrows
@@ -249,10 +291,11 @@ export class HMapDesertMap extends HMapAbstractMap {
                 const arrowRegistred = this.registredArrows[i];
                 // if we clicked in the square of a directionnal arrow
                 if (mouseX > arrowRegistred.rx &&
-                    mouseX < ( arrowRegistred.rx + arrowRegistred.w) &&
+                    mouseX < (arrowRegistred.rx + arrowRegistred.w) &&
                     mouseY > arrowRegistred.ry &&
-                    mouseY < ( arrowRegistred.ry + arrowRegistred.h) ) {
+                    mouseY < (arrowRegistred.ry + arrowRegistred.h)) {
                     this.move(this.registredArrows[i].t);
+                    break;
                 }
             }
         }
@@ -270,6 +313,10 @@ export class HMapDesertMap extends HMapAbstractMap {
         }
     }
 
+    private onMapButtonClick() {
+        this.hmap.switchMapAndReload('grid');
+    }
+
     /**
      * Register the available directionnal arrows
      */
@@ -283,22 +330,22 @@ export class HMapDesertMap extends HMapAbstractMap {
                         if (neighbour.position === 'top_center') {
                             offsetY = 15;
                             offsetX = - 41 + 150;
-                            const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28 , 'top', 0, false);
+                            const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
                             this.registredArrows.push(A);
                         } else if (neighbour.position === 'bottom_center') {
                             offsetY = 250;
                             offsetX = - 41 + 150;
-                            const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28 , 'bottom', 180, false);
+                            const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
                             this.registredArrows.push(A);
                         } else if (neighbour.position === 'middle_right') {
                             offsetX = 230;
                             offsetY = - 14 + 150;
-                            const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83 , 'right', 90, false);
+                            const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
                             this.registredArrows.push(A);
                         } else if (neighbour.position === 'middle_left') {
                             offsetX = -10;
                             offsetY = - 14 + 150;
-                            const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83 , 'left', 270, false);
+                            const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
                             this.registredArrows.push(A);
                         }
                     }
