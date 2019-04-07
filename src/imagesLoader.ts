@@ -24,6 +24,10 @@ export class HMapImagesLoader {
         this.images.set('zombieGlow', { src: 'https://u.cubeupload.com/ryderone/zombieglow.png', obj: undefined });
         this.images.set('blood', { src: 'https://u.cubeupload.com/ryderone/blood.png', obj: undefined });
         this.images.set('single', { src: 'http://u.cubeupload.com/ryderone/single.png', obj: undefined });
+        this.images.set('hatch', { src: 'http://u.cubeupload.com/ryderone/hatch.png', obj: undefined });
+        this.images.set('town', { src: 'http://u.cubeupload.com/ryderone/town.png', obj: undefined });
+        this.images.set('building', { src: 'http://u.cubeupload.com/ryderone/building.png', obj: undefined });
+        this.images.set('hatch-dense', { src: 'http://u.cubeupload.com/ryderone/hatchdense.png', obj: undefined });
     }
 
     public isset(imageId: string): boolean {

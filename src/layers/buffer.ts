@@ -1,9 +1,9 @@
 import { AbstractHMapLayer } from './abstract';
-import { HMap } from '../hmap';
+import { HMapDesertMap } from '../maps/desert';
 
 export class HMapBufferLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMap) {
+    constructor(jQ: JQueryStatic, map: HMapDesertMap) {
         super(jQ, map);
 
         this.canvas = document.createElement('canvas');
