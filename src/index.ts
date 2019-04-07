@@ -12,14 +12,14 @@ const style = document.createElement('style');
 style.appendChild(document.createTextNode('\
 @font-face {\
     font-family: visitor2;\
-    src: url(\'https://github.com/Ryder-One/hmap/blob/dfd537424bac4b6bf7c85efcba93ffd3862edc2c/assets/visitor2.ttf?raw=true\') format(\'ttf\');\
+    src: url(\'https://ryder-one.github.io/hmap/visitor2.ttf\') format(\'ttf\');\
 }\
 '));
 document.head.appendChild(style);
 
 // @ts-ignore https://github.com/Microsoft/TypeScript/issues/13569
 const visitor2 = new FontFace('visitor2',
-    'url(https://github.com/Ryder-One/hmap/blob/dfd537424bac4b6bf7c85efcba93ffd3862edc2c/assets/visitor2.ttf?raw=true)');
+    'url(https://ryder-one.github.io/hmap/visitor2.ttf)');
 visitor2.load().then(function(loadedFont: any) {
     // @ts-ignore same reason
     document.fonts.add(loadedFont);
@@ -35,23 +35,23 @@ visitor2.load().then(function(loadedFont: any) {
         const map = new HMap(jQ, dev);
 
         if (dev === true) { // dev mode to play with the map
+            map.location = 'desert';
             map.fetchMapData();
         } else {
             // wait for js.JsMap to be ready
             let counterCheckJsMap = 0;
             const checkJsMapExists = setInterval(function() {
-                if (js && js.JsMap && js.JsMap.sh) { // when js.JsMap.sh does not exists, that can mean we are not outside
+                if (js && js.JsMap) { // when we land on a page with the map already there, start the code
                     clearInterval(checkJsMapExists);
-                    map.setupInterceptor();
+                    map.location = map.getCurrentLocation();
                     map.fetchMapData();
-                } else if (js && js.JsMap) {
-                    console.log('JS MAP is there', js.JsMap);
+                    map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
+                } else if (++counterCheckJsMap > 20) { // timeout 2s
                     clearInterval(checkJsMapExists);
-                } else if (++counterCheckJsMap > 100) { // timeout 10s on haxe loading
-                    clearInterval(checkJsMapExists);
-                    console.warn('HMap::bootstrap - JsMap not detected : exiting', js, js.JsMap);
+                    map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
+
                 }
-            }, 100); // 10 sec then give up
+            }, 100);
         }
     } catch (err) {
         console.error('HMap::bootstrap', err);

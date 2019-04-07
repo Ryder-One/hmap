@@ -2,19 +2,19 @@
 
 An HTML5 map for Die2Nite
 
-All the assets are copyrighted by MotionTwin
+All the assets are copyrighted by Motion Twin
 
 ## DISCLAIMER
 
 I made this map because we have no news from Motion Twin (MT) for a couple years now, and the end - death - of flash
-is already announced. I like the game and I can see the community worrying days after days. Some are already leaving because 
+is already announced. I like the game and I can see the community worrying day after day. Some are already leaving because 
 they think the game will die with flash.
 
 This code is open source because this is the rule that moderators use to allow an addon.
 
-If Motion Twin sees an offense in this project and officially ask me to remove the code and delete this project I will do it.
+If Motion Twin sees an offense in this project and officially asks me to remove the code and delete this project I will do it.
 
-If Motion Twin officially give me their blessing to continue this project, then I will remove this disclamer and licence 
+If Motion Twin officially gives me their blessing to continue this project, then I will remove this disclaimer and licence 
 the code under an open source licence. The assets will always be the exclusive copyright of Motion Twin.
 
  ## How to use
@@ -27,18 +27,18 @@ the code under an open source licence. The assets will always be the exclusive c
   
  ## Known issues
  
- The map is still in a very early stage, so there is a lot of issues. Please read carefully this list before posting
+ The map is still in a very early stage, so there are a lot of issues. Please read this list carefully before posting
  new ones.
  
-  * The explorable ruins are not made at all
-  * All the tools (grid, expeditions courses, ..) are not made
+  * The explorable ruins are'nt done
+  * All the tools (grid, expeditions courses, ..) are'nt done
   * The kills are not displayed on the map
-  * The paranoid effects are not made (static effect, distortion effect, blur..)
+  * The paranoid effects are'nt done (static effect, distortion effect, blur..)
   * The fog of war is not as good as the original
  
  ## Contributing
  
- If you are developer and you want to help me, here is something to start.
+ If you are a developer and you want to help me, here is something to start.
  
  ```
  npm install -g browserify typescript tslint

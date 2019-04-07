@@ -1,9 +1,9 @@
 import { AbstractHMapLayer } from './abstract';
-import { HMap } from '../hmap';
+import { HMapDesertMap } from '../maps/desert';
 
 export class HMapForegroundLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMap) {
+    constructor(jQ: JQueryStatic, map: HMapDesertMap) {
         super(jQ, map);
 
         if (!this.jQ('#canvasArrows').length) {
@@ -18,6 +18,8 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
 
     public draw() {
         this.ctx.clearRect(0, 0, 300, 300);
+
+        const map = this.map as HMapDesertMap;
 
         const mapData = this.map.mapData!;
         const imagesLoader = this.map.imagesLoader;
@@ -39,12 +41,14 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
             this.drawImage(imagesLoader.getImg('blood'), 0, 0);
         }
 
+        // position text
+        const relativePos = mapData.getPositionRelativeToTown(mapData.position);
         this.ctx.fillStyle = '#d6fe5a';
-        this.ctx.fillText('position : ' + (mapData.position.x - mapData.town.x) + ' / ' + (mapData.town.y - mapData.position.y), 190, 280);
+        this.ctx.fillText('position : ' + relativePos.x + ' / ' + relativePos.y, 190, 280);
 
         // arrows
-        for (let i = 0, j = this.map.registredArrows.length; i < j; i++) {
-            const arrow = this.map.registredArrows[i];
+        for (let i = 0, j = map.registredArrows.length; i < j; i++) {
+            const arrow = map.registredArrows[i];
             this.drawImageRot(imagesLoader.getImg('moveArrowLight'), arrow.ax, arrow.ay, 82, 27, arrow.a);
             this.drawImageRot(imagesLoader.getImg('moveArrowOutline'), arrow.ax, arrow.ay, 83, 28, arrow.a);
             this.drawImageRot(imagesLoader.getImg('moveArrowOutline'), arrow.ax, arrow.ay, 83, 28, arrow.a); // increase luminosity

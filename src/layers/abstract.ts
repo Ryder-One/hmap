@@ -1,6 +1,6 @@
-import { HMap } from '../hmap';
+import { HMapTypeMap } from '../maps/abstract';
 
-export type HMapLayerType = 'background' | 'foreground' | 'buffer';
+export type HMapLayerType = 'background' | 'foreground' | 'buffer' | 'grid';
 
 /**
  * HTML5 canvas wrapper
@@ -10,13 +10,13 @@ export abstract class AbstractHMapLayer {
     public canvas!: HTMLCanvasElement; // assigned in derivated class
     protected jQ: JQueryStatic;
     protected type!: HMapLayerType; // assigned in derivated class
-    protected map: HMap;
+    protected map: HMapTypeMap;
 
     get ctx(): CanvasRenderingContext2D {
-        return this.canvas.getContext('2d')!; // assuming the canvas is always defined, the ctx should be always defined
+        return this.canvas.getContext('2d', {alpha: false})!; // assuming the canvas is always defined, the ctx should be always defined
     }
 
-    constructor(jQ: JQueryStatic, map: HMap) {
+    constructor(jQ: JQueryStatic, map: HMapTypeMap) {
         this.jQ = jQ;
         this.map = map;
     }

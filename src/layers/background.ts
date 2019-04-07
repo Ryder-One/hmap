@@ -1,11 +1,11 @@
 import { AbstractHMapLayer } from './abstract';
-import { HMap } from '../hmap';
 import { HMapRandom } from '../random';
 import { HMapNeighbour } from '../neighbours';
+import { HMapDesertMap } from '../maps/desert';
 
 export class HMapBackgroundLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMap) {
+    constructor(jQ: JQueryStatic, map: HMapDesertMap) {
         super(jQ, map);
 
         if (!jQ('#canvasBG').length) {
@@ -50,13 +50,13 @@ export class HMapBackgroundLayer extends AbstractHMapLayer {
         // humans
         this.drawImage(imagesLoader.getImg('humanGlow'), 141, 141); // you
         for (let k = 1; k <= numberOfHumans - 1; k++) { // others
-            const newPosH = random.randomCircle(center, Math.floor(random.random() * 45) + 5);
+            const newPosH = random.randomCircle(center, Math.floor(random.random() * 30) + 5);
             this.drawImage(imagesLoader.getImg('humanGlow'), newPosH.x, newPosH.y);
         }
 
         // zombies
         for (let n = 1; n <= numberOfZombies; n++) {
-            const newPosZ = random.randomCircle(center, Math.floor(random.random() * 60) + 5 );
+            const newPosZ = random.randomCircle(center, Math.floor(random.random() * 40) + 5 );
             this.drawImage(imagesLoader.getImg('zombieGlow'), newPosZ.x, newPosZ.y);
         }
 
