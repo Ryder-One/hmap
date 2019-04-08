@@ -2,13 +2,14 @@ import { HMapAbstractMap } from './abstract';
 import { HMapGridLayer } from '../layers/grid';
 import { HMapPoint } from '../hmap';
 
-export type HMapGridMode = 'global' | 'perso';
+export type HMapGridMode = 'global' | 'personal';
 
 export class HMapGridMap extends HMapAbstractMap {
 
     public mouse?: HMapPoint;
     public mouseOverIndex = -1;
-    public mode = 'perso';
+    public mode = 'personal';
+    public enableClose = true;
 
 
     /**
@@ -21,17 +22,43 @@ export class HMapGridMap extends HMapAbstractMap {
             this.jQ('.swf').append('<div id="hmap"></div>');
             this.jQ('#hmap').css('height', '300px').css('position', 'relative');
 
+            // create the menu
             this.jQ('#hmap').append('<div id="hmap-menu"></div>');
             this.jQ('#hmap-menu')
                 .css('position', 'absolute')
                 .css('bottom', '0px')
                 .css('z-index', '10')
+                .css('height', '20px')
                 .css('display', 'none');
 
-            this.jQ('#hmap-menu').append('<div id="hmap-close-button">Close</div>');
-            this.jQ('#hmap-close-button')
+            // create the buttons
+            if (this.enableClose) {
+                this.jQ('#hmap-menu').append('<div id="hmap-close-button" class="hmap-button">Close</div>');
+            }
+            this.jQ('#hmap-menu').append('<div id="hmap-mode-button" class="hmap-button"></div>');
+
+            if (this.mode === 'global') {
+                this.jQ('#hmap-mode-button').html('Personal');
+            } else {
+                this.jQ('#hmap-mode-button').html('Global');
+            }
+
+            // bind the clicks
+            if (this.enableClose) {
+                this.jQ('#hmap-close-button').on('click', this.onMapButtonClick.bind(this));
+            }
+            this.jQ('#hmap-mode-button').on('click', this.switchMode.bind(this));
+
+            // style the buttons
+            this.jQ('div.hmap-button').on('mouseenter', (e: JQuery.MouseEnterEvent) => {
+                this.jQ(e.target).css('outline', '1px solid #eccb94');
+            }).on('mouseleave', (e: JQuery.MouseLeaveEvent) => {
+                this.jQ(e.target).css('outline', '0px');
+            });
+
+            this.jQ('div.hmap-button')
                 .css('padding', '0px 5px')
-                .css('margin', '2px')
+                .css('margin', '2px 5px')
                 .css('border', '1px solid black')
                 .css('background-color', '#a13119')
                 .css('font-size', '13px')
@@ -42,14 +69,6 @@ export class HMapGridMap extends HMapAbstractMap {
                 .css('display', 'flex')
                 .css('align-items', 'center')
                 .css('user-select', 'none');
-
-            this.jQ('#hmap-close-button').on('click', this.onMapButtonClick.bind(this));
-
-            this.jQ('#hmap-close-button').on('mouseenter', () => {
-                this.jQ('#hmap-close-button').css('outline', '1px solid #eccb94');
-            }).on('mouseleave', () => {
-                this.jQ('#hmap-close-button').css('outline', '0px');
-            });
         }
 
         const GridLayer = new HMapGridLayer(this.jQ, this);
@@ -81,7 +100,7 @@ export class HMapGridMap extends HMapAbstractMap {
 
         // when preloading the pictures is finished, starts drawing
         this.imagesLoader.preloadPictures(firstCtx, () => {
-            this.jQ('#hmap-menu').css('display', 'block');
+            this.jQ('#hmap-menu').css('display', 'flex');
             this.startAnimation();
         });
     }
@@ -104,5 +123,15 @@ export class HMapGridMap extends HMapAbstractMap {
 
     private onMapButtonClick() {
         this.hmap.switchMapAndReload('desert');
+    }
+
+    private switchMode() {
+        if (this.mode === 'global') {
+            this.mode = 'perso';
+            this.jQ('#hmap-mode-button').html('Global');
+        } else {
+            this.mode = 'global';
+            this.jQ('#hmap-mode-button').html('Personal');
+        }
     }
 }

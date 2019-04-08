@@ -1,23 +1,17 @@
 {
     "name": "hmap",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
         "build-ts": "tsc",
         "browserify": "browserify dist/ -o dist/hmap.user.js",
         "copy-headers": "echo \"$(cat header-userscript)\n$(cat dist/hmap.user.js)\" > dist/hmap.user.js",
         "lint": "tslint --project tslint.json ./src/*.ts",
-        "version" : "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
+        "version": "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
         "build": "npm run build-ts && npm run browserify && npm run copy-headers && npm run version"
-     
     },
     "author": "RyderOne",
     "dependencies": {
         "@types/jquery": "^3.3.29"
-    },
-    "devDependencies": {
-        "browserify": "^16.2.3",
-        "tslint": "^5.14.0",
-        "typescript": "^3.3.4000"
     }
 }

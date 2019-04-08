@@ -27,8 +27,6 @@ export class HMapDesertMap extends HMapAbstractMap {
     private startTranslate?: number; // timestamp
     private translateTo: HMapParallax = { x: 0, y: 0 };
 
-    private originalOnData?: CallableFunction;
-
     /**
      * Append the HTML with jQuery.
      */
@@ -44,6 +42,7 @@ export class HMapDesertMap extends HMapAbstractMap {
                 .css('position', 'absolute')
                 .css('bottom', '0px')
                 .css('z-index', '10')
+                .css('height', '20px')
                 .css('display', 'none');
 
             this.jQ('#hmap-menu').append('<div id="hmap-minimap-button"></div>');
@@ -194,7 +193,7 @@ export class HMapDesertMap extends HMapAbstractMap {
 
                         this.partialDataReceived({ raw: tempMapData });
 
-                        this.originalOnData!(data); // we are sure it has been set
+                        this.hmap.originalOnData!(data); // we are sure it has been set
                     }
                 };
 
