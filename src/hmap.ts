@@ -21,9 +21,9 @@ export class HMap {
     private jQ: JQueryStatic;
     private devMode = false;
 
-    private originalOnData?: CallableFunction;
     private map?: HMapTypeMap;
 
+    public originalOnData?: CallableFunction;
     public location?: HMapLocation;
 
     constructor(jQ: JQueryStatic, devMode?: boolean) {
@@ -60,8 +60,12 @@ export class HMap {
                     if (this.jQ('#FlashMap').length) { // if the flashmap is there
                         tempMapData = this.jQ('#FlashMap').attr('flashvars')!.substring(13);
                     } else { // if this is only the JS code supposed to bootstrap flash
-                        const scriptStr = this.jQ('#parsed_1').html();
-                        const startVar = scriptStr.indexOf('data') + 8;
+                        const scriptStr = this.jQ('#gameLayout').html();
+                        const mapMarker = scriptStr.indexOf('mapLoader.swf');
+                        if (mapMarker === -1) {
+                            return;
+                        }
+                        const startVar = scriptStr.indexOf('data', mapMarker) + 8;
                         const stopVar = scriptStr.indexOf('\');', startVar);
                         tempMapData = scriptStr.substring(startVar, stopVar);
                     }
@@ -82,12 +86,14 @@ export class HMap {
      * and pass it back to haxe.
      */
     setupInterceptor() {
+        console.log('Setup interceptor');
         if (js && js.XmlHttp && js.XmlHttp.onData) {
             this.originalOnData = js.XmlHttp.onData;
             js.XmlHttp.onData = this.dataInterceptor.bind(this);
         } else {
             throw new Error('HMap::setupInterceptor - Cannot find js.XmlHttp.onData');
         }
+        console.log(this.originalOnData);
     }
 
     /**
@@ -133,7 +139,6 @@ export class HMap {
         } else if (window.location.href.indexOf('outside') !== -1) {
             return 'desert';
         } else {
-            console.log(window.location.href);
             return 'unknown';
         }
     }
@@ -158,6 +163,7 @@ export class HMap {
         if (this.location === 'doors') { // in town
             this.map = new HMapGridMap(this.jQ, this, this.devMode);
             this.map.mode = 'global'; // in town, we can see the global mode, not perso
+            this.map.enableClose = false; // in town, you cannot go back to the desert map
         } else if (this.location === 'desert') {
             this.map = new HMapDesertMap(this.jQ, this, this.devMode);
         } else if (this.location === 'ruin') {

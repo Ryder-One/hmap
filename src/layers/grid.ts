@@ -75,7 +75,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
                         } else if (mapData.details[i]._z > 0) {
                             this.ctx.fillStyle = '#8f990b';
                         } else {
-                            this.ctx.fillStyle = '#d7ff5b'; // too bright, waitng for the right color
+                            this.ctx.fillStyle = 'transparent'; // too bright, waitng for the right color
                         }
 
                         this.ctx.fillRect(x, y, squareSize, squareSize);

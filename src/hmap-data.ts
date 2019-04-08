@@ -245,10 +245,6 @@ export class HMapData {
         return  { x: position.x - this.town.x, y: this.town.y - position.y };
     }
 
-    getBuildingName() {
-
-    }
-
     /**
      * Called with +/- 1 on x or y when we move the map
      */
@@ -356,8 +352,13 @@ export class HMapData {
      * Decode the url encoded flashvar
      */
     private decode(urlEncoded: string): Object {
-        const tempMapData = StringTools.urlDecode(urlEncoded);
-        return haxe.Unserializer.run(this.binaryToMessage(MapCommon.genKey(tempMapData.length), MapCommon.permute(tempMapData)));
+        try {
+            const tempMapData = StringTools.urlDecode(urlEncoded);
+            return haxe.Unserializer.run(this.binaryToMessage(MapCommon.genKey(tempMapData.length), MapCommon.permute(tempMapData)));
+        } catch (err) {
+            console.error('HMapData::decode - caught an exception during decoding', urlEncoded);
+            throw err;
+        }
     }
 
     /**
