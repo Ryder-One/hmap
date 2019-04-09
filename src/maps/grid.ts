@@ -8,7 +8,7 @@ export class HMapGridMap extends HMapAbstractMap {
 
     public mouse?: HMapPoint;
     public mouseOverIndex = -1;
-    public mode = 'personal';
+    public mode: HMapGridMode = 'personal';
     public enableClose = true;
 
 
@@ -127,7 +127,7 @@ export class HMapGridMap extends HMapAbstractMap {
 
     private switchMode() {
         if (this.mode === 'global') {
-            this.mode = 'perso';
+            this.mode = 'personal';
             this.jQ('#hmap-mode-button').html('Global');
         } else {
             this.mode = 'global';

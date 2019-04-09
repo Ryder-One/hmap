@@ -135,8 +135,10 @@ export class HMapData {
                 if (x < town.x + 5 && x > town.x - 5 && y < town.y + 5 && y > town.y - 5) {
                     view = true;
                 }
-                const bid = (town.x === x && town.y === y) ?
+                let bid = (town.x === x && town.y === y) ?
                     1 : (HMapRandom.getRandomInteger(0, 10) === 5 ?  HMapRandom.getRandomInteger(2, 62) : 0 );
+
+                bid = HMapRandom.getRandomInteger(0, 10) === 5 ? -1 : bid;
 
                 buildings.push({_id: bid, _n: 'Building ' + bid});
 

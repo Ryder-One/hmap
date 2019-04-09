@@ -60,7 +60,7 @@ export class HMapDesertMap extends HMapAbstractMap {
                 .css('align-items', 'center')
                 .css('user-select', 'none');
 
-            this.jQ('#hmap-minimap-button').append('<img id="hmap-minimap-icon" src="https://u.cubeupload.com/ryderone/minimap.png"> Map');
+            this.jQ('#hmap-minimap-button').append('<img id="hmap-minimap-icon" src="https://ryder-one.github.io/hmap/assets/minimap.png"> Map');
             this.jQ('#hmap-minimap-button').on('click', this.onMapButtonClick.bind(this));
 
             this.jQ('#hmap-minimap-icon').css('margin-right', '3px');

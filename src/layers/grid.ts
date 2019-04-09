@@ -59,7 +59,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
 
                 // color or hatch the position
                 let visionArray = mapData.global;
-                if (map.mode === 'perso') {
+                if (map.mode === 'personal') {
                     visionArray = mapData.view;
                 }
 
@@ -89,7 +89,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
                     this.drawImage(map.imagesLoader.getImg('hatch-dense'), x, y, squareSize, squareSize);
                 }
 
-                if (mapData.details[i]._c > 0) { // another building than town
+                if (mapData.details[i]._c > 0 || mapData.details[i]._c === -1) { // another building than town
                     this.drawImage(map.imagesLoader.getImg('building'), x, y, squareSize, squareSize);
                 }
             }
@@ -125,7 +125,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
         const relativePos = mapData.getPositionRelativeToTown(currentPos);
 
         let text = '';
-        if (mapData.details[map.mouseOverIndex]._c > 0) {
+        if (mapData.details[map.mouseOverIndex]._c > 0 || mapData.details[map.mouseOverIndex]._c === - 1) {
             if (mapData.details[map.mouseOverIndex]._c === 1) {
                 text = mapData.townName + ' ';
             } else {

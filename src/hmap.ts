@@ -134,11 +134,11 @@ export class HMap {
      * Guess on what page we are (town, desert, ruin.. ) by parsing the HTML
      */
     getCurrentLocation(): HMapLocation {
-        if (window.location.href.indexOf('door') !== -1) {
-            return 'doors';
-        } else if (window.location.href.indexOf('outside') !== -1) {
+        if (window.location.href.indexOf('outside') !== -1) {
             return 'desert';
-        } else {
+        } else if (window.location.href.indexOf('door') !== -1) {
+            return 'doors';
+        } else  {
             return 'unknown';
         }
     }

@@ -11,23 +11,23 @@ export class HMapImagesLoader {
     constructor() {
 
         // images to preload
-        this.images.set('loading', { src: 'https://u.cubeupload.com/ryderone/loading.png', obj: undefined });
-        this.images.set('glass', { src: 'https://u.cubeupload.com/ryderone/glass.png', obj: undefined });
-        this.images.set('humanGlow', { src: 'https://u.cubeupload.com/ryderone/humanglow.png', obj: undefined });
-        this.images.set('map', { src: 'https://u.cubeupload.com/ryderone/map.png', obj: undefined });
-        this.images.set('moveArrowFill', { src: 'https://u.cubeupload.com/ryderone/movearrowfill.png', obj: undefined });
-        this.images.set('moveArrowLight', { src: 'https://u.cubeupload.com/ryderone/movearrowlight.png', obj: undefined });
-        this.images.set('moveArrowOutline', { src: 'https://u.cubeupload.com/ryderone/movearrowoutline.png', obj: undefined });
-        this.images.set('night', { src: 'https://u.cubeupload.com/ryderone/night.png', obj: undefined });
-        this.images.set('shadowFocus', { src: 'https://u.cubeupload.com/ryderone/shadowfocus.png', obj: undefined });
-        this.images.set('townArrow', { src: 'https://u.cubeupload.com/ryderone/townarrow.png', obj: undefined });
-        this.images.set('zombieGlow', { src: 'https://u.cubeupload.com/ryderone/zombieglow.png', obj: undefined });
-        this.images.set('blood', { src: 'https://u.cubeupload.com/ryderone/blood.png', obj: undefined });
-        this.images.set('single', { src: 'http://u.cubeupload.com/ryderone/single.png', obj: undefined });
-        this.images.set('hatch', { src: 'http://u.cubeupload.com/ryderone/hatch.png', obj: undefined });
-        this.images.set('town', { src: 'http://u.cubeupload.com/ryderone/town.png', obj: undefined });
-        this.images.set('building', { src: 'http://u.cubeupload.com/ryderone/building.png', obj: undefined });
-        this.images.set('hatch-dense', { src: 'http://u.cubeupload.com/ryderone/hatchdense.png', obj: undefined });
+        this.images.set('loading', { src: 'https://ryder-one.github.io/hmap/assets/loading.png', obj: undefined });
+        this.images.set('glass', { src: 'https://ryder-one.github.io/hmap/assets/glass.png', obj: undefined });
+        this.images.set('humanGlow', { src: 'https://ryder-one.github.io/hmap/assets/human_glow.png', obj: undefined });
+        this.images.set('map', { src: 'https://ryder-one.github.io/hmap/assets/map.png', obj: undefined });
+        this.images.set('moveArrowFill', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_fill.png', obj: undefined });
+        this.images.set('moveArrowLight', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_light.png', obj: undefined });
+        this.images.set('moveArrowOutline', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_outline.png', obj: undefined });
+        this.images.set('night', { src: 'https://ryder-one.github.io/hmap/assets/night.png', obj: undefined });
+        this.images.set('shadowFocus', { src: 'https://ryder-one.github.io/hmap/assets/shadow_focus.png', obj: undefined });
+        this.images.set('townArrow', { src: 'https://ryder-one.github.io/hmap/assets/town_arrow.png', obj: undefined });
+        this.images.set('zombieGlow', { src: 'https://ryder-one.github.io/hmap/assets/zombie_glow.png', obj: undefined });
+        this.images.set('blood', { src: 'https://ryder-one.github.io/hmap/assets/blood.png', obj: undefined });
+        this.images.set('single', { src: 'https://ryder-one.github.io/hmap/assets/single.png', obj: undefined });
+        this.images.set('hatch', { src: 'https://ryder-one.github.io/hmap/assets/hatch.png', obj: undefined });
+        this.images.set('town', { src: 'https://ryder-one.github.io/hmap/assets/town.png', obj: undefined });
+        this.images.set('building', { src: 'https://ryder-one.github.io/hmap/assets/building.png', obj: undefined });
+        this.images.set('hatch-dense', { src: 'https://ryder-one.github.io/hmap/assets/hatch_dense.png', obj: undefined });
     }
 
     public isset(imageId: string): boolean {
@@ -104,9 +104,9 @@ export class HMapImagesLoader {
             if (neighbour.building !== 0 && neighbour.building !== undefined && !this.issetImg('b' + neighbour.building)) {
                 let url;
                 if (neighbour.building === -1) {
-                    url = 'https://u.cubeupload.com/ryderone/bm1.png';
+                    url = 'https://ryder-one.github.io/hmap/assets/bm1.png';
                 } else {
-                    url = 'https://u.cubeupload.com/ryderone/b' + neighbour.building + '.png';
+                    url = 'https://ryder-one.github.io/hmap/assets/b' + neighbour.building + '.png';
                 }
                 this.set('b' + neighbour.building, {
                     src: url,
