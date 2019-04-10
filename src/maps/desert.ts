@@ -53,7 +53,7 @@ export class HMapDesertMap extends HMapAbstractMap {
                 .css('background-color', '#a13119')
                 .css('font-size', '13px')
                 .css('font-weight', '700')
-                .css('font-family', 'agency-fb')
+                .css('font-family', 'economica')
                 .css('color', '#eccb94')
                 .css('cursor', 'pointer')
                 .css('display', 'flex')
@@ -181,20 +181,13 @@ export class HMapDesertMap extends HMapAbstractMap {
                 js.XmlHttp.urlForBack = url;
                 r.setHeader('X-Handler', 'js.XmlHttp');
                 r.onData = (data: string) => {
+                    const startVar = data.indexOf('js.JsMap.init') + 16;
+                    const stopVar = data.indexOf('\',', startVar);
+                    const tempMapData = data.substring(startVar, stopVar);
 
-                    if (data.indexOf('<load>outside') !== -1) { // in town
-                        // tslint:disable-next-line
-                        location.reload(true); // I dont have a better idea atm
-                    } else {
+                    this.partialDataReceived({ raw: tempMapData });
 
-                        const startVar = data.indexOf('js.JsMap.init') + 16;
-                        const stopVar = data.indexOf('\',', startVar);
-                        const tempMapData = data.substring(startVar, stopVar);
-
-                        this.partialDataReceived({ raw: tempMapData });
-
-                        this.hmap.originalOnData!(data); // we are sure it has been set
-                    }
+                    this.hmap.originalOnData!(data); // we are sure it has been set
                 };
 
                 r.onError = js.XmlHttp.onError;

@@ -52,7 +52,7 @@ forking the project with the assets until then.
  If you are a developer and you want to help me, here is something to start.
  
  ```
- npm install -g browserify typescript tslint
+ npm install -g browserify typescript tslint uglify-js npx
  ```
  
  Then pull the code, and run the build with 

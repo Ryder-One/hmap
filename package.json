@@ -4,14 +4,30 @@
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
         "build-ts": "tsc",
-        "browserify": "browserify dist/ -o dist/hmap.user.js",
-        "copy-headers": "echo \"$(cat header-userscript)\n$(cat dist/hmap.user.js)\" > dist/hmap.user.js",
+        "browserify": "browserify dist/ -o dist/hmap.user.es6.js",
         "lint": "tslint --project tslint.json ./src/*.ts",
+        "babel": "npx babel dist/hmap.user.es6.js > dist/hmap.user.es5.js",
+        "uglify": "uglifyjs dist/hmap.user.es5.js > dist/hmap.user.js",
+        "copy-headers": "echo \"$(cat header-userscript)\n$(cat dist/hmap.user.js)\" > dist/hmap.user.js",
         "version": "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
-        "build": "npm run build-ts && npm run browserify && npm run copy-headers && npm run version"
+        "build": "npm run build-ts && npm run browserify && npm run babel && npm run uglify && npm run copy-headers && npm run version"
     },
     "author": "RyderOne",
     "dependencies": {
-        "@types/jquery": "^3.3.29"
-    }
+        "@types/jquery": "^3.3.29",
+        "fontfaceobserver": "^2.1.0"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.4.3",
+        "@babel/core": "^7.4.3",
+        "@babel/polyfill": "^7.4.3",
+        "@babel/preset-env": "^7.4.3",
+        "@types/node": "^11.13.2"
+    },
+    "browserslist": "> 0.25%, not dead",
+    "babel": {
+        "presets": [ 
+            [ "@babel/preset-env" ] 
+        ]
+      }
 }

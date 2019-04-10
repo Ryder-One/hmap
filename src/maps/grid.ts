@@ -63,7 +63,7 @@ export class HMapGridMap extends HMapAbstractMap {
                 .css('background-color', '#a13119')
                 .css('font-size', '13px')
                 .css('font-weight', '700')
-                .css('font-family', 'agency-fb')
+                .css('font-family', 'economica')
                 .css('color', '#eccb94')
                 .css('cursor', 'pointer')
                 .css('display', 'flex')

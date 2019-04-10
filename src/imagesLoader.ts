@@ -104,9 +104,9 @@ export class HMapImagesLoader {
             if (neighbour.building !== 0 && neighbour.building !== undefined && !this.issetImg('b' + neighbour.building)) {
                 let url;
                 if (neighbour.building === -1) {
-                    url = 'https://ryder-one.github.io/hmap/assets/bm1.png';
+                    url = 'https://ryder-one.github.io/hmap/assets/buildings/b_m1.png';
                 } else {
-                    url = 'https://ryder-one.github.io/hmap/assets/b' + neighbour.building + '.png';
+                    url = 'https://ryder-one.github.io/hmap/assets/buildings/b_' + neighbour.building + '.png';
                 }
                 this.set('b' + neighbour.building, {
                     src: url,
