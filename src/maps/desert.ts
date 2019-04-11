@@ -145,7 +145,7 @@ export class HMapDesertMap extends HMapAbstractMap {
      */
     private move(direction: HMapArrowDirection) {
 
-        // since the move is happening in a setTimeout, we have to do this boolean trick
+        // since the move is happening in a setTimeout, we have to do this boolean trick to avoid double move
         if (this.moving === true) {
             return;
         }
@@ -162,6 +162,7 @@ export class HMapDesertMap extends HMapAbstractMap {
             x = 0; y = 1;
         }
 
+        // variables to manage the start effect
         this.startTranslate = Date.now();
         this.translateTo = { x: -100 * x, y: -100 * y };
 
@@ -171,9 +172,6 @@ export class HMapDesertMap extends HMapAbstractMap {
             // move the position
             this.mapData!.movePosition(x, y);
 
-            // reset the animation
-            this.translateTo = { x: 0, y: 0 };
-
             if (this.devMode === false) {
                 const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
                 const r = new haxe.Http('/' + url);
@@ -181,13 +179,17 @@ export class HMapDesertMap extends HMapAbstractMap {
                 js.XmlHttp.urlForBack = url;
                 r.setHeader('X-Handler', 'js.XmlHttp');
                 r.onData = (data: string) => {
-                    const startVar = data.indexOf('js.JsMap.init') + 16;
-                    const stopVar = data.indexOf('\',', startVar);
-                    const tempMapData = data.substring(startVar, stopVar);
+                    if (data.indexOf('load>outside/doors') === -1) { // skip this particular query, not interesting for us
+                        const startVar = data.indexOf('js.JsMap.init') + 16;
+                        const stopVar = data.indexOf('\',', startVar);
+                        const tempMapData = data.substring(startVar, stopVar);
 
-                    this.partialDataReceived({ raw: tempMapData });
+                        this.partialDataReceived({ raw: tempMapData });
+                    }
+                    this.hmap.originalOnData!(data); // we are sure the function has been set
 
-                    this.hmap.originalOnData!(data); // we are sure it has been set
+                    // reset the animation
+                    this.translateTo = { x: 0, y: 0 };
                 };
 
                 r.onError = js.XmlHttp.onError;
@@ -231,6 +233,8 @@ export class HMapDesertMap extends HMapAbstractMap {
                 }
 
                 this.partialDataReceived({ JSON: fakeData });
+                // reset the animation
+                this.translateTo = { x: 0, y: 0 };
             }
             this.moving = false;
         }, 300);

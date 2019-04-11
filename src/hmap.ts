@@ -38,8 +38,6 @@ export class HMap {
      * Get the map data and launch the drawing of the map
      */
     fetchMapData() {
-        console.log('fetchMapData');
-
         if (this.map === undefined) {
             this.autoBuildMap();
         }
@@ -86,14 +84,12 @@ export class HMap {
      * and pass it back to haxe.
      */
     setupInterceptor() {
-        console.log('Setup interceptor');
         if (js && js.XmlHttp && js.XmlHttp.onData) {
             this.originalOnData = js.XmlHttp.onData;
             js.XmlHttp.onData = this.dataInterceptor.bind(this);
         } else {
             throw new Error('HMap::setupInterceptor - Cannot find js.XmlHttp.onData');
         }
-        console.log(this.originalOnData);
     }
 
     /**
@@ -102,8 +98,6 @@ export class HMap {
     dataInterceptor(data: string) {
 
         this.originalOnData!(data);
-
-        console.log('HMap interceptor - ', this.getCurrentLocation(), this.location);
 
         const currentLocation = this.getCurrentLocation();
         if (currentLocation === 'unknown') { // unknown location, make sure the HMap is removed from the DOM
@@ -116,7 +110,8 @@ export class HMap {
         if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
             if (currentLocation !== this.location) { // if we changed location, reload the whole map
                 this.location = currentLocation;
-                this.fetchMapData();
+                this.map = undefined;
+                this.fetchMapData(); // it will autobuild the map
             } else { // we are still on the same location
                 if (data.indexOf('js.JsMap.init') !== -1) {
                     const startVar = data.indexOf('js.JsMap.init') + 16;

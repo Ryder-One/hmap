@@ -47,9 +47,6 @@ export class HMapGridLayer extends AbstractHMapLayer {
                 && map.mouse.y > y
                 && map.mouse.y < (y + squareSize)) {
 
-                if (i !== map.mouseOverIndex) {
-                    console.log(mapData.details[i], mapData.view[i], mapData.global[i]);
-                }
                 map.mouseOverIndex = i;
             }
 
