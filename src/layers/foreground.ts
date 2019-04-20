@@ -27,10 +27,10 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
         // focus lens shadow
         this.drawImage(imagesLoader.getImg('shadowFocus'), -66, -66);
 
-        // arrow pointing toward town
-        if (mapData.position.x !== mapData.town.x || mapData.position.y !== mapData.town.y) {
-            const townAngle = Math.atan2(mapData.town.y - mapData.position.y, mapData.town.x - mapData.position.x);
-            this.positionTownArrow(townAngle);
+        // arrow pointing toward target
+        if (mapData.position.x !== map.target.x || mapData.position.y !== map.target.y) {
+            const targetAngle = Math.atan2(map.target.y - mapData.position.y, map.target.x - mapData.position.x);
+            this.positionTargetArrow(targetAngle);
         }
 
         // glass
@@ -76,18 +76,18 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
     }
 
     /**
-     * Draw the small green arrow pointing toward the town
+     * Draw the small green arrow pointing toward the target
      * The angle is not calculated here
      * @param img img of the arrow
      * @param angle angle precalculated
      */
-    private positionTownArrow(angle: number) {
+    private positionTargetArrow(angle: number) {
         let originX = 150 - 4;
         let originY = 150 - 8;
         originX += 120 * Math.cos(angle);
         originY += 120 * Math.sin(angle);
 
-        this.drawImageRot(this.map.imagesLoader.getImg('townArrow'), originX, originY, 9, 17, angle * 180 / Math.PI);
+        this.drawImageRot(this.map.imagesLoader.getImg('targetArrow'), originX, originY, 9, 17, angle * 180 / Math.PI);
     }
 
 }

@@ -75,6 +75,7 @@ export class HMapGridMap extends HMapAbstractMap {
         this.layers.set('grid', GridLayer);
         GridLayer.canvas.onmousemove = this.onMouseMove.bind(this);
         GridLayer.canvas.onmouseleave = this.onMouseLeave.bind(this);
+        GridLayer.canvas.onclick = this.onMouseClick.bind(this);
     }
 
     /**
@@ -114,6 +115,11 @@ export class HMapGridMap extends HMapAbstractMap {
 
             this.mouse = { x: mouseX, y: mouseY };
         }
+    }
+
+    private onMouseClick() {
+        // set the target for the pointing arrow
+        this.hmap.target = this.mapData!.getCoordinates(this.mouseOverIndex);
     }
 
     private onMouseLeave(e: MouseEvent) {

@@ -26,6 +26,8 @@ https://github.com/Ryder-One/hmap/releases/latest/download/hmap.user.js
  
 It has been tested with tampermonkey. You can learn how to use it here : https://tampermonkey.net/faq.php
 
+IT IS CURRENTLY NOT WORKING WITH GREASEMONKEY
+
 ## Browser support
 
 I'm not sure about userscript : your browser has to support userscripts or plugins that enable userscripts.

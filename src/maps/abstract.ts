@@ -7,7 +7,7 @@ import { HMapImagesLoader } from '../imagesLoader';
 import { HMapGridLayer } from '../layers/grid';
 import { HMapDesertMap } from './desert';
 import { HMapGridMap } from './grid';
-import { HMap } from '../hmap';
+import { HMap, HMapPoint } from '../hmap';
 
 export type HMapTypeMapStr = 'grid' | 'desert';
 export type HMapTypeMap = HMapGridMap | HMapDesertMap;
@@ -23,6 +23,16 @@ export abstract class HMapAbstractMap {
 
     public imagesLoader = new HMapImagesLoader();
     public mapData?: HMapData;
+
+    get target(): HMapPoint {
+        if (this.hmap.target) {
+            return this.hmap.target;
+        } else if (this.mapData) {
+            return this.mapData.town;
+        } else {
+            throw new Error('target and map data are not set');
+        }
+    }
 
     constructor(jQ: JQueryStatic, hmap: HMap, devMode?: boolean) {
 

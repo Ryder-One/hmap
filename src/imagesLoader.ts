@@ -20,7 +20,7 @@ export class HMapImagesLoader {
         this.images.set('moveArrowOutline', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_outline.png', obj: undefined });
         this.images.set('night', { src: 'https://ryder-one.github.io/hmap/assets/night.png', obj: undefined });
         this.images.set('shadowFocus', { src: 'https://ryder-one.github.io/hmap/assets/shadow_focus.png', obj: undefined });
-        this.images.set('townArrow', { src: 'https://ryder-one.github.io/hmap/assets/town_arrow.png', obj: undefined });
+        this.images.set('targetArrow', { src: 'https://ryder-one.github.io/hmap/assets/town_arrow.png', obj: undefined });
         this.images.set('zombieGlow', { src: 'https://ryder-one.github.io/hmap/assets/zombie_glow.png', obj: undefined });
         this.images.set('blood', { src: 'https://ryder-one.github.io/hmap/assets/blood.png', obj: undefined });
         this.images.set('single', { src: 'https://ryder-one.github.io/hmap/assets/single.png', obj: undefined });

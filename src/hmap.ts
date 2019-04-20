@@ -23,6 +23,9 @@ export class HMap {
 
     private map?: HMapTypeMap;
 
+    // little green arrow target. Held here because mapdata is rebuild at each map switch
+    public target?: HMapPoint;
+
     public originalOnData?: CallableFunction;
     public location?: HMapLocation;
 
@@ -84,9 +87,20 @@ export class HMap {
      * and pass it back to haxe.
      */
     setupInterceptor() {
-        if (js && js.XmlHttp && js.XmlHttp.onData) {
-            this.originalOnData = js.XmlHttp.onData;
-            js.XmlHttp.onData = this.dataInterceptor.bind(this);
+
+        let _js;
+        // @ts-ignore this thing is not known by the TS compiler
+        const page: any = window.wrappedJSObject;
+
+        if (page.js) { // greasemonkey
+            _js = page.js;
+        } else { // tampermonkey
+            _js = js;
+        }
+
+        if (_js && _js.XmlHttp && _js.XmlHttp.onData) { // tampermonkey
+            this.originalOnData = _js.XmlHttp.onData;
+            _js.XmlHttp.onData = this.dataInterceptor.bind(this);
         } else {
             throw new Error('HMap::setupInterceptor - Cannot find js.XmlHttp.onData');
         }
@@ -117,9 +131,9 @@ export class HMap {
                     const startVar = data.indexOf('js.JsMap.init') + 16;
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
-                    this.map!.partialDataReceived({raw: tempMapData}); // else just patch the data
+                    this.map!.partialDataReceived({ raw: tempMapData }); // else just patch the data
                 } else {
-                    console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet' );
+                    console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet');
                 }
             }
         }
@@ -133,7 +147,7 @@ export class HMap {
             return 'desert';
         } else if (window.location.href.indexOf('door') !== -1) {
             return 'doors';
-        } else  {
+        } else {
             return 'unknown';
         }
     }

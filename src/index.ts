@@ -6,7 +6,6 @@ const FontFaceObserver = require('fontfaceobserver');
 const jQ = $.noConflict(true);
 declare var HMAP_DEVMODE: boolean;
 
-declare var js: any;
 const dev = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
 
 

@@ -162,39 +162,61 @@ export class HMapDesertMap extends HMapAbstractMap {
             x = 0; y = 1;
         }
 
-        // variables to manage the start effect
-        this.startTranslate = Date.now();
-        this.translateTo = { x: -100 * x, y: -100 * y };
+        if (this.devMode === false) {
+            const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
 
-        // this is a real timeout (300ms), not a fake async method
-        setTimeout(() => {
+            let hx: any;
 
-            // move the position
-            this.mapData!.movePosition(x, y);
+            // @ts-ignore
+            const page = window.wrappedJSObject;
+            if (page && page.haxe) { // greasemonkey ...
+                hx = page.haxe;
+            } else if (haxe) { // tampermonkey
+                hx = haxe;
+            }
 
-            if (this.devMode === false) {
-                const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
-                const r = new haxe.Http('/' + url);
-                js.XmlHttp.onStart(r);
-                js.XmlHttp.urlForBack = url;
-                r.setHeader('X-Handler', 'js.XmlHttp');
-                r.onData = (data: string) => {
-                    if (data.indexOf('load>outside/doors') === -1) { // skip this particular query, not interesting for us
+            const r = new hx.Http('/' + url);
+            js.XmlHttp.onStart(r);
+            js.XmlHttp.urlForBack = url;
+            r.setHeader('X-Handler', 'js.XmlHttp');
+            r.onData = (data: string) => {
+                this.hmap.originalOnData!(data); // we are sure the function has been set
+
+                // variables to manage the start effect
+                this.startTranslate = Date.now();
+                this.translateTo = { x: -100 * x, y: -100 * y };
+
+                // this is a real timeout (300ms), not a fake async method
+                setTimeout(() => {
+                    // move the position
+                    this.mapData!.movePosition(x, y);
+
+                    if (data.indexOf('js.JsMap.init') !== -1) {
                         const startVar = data.indexOf('js.JsMap.init') + 16;
                         const stopVar = data.indexOf('\',', startVar);
                         const tempMapData = data.substring(startVar, stopVar);
 
                         this.partialDataReceived({ raw: tempMapData });
                     }
-                    this.hmap.originalOnData!(data); // we are sure the function has been set
 
                     // reset the animation
                     this.translateTo = { x: 0, y: 0 };
-                };
+                    this.moving = false;
+                }, 300);
+            };
 
-                r.onError = js.XmlHttp.onError;
-                r.request(false);
-            } else { // dev mode, fake the data
+            r.onError = js.XmlHttp.onError;
+            r.request(false);
+
+        } else { // dev mode, fake the data
+
+            // variables to manage the start effect
+            this.startTranslate = Date.now();
+            this.translateTo = { x: -100 * x, y: -100 * y };
+
+            setTimeout(() => {
+                // move the position
+                this.mapData!.movePosition(x, y);
 
                 const newIndex = this.mapData!.index;
 
@@ -235,9 +257,10 @@ export class HMapDesertMap extends HMapAbstractMap {
                 this.partialDataReceived({ JSON: fakeData });
                 // reset the animation
                 this.translateTo = { x: 0, y: 0 };
-            }
-            this.moving = false;
-        }, 300);
+
+                this.moving = false;
+            }, 300);
+        }
     }
 
     private onMouseMove(e: MouseEvent) {

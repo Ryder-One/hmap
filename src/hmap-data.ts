@@ -63,6 +63,8 @@ export interface HMapPatchDataJSON { // current position
 
 export class HMapData {
 
+    public static _fakeData: HMapDataJSON;
+
     public data: HMapDataJSON;
     public neighbours = new HMapNeighbours();
     public town: HMapPoint;
@@ -86,107 +88,111 @@ export class HMapData {
     /**
      * create a fake JSON to debug the map
      */
-    static fakeData(): HMapDataJSON {
-        const mapSize = HMapRandom.getRandomInteger(15, 25);
+    static fakeData(force = false): HMapDataJSON {
+        if (HMapData._fakeData !== undefined && force === false) {
+            return HMapData._fakeData;
+        } else {
+            const mapSize = HMapRandom.getRandomInteger(15, 25);
 
-        const town = {
-            x: HMapRandom.getRandomInteger(3, mapSize - 3),
-            y: HMapRandom.getRandomInteger(3, mapSize - 3)
-        };
+            const town = {
+                x: HMapRandom.getRandomInteger(3, mapSize - 3),
+                y: HMapRandom.getRandomInteger(3, mapSize - 3)
+            };
 
-        const fakeData: HMapDataJSON = {
-            _details: new Array(),
-            _city: 'Oh yeah',
-            _hour: 17,
-            _path: null,
-            _slow: true,
-            _b: new Array(),
-            _e: new Array(),
-            _h: mapSize,
-            _r: {
-                _neigDrops: new Array(),
-                _neig: new Array(),
-                _state: false,
-                _c: 1,
-                _h: 1,
-                _m: 6,
-                _t: 0,
-                _z: 0,
-                _zid: HMapRandom.getRandomInteger(111111, 999999)
-            },
-            _w: mapSize,
-            _x: town.x,
-            _y: town.y,
-            _town: false,
-            _up: false,
-            _view: new Array(),
-            _global: new Array(),
-            _users: null,
-            _editor: false,
-            _map: false,
-            _mid: HMapRandom.getRandomInteger(111111, 999999)
-        };
-
-        let index = 0, townIndex = 0;
-        const buildings = new Array();
-        for (let y = 0; y < mapSize; y++) {
-            for (let x = 0; x < mapSize; x++) {
-                    let view = false;
-                if (x < town.x + 5 && x > town.x - 5 && y < town.y + 5 && y > town.y - 5) {
-                    view = true;
-                }
-                let bid = (town.x === x && town.y === y) ?
-                    1 : (HMapRandom.getRandomInteger(0, 10) === 5 ?  HMapRandom.getRandomInteger(2, 62) : 0 );
-
-                bid = HMapRandom.getRandomInteger(0, 10) === 5 ? -1 : bid;
-
-                buildings.push({_id: bid, _n: 'Building ' + bid});
-
-                fakeData._details.push({
-                    _c: bid,
-                    _s: false,
+            HMapData._fakeData = {
+                _details: new Array(),
+                _city: 'Oh yeah',
+                _hour: 17,
+                _path: null,
+                _slow: true,
+                _b: new Array(),
+                _e: new Array(),
+                _h: mapSize,
+                _r: {
+                    _neigDrops: new Array(),
+                    _neig: new Array(),
+                    _state: false,
+                    _c: 1,
+                    _h: 1,
+                    _m: 6,
                     _t: 0,
-                    _z: HMapRandom.getRandomInteger(0, 3) === 2 ? HMapRandom.getRandomInteger(0, 18) : 0,
-                    _nvt: view
-                });
-                if (view === true) {
-                    fakeData._view.push(bid);
-                } else {
-                    fakeData._view.push(null);
-                }
+                    _z: 0,
+                    _zid: HMapRandom.getRandomInteger(111111, 999999)
+                },
+                _w: mapSize,
+                _x: town.x,
+                _y: town.y,
+                _town: false,
+                _up: false,
+                _view: new Array(),
+                _global: new Array(),
+                _users: null,
+                _editor: false,
+                _map: false,
+                _mid: HMapRandom.getRandomInteger(111111, 999999)
+            };
 
-                if (bid === 1) {
-                    townIndex = index;
+            let index = 0, townIndex = 0;
+            const buildings = new Array();
+            for (let y = 0; y < mapSize; y++) {
+                for (let x = 0; x < mapSize; x++) {
+                        let view = false;
+                    if (x < town.x + 5 && x > town.x - 5 && y < town.y + 5 && y > town.y - 5) {
+                        view = true;
+                    }
+                    let bid = (town.x === x && town.y === y) ?
+                        1 : (HMapRandom.getRandomInteger(0, 10) === 5 ?  HMapRandom.getRandomInteger(2, 62) : 0 );
+
+                    bid = HMapRandom.getRandomInteger(0, 10) === 5 ? -1 : bid;
+
+                    buildings.push({_id: bid, _n: 'Building ' + bid});
+
+                    HMapData._fakeData._details.push({
+                        _c: bid,
+                        _s: false,
+                        _t: 0,
+                        _z: HMapRandom.getRandomInteger(0, 3) === 2 ? HMapRandom.getRandomInteger(0, 18) : 0,
+                        _nvt: view
+                    });
+                    if (view === true) {
+                        HMapData._fakeData._view.push(bid);
+                    } else {
+                        HMapData._fakeData._view.push(null);
+                    }
+
+                    if (bid === 1) {
+                        townIndex = index;
+                    }
+                    index++;
                 }
-                index++;
             }
-        }
-        fakeData._global = fakeData._view;
-        fakeData._b = buildings;
+            HMapData._fakeData._global = HMapData._fakeData._view;
+            HMapData._fakeData._b = buildings;
 
-        fakeData._r._neig = new Array();
-        if (townIndex - mapSize > 0) {
-            fakeData._r._neig.push(fakeData._details[townIndex - mapSize]._z);
-        } else {
-            fakeData._r._neig.push(0);
-        }
-        if (townIndex + 1 < (mapSize * mapSize) ) {
-            fakeData._r._neig.push(fakeData._details[townIndex + 1]._z);
-        } else {
-            fakeData._r._neig.push(0);
-        }
-        if (townIndex + mapSize < (mapSize * mapSize) ) {
-            fakeData._r._neig.push(fakeData._details[townIndex + mapSize]._z);
-        } else {
-            fakeData._r._neig.push(0);
-        }
-        if (townIndex - 1 > 0 ) {
-            fakeData._r._neig.push(fakeData._details[townIndex - 1]._z);
-        } else {
-            fakeData._r._neig.push(0);
-        }
+            HMapData._fakeData._r._neig = new Array();
+            if (townIndex - mapSize > 0) {
+                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex - mapSize]._z);
+            } else {
+                HMapData._fakeData._r._neig.push(0);
+            }
+            if (townIndex + 1 < (mapSize * mapSize) ) {
+                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex + 1]._z);
+            } else {
+                HMapData._fakeData._r._neig.push(0);
+            }
+            if (townIndex + mapSize < (mapSize * mapSize) ) {
+                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex + mapSize]._z);
+            } else {
+                HMapData._fakeData._r._neig.push(0);
+            }
+            if (townIndex - 1 > 0 ) {
+                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex - 1]._z);
+            } else {
+                HMapData._fakeData._r._neig.push(0);
+            }
 
-        return fakeData;
+            return HMapData._fakeData;
+        }
     }
 
     /**
@@ -203,7 +209,7 @@ export class HMapData {
 
         this.buildNeighbours();
         this.town = this.findTown();
-
+        console.log('hmap data constructor');
         this.cacheBuildingsNames();
     }
 
@@ -354,11 +360,24 @@ export class HMapData {
      * Decode the url encoded flashvar
      */
     private decode(urlEncoded: string): Object {
+        let st: any, hx: any, mc: any;
+
         try {
-            const tempMapData = StringTools.urlDecode(urlEncoded);
-            return haxe.Unserializer.run(this.binaryToMessage(MapCommon.genKey(tempMapData.length), MapCommon.permute(tempMapData)));
+            // @ts-ignore
+            const page = window.wrappedJSObject;
+            if (page && page.StringTools && page.MapCommon && page.haxe) { // greasemonkey ...
+                st = page.StringTools;
+                hx = page.haxe;
+                mc = page.MapCommon;
+            } else if (StringTools && haxe && MapCommon) { // tampermonkey
+                st = StringTools;
+                hx = haxe;
+                mc = MapCommon;
+            }
+            const tempMapData = st.urlDecode(urlEncoded);
+            return hx.Unserializer.run(this.binaryToMessage(mc.genKey(tempMapData.length), mc.permute(tempMapData)));
         } catch (err) {
-            console.error('HMapData::decode - caught an exception during decoding', urlEncoded);
+            console.error('HMapData::decode - caught an exception during decoding', err, urlEncoded);
             throw err;
         }
     }
