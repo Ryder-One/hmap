@@ -28,6 +28,8 @@ export class HMapImagesLoader {
         this.images.set('town', { src: 'https://ryder-one.github.io/hmap/assets/town.png', obj: undefined });
         this.images.set('building', { src: 'https://ryder-one.github.io/hmap/assets/building.png', obj: undefined });
         this.images.set('hatch-dense', { src: 'https://ryder-one.github.io/hmap/assets/hatch_dense.png', obj: undefined });
+        this.images.set('target', { src: 'https://ryder-one.github.io/hmap/assets/target.png', obj: undefined });
+        this.images.set('position', { src: 'https://ryder-one.github.io/hmap/assets/position.png', obj: undefined });
     }
 
     public isset(imageId: string): boolean {

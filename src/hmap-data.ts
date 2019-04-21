@@ -92,7 +92,7 @@ export class HMapData {
         if (HMapData._fakeData !== undefined && force === false) {
             return HMapData._fakeData;
         } else {
-            const mapSize = HMapRandom.getRandomInteger(15, 25);
+            const mapSize = HMapRandom.getRandomInteger(8, 25);
 
             const town = {
                 x: HMapRandom.getRandomInteger(3, mapSize - 3),

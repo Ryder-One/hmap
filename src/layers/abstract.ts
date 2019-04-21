@@ -26,11 +26,11 @@ export abstract class AbstractHMapLayer {
      */
     public drawImageRot(img: HTMLImageElement | undefined, x: number, y: number, width: number, height: number, angle: number) {
         const rad = angle * Math.PI / 180;
-        this.ctx.translate(x + width / 2, y + height / 2); // Set the origin to the center of the image
+        this.ctx.translate(Math.floor(x + width / 2), Math.floor(y + height / 2)); // Set the origin to the center of the image
         this.ctx.rotate(rad); // Rotate the canvas around the origin
         this.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height); // draw the image
         this.ctx.rotate(rad * ( -1 ) ); // reset the canvas
-        this.ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
+        this.ctx.translate(Math.floor((x + width / 2)) * (-1), Math.floor((y + height / 2)) * (-1));
     }
 
     /**
@@ -44,9 +44,9 @@ export abstract class AbstractHMapLayer {
         }
 
         if (width !== undefined && height !== undefined) {
-            this.ctx.drawImage(img, x, y, width, height); // draw the image
+            this.ctx.drawImage(img, Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height)); // draw the image
         } else {
-            this.ctx.drawImage(img, x, y); // draw the image
+            this.ctx.drawImage(img, Math.floor(x), Math.floor(y)); // draw the image
         }
     }
 }

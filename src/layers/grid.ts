@@ -28,7 +28,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
      * But I didnt see any performance issues
      */
     draw(): void {
-        this.ctx.translate(0.5, 0.5); // try to fix blurry text & stuff
+        // this.ctx.translate(0.5, 0.5); // try to fix blurry text & stuff
         const mapData = this.map.mapData!;
         const map = this.map as HMapGridMap;
         const spaceBetweenSquares = 1;
@@ -101,10 +101,13 @@ export class HMapGridLayer extends AbstractHMapLayer {
                 }
             }
 
+            // square around the current position
             if ( (position.y === mapData.position.y && position.x === mapData.position.x) || map.mouseOverIndex === i) {
-                this.ctx.strokeStyle = '#d8fe6e';
-                this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(x, y, squareSize, squareSize);
+                this.drawImage(map.imagesLoader.getImg('position'), x, y, squareSize, squareSize);
+            } else if ( mapData.details[i]._c !== 1 &&
+                        position.x === map.target.x &&
+                        position.y === map.target.y) { // not town && target
+                this.drawImage(map.imagesLoader.getImg('target'), x, y, squareSize, squareSize);
             }
 
             if (map.mouseOverIndex === i) {
@@ -121,7 +124,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
 
         // glass
         this.drawImage(map.imagesLoader.getImg('glass'), 0, 0);
-        this.ctx.translate(-0.5, -0.5);
+        // this.ctx.translate(-0.5, -0.5);
     }
 
     private drawPopup(x: number, y: number) {
@@ -149,7 +152,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
         const popupWidth = Math.floor(this.ctx.measureText(text).width + 10);
         const popupHeight = 15;
         const minWidthHeight = Math.min(map.width, map.height);
-        const xPopup = Math.min( Math.max(x - popupWidth / 2, 0), minWidthHeight - popupWidth);
+        const xPopup = Math.floor(Math.min( Math.max(x - popupWidth / 2, 0), minWidthHeight - popupWidth));
 
         this.ctx.strokeStyle = '#b9ba3e';
         this.ctx.fillStyle = '#000000';
