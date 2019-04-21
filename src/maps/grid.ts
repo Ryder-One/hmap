@@ -1,6 +1,7 @@
 import { HMapAbstractMap } from './abstract';
 import { HMapGridLayer } from '../layers/grid';
 import { HMapPoint } from '../hmap';
+import { Toast } from '../toast';
 
 export type HMapGridMode = 'global' | 'personal';
 
@@ -56,6 +57,13 @@ export class HMapGridMap extends HMapAbstractMap {
                 }
 
                 modeButton.onclick = this.switchMode.bind(this);
+
+                const debugButton = document.createElement('div');
+                debugButton.setAttribute('id', 'hmap-debug-button');
+                debugButton.setAttribute('class', 'hmap-button');
+                debugButton.innerHTML = '< >';
+                hmapMenu.appendChild(debugButton);
+                debugButton.onclick = this.onDebugButtonClick.bind(this);
 
                 // style the buttons
                 const buttons = document.querySelectorAll('.hmap-button');
@@ -131,6 +139,17 @@ export class HMapGridMap extends HMapAbstractMap {
 
     private onMapButtonClick() {
         this.hmap.switchMapAndReload('desert');
+    }
+
+    private onDebugButtonClick() {
+        const el = document.createElement('textarea');
+        el.value = this.mapData!.prettyData;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+
+        Toast.show('Debug has been copied to clipboard');
     }
 
     private switchMode() {

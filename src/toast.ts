@@ -21,7 +21,7 @@ export class Toast {
         const newToast = document.createElement('div');
         newToast.setAttribute('id', 'toast_' + id);
         newToast.innerHTML = text;
-        const styleString = 'padding:10px;background:#333333;font-size:12px;color:#fafafa;' +
+        const styleString = 'padding:6px;background:#333333;font-size:12px;color:#fafafa;' +
             'font-family:Helvetica, Arial;cursor:pointer;margin-bottom:5px';
         newToast.setAttribute('style', styleString);
         newToast.onclick = (e: MouseEvent) => {
@@ -30,6 +30,7 @@ export class Toast {
                 target.style.display = 'none';
             }
         };
+        toastContainer.appendChild(newToast);
 
         Toast.count++;
 

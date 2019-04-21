@@ -5,6 +5,7 @@ import { HMapForegroundLayer } from '../layers/foreground';
 import { HMapBufferLayer } from '../layers/buffer';
 import { HMapNeighbour } from '../neighbours';
 import { HMap } from '../hmap';
+import { Toast } from '../toast';
 
 declare var haxe: any;
 declare var js: any;
@@ -52,7 +53,7 @@ export class HMapDesertMap extends HMapAbstractMap {
                 mapButton.setAttribute('id', 'hmap-minimap-button');
                 mapButton.setAttribute('class', 'hmap-button');
                 hmapMenu.appendChild(mapButton);
-                hmapMenu.onclick = this.onMapButtonClick.bind(this);
+                mapButton.onclick = this.onMapButtonClick.bind(this);
 
                 const mapIcon = document.createElement('img');
                 mapIcon.setAttribute('id', 'hmap-minimap-icon');
@@ -60,6 +61,14 @@ export class HMapDesertMap extends HMapAbstractMap {
                 mapButton.appendChild(mapIcon);
                 mapButton.append('Map');
                 mapButton.style.marginRight = '3px';
+
+                const debugButton = document.createElement('div');
+                debugButton.setAttribute('id', 'hmap-debug-button');
+                debugButton.setAttribute('class', 'hmap-button');
+                debugButton.innerHTML = '< >';
+                hmapMenu.appendChild(debugButton);
+                debugButton.onclick = this.onDebugButtonClick.bind(this);
+
 
                 // style the buttons
                 const buttons = document.querySelectorAll('.hmap-button');
@@ -338,6 +347,17 @@ export class HMapDesertMap extends HMapAbstractMap {
 
     private onMapButtonClick() {
         this.hmap.switchMapAndReload('grid');
+    }
+
+    private onDebugButtonClick() {
+        const el = document.createElement('textarea');
+        el.value = this.mapData!.prettyData;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+
+        Toast.show('Debug has been copied to clipboard');
     }
 
     /**

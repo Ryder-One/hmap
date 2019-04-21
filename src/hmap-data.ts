@@ -84,6 +84,7 @@ export class HMapData {
     get global(): Array<number|null> { return this.data._global; }
     get view(): Array<number|null> { return this.data._view; }
     get townName(): string { return this.data._city; }
+    get prettyData(): string { return JSON.stringify(this.data, undefined, 4); }
 
     /**
      * create a fake JSON to debug the map
