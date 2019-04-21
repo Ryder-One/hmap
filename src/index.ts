@@ -41,7 +41,6 @@ const dev = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? tru
         }\
         '));
 
-        
         document.head.appendChild(style);
 
         // create fake content to load the fonts ( ... )
