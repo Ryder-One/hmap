@@ -18,10 +18,12 @@ declare var js: any; // haxe stuff
 
 export class HMap {
 
-    private jQ: JQueryStatic;
     private devMode = false;
 
     private map?: HMapTypeMap;
+
+    public width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
+    public height = 300; // for debug only, the value is 300 and there is a lot of hard coded values
 
     // little green arrow target. Held here because mapdata is rebuild at each map switch
     public target?: HMapPoint;
@@ -29,9 +31,8 @@ export class HMap {
     public originalOnData?: CallableFunction;
     public location?: HMapLocation;
 
-    constructor(jQ: JQueryStatic, devMode?: boolean) {
+    constructor(devMode?: boolean) {
 
-        this.jQ = jQ;
         if (devMode !== undefined) {
             this.devMode = devMode;
         }
@@ -54,21 +55,24 @@ export class HMap {
             // We will look for the flashmap, take the data, and bootstrap our map
             let counterCheckExists = 0;
             const checkExist = setInterval(() => {
-                if (this.jQ('#swfCont').length) {
+                if (document.querySelector('#swfCont') !== null) {
                     clearInterval(checkExist);
 
                     let tempMapData;
-                    if (this.jQ('#FlashMap').length) { // if the flashmap is there
-                        tempMapData = this.jQ('#FlashMap').attr('flashvars')!.substring(13);
+                    if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
+                        tempMapData = document.querySelector('#FlashMap')!.getAttribute('flashvars')!.substring(13);
                     } else { // if this is only the JS code supposed to bootstrap flash
-                        const scriptStr = this.jQ('#gameLayout').html();
-                        const mapMarker = scriptStr.indexOf('mapLoader.swf');
-                        if (mapMarker === -1) {
-                            return;
+                        if (document.querySelector('#gameLayout') !== null) {
+
+                            const scriptStr = document.querySelector('#gameLayout')!.innerHTML;
+                            const mapMarker = scriptStr.indexOf('mapLoader.swf');
+                            if (mapMarker === -1) {
+                                return;
+                            }
+                            const startVar = scriptStr.indexOf('data', mapMarker) + 8;
+                            const stopVar = scriptStr.indexOf('\');', startVar);
+                            tempMapData = scriptStr.substring(startVar, stopVar);
                         }
-                        const startVar = scriptStr.indexOf('data', mapMarker) + 8;
-                        const stopVar = scriptStr.indexOf('\');', startVar);
-                        tempMapData = scriptStr.substring(startVar, stopVar);
                     }
                     this.map!.buildLayers();
                     this.map!.completeDataReceived(tempMapData);
@@ -116,7 +120,10 @@ export class HMap {
         const currentLocation = this.getCurrentLocation();
         if (currentLocation === 'unknown') { // unknown location, make sure the HMap is removed from the DOM
             this.location = 'unknown';
-            this.jQ('#hmap').remove();
+            const hmap = document.querySelector('#hmap');
+            if (hmap !== null && hmap.parentNode !== null) {
+                hmap.parentNode.removeChild(hmap);
+            }
             return;
         }
 
@@ -156,11 +163,14 @@ export class HMap {
      * Switch the map to a new type and reload
      */
     switchMapAndReload(type: HMapTypeMapStr) {
-        this.jQ('#hmap').remove();
+        const hmap = document.querySelector('#hmap');
+        if (hmap !== null && hmap.parentNode !== null) {
+            hmap.parentNode.removeChild(hmap);
+        }
         if (type === 'desert') {
-            this.map = new HMapDesertMap(this.jQ, this, this.devMode);
+            this.map = new HMapDesertMap(this, this.devMode);
         } else if (type === 'grid') {
-            this.map = new HMapGridMap(this.jQ, this, this.devMode);
+            this.map = new HMapGridMap(this, this.devMode);
         }
         this.fetchMapData();
     }
@@ -170,11 +180,11 @@ export class HMap {
      */
     private autoBuildMap() {
         if (this.location === 'doors') { // in town
-            this.map = new HMapGridMap(this.jQ, this, this.devMode);
+            this.map = new HMapGridMap(this, this.devMode);
             this.map.mode = 'global'; // in town, we can see the global mode, not perso
             this.map.enableClose = false; // in town, you cannot go back to the desert map
         } else if (this.location === 'desert') {
-            this.map = new HMapDesertMap(this.jQ, this, this.devMode);
+            this.map = new HMapDesertMap(this, this.devMode);
         } else if (this.location === 'ruin') {
             return; // @TODO
         } else {

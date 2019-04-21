@@ -8,7 +8,6 @@ export type HMapLayerType = 'background' | 'foreground' | 'buffer' | 'grid';
 export abstract class AbstractHMapLayer {
 
     public canvas!: HTMLCanvasElement; // assigned in derivated class
-    protected jQ: JQueryStatic;
     protected type!: HMapLayerType; // assigned in derivated class
     protected map: HMapTypeMap;
 
@@ -16,8 +15,7 @@ export abstract class AbstractHMapLayer {
         return this.canvas.getContext('2d')!; // assuming the canvas is always defined, the ctx should be always defined
     }
 
-    constructor(jQ: JQueryStatic, map: HMapTypeMap) {
-        this.jQ = jQ;
+    constructor(map: HMapTypeMap) {
         this.map = map;
     }
 

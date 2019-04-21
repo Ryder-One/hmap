@@ -3,8 +3,8 @@ import { HMapDesertMap } from '../maps/desert';
 
 export class HMapBufferLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMapDesertMap) {
-        super(jQ, map);
+    constructor(map: HMapDesertMap) {
+        super(map);
 
         this.canvas = document.createElement('canvas');
         this.canvas.width = 300;

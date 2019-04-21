@@ -51,8 +51,9 @@ That won't be done :
 
   * Expeditions (use external tools for that)
   * The paranoid effects (static effect, distortion effect, blur..)
-  * Easing on the parallax effect
+  * Easing on the parallax effect, easing on the green arrow
   * The fog of war is not as good as the original (neither is the blood, and other assets I made)
+  * Texts are blurry. I don't know how to fix it.
   
 ## Known issues
 

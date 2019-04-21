@@ -3,29 +3,39 @@ import { HMapDesertMap } from '../maps/desert';
 
 export class HMapForegroundLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMapDesertMap) {
-        super(jQ, map);
+    constructor(map: HMapDesertMap) {
+        super(map);
 
-        if (!this.jQ('#canvasArrows').length) {
-            this.jQ('#hmap')
-                .append('<canvas id="canvasArrows" width="300px" height="300px" style="position:absolute;z-index:2;"></canvas>');
+        if (document.querySelector('#canvasFG') === null) {
+            const canvas = document.createElement('canvas');
+            canvas.setAttribute('id', 'canvasFG');
+            canvas.setAttribute('style', 'position:absolute;z-index:2;');
+            document.querySelector('#hmap')!.appendChild(canvas);
         }
-        this.canvas = document.getElementById('canvasArrows') as HTMLCanvasElement;
+        this.canvas = document.getElementById('canvasFG') as HTMLCanvasElement;
+
+        this.canvas.width = map.width;
+        this.canvas.height = map.height;
+        this.canvas.style.width = map.width + 'px';
+        this.canvas.style.height = map.height + 'px';
+
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.font = '14px visitor2';
         this.type = 'foreground';
     }
 
     public draw() {
-        this.ctx.clearRect(0, 0, 300, 300);
+        this.ctx.translate(0.5, 0.5); // try to fix blurry text & stuff
 
         const map = this.map as HMapDesertMap;
-
         const mapData = this.map.mapData!;
         const imagesLoader = this.map.imagesLoader;
 
-        // focus lens shadow
-        this.drawImage(imagesLoader.getImg('shadowFocus'), -66, -66);
+        // clear the scene
+        this.ctx.clearRect(0, 0, map.width, map.height);
+
+        // focus lens shadow (433x433)
+        this.drawImage(imagesLoader.getImg('shadowFocus'), (map.width - 433) / 2, (map.height - 433) / 2);
 
         // arrow pointing toward target
         if (mapData.position.x !== map.target.x || mapData.position.y !== map.target.y) {
@@ -43,8 +53,10 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
 
         // position text
         const relativePos = mapData.getPositionRelativeToTown(mapData.position);
+        const positionText = 'position : ' + (relativePos.x) + ' / ' + (relativePos.y);
+        const positionTextWidth = Math.floor(this.ctx.measureText(positionText).width + 10);
         this.ctx.fillStyle = '#d6fe5a';
-        this.ctx.fillText('position : ' + (relativePos.x) + ' / ' + (relativePos.y), 190, 280);
+        this.ctx.fillText(positionText, map.width - positionTextWidth - 2, map.height - 20);
 
         // arrows
         for (let i = 0, j = map.registredArrows.length; i < j; i++) {
@@ -73,6 +85,7 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
                 this.ctx.fillText('' + mapData.scoutArray[3], 30, 152);
             }
         }
+        this.ctx.translate(-0.5, -0.5); // try to fix blurry text & stuff
     }
 
     /**
@@ -82,8 +95,8 @@ export class HMapForegroundLayer extends AbstractHMapLayer {
      * @param angle angle precalculated
      */
     private positionTargetArrow(angle: number) {
-        let originX = 150 - 4;
-        let originY = 150 - 8;
+        let originX = this.map.width / 2 - 4;
+        let originY = this.map.height / 2 - 8;
         originX += 120 * Math.cos(angle);
         originY += 120 * Math.sin(angle);
 

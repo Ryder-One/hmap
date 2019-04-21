@@ -13,7 +13,6 @@ export type HMapTypeMapStr = 'grid' | 'desert';
 export type HMapTypeMap = HMapGridMap | HMapDesertMap;
 
 export abstract class HMapAbstractMap {
-    protected jQ: JQueryStatic;
     protected devMode = false;
     protected hmap: HMap;
 
@@ -34,9 +33,16 @@ export abstract class HMapAbstractMap {
         }
     }
 
-    constructor(jQ: JQueryStatic, hmap: HMap, devMode?: boolean) {
+    get height(): number {
+        return this.hmap.height;
+    }
 
-        this.jQ = jQ;
+    get width(): number {
+        return this.hmap.width;
+    }
+
+    constructor(hmap: HMap, devMode?: boolean) {
+
         this.hmap = hmap;
 
         if (devMode !== undefined) {

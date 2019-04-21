@@ -5,19 +5,29 @@ import { HMapDesertMap } from '../maps/desert';
 
 export class HMapBackgroundLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMapDesertMap) {
-        super(jQ, map);
+    constructor(map: HMapDesertMap) {
+        super(map);
 
-        if (!jQ('#canvasBG').length) {
-            jQ('#hmap').append('<canvas id="canvasBG" width="300px" height="300px" style="position:absolute;z-index:0;"></canvas>');
+        if (document.querySelector('#canvasBG') === null) {
+            const canvas = document.createElement('canvas');
+            canvas.setAttribute('id', 'canvasBG');
+            canvas.setAttribute('style', 'position:absolute;z-index:2;');
+            document.querySelector('#hmap')!.appendChild(canvas);
         }
         this.canvas = document.getElementById('canvasBG') as HTMLCanvasElement;
+        this.canvas.width = map.width;
+        this.canvas.height = map.height;
+        this.canvas.style.width = map.width + 'px';
+        this.canvas.style.height = map.height + 'px';
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.font = '14px visitor2';
         this.type = 'background';
     }
 
     public draw() {
+        this.ctx.translate(0.5, 0.5); // try to fix blurry text & stuff
+
+        const map = this.map;
         const mapData = this.map.mapData!;
 
         const imagesLoader = this.map.imagesLoader;
@@ -25,9 +35,9 @@ export class HMapBackgroundLayer extends AbstractHMapLayer {
         const random = new HMapRandom(seed);
         const neighbours = mapData.neighbours;
 
-        this.ctx.clearRect(0, 0, 300, 300);
+        this.ctx.clearRect(0, 0, map.width, map.height);
 
-        const center = { x: 150, y: 150 };
+        const center = { x: map.width / 2, y: map.height / 2 };
         const position = mapData.position;
         const numberOfHumans = mapData.numberOfHumans;
         const numberOfZombies = mapData.numberOfZombies;
@@ -83,6 +93,8 @@ export class HMapBackgroundLayer extends AbstractHMapLayer {
                 }
             }
         }
+
+        this.ctx.translate(-0.5, -0.5); // try to fix blurry text & stuff
     }
 
 }

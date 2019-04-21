@@ -209,7 +209,6 @@ export class HMapData {
 
         this.buildNeighbours();
         this.town = this.findTown();
-        console.log('hmap data constructor');
         this.cacheBuildingsNames();
     }
 

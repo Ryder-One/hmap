@@ -28,54 +28,55 @@ export class HMapDesertMap extends HMapAbstractMap {
     private translateTo: HMapParallax = { x: 0, y: 0 };
 
     /**
-     * Append the HTML with jQuery.
+     * Append the HTML
      */
     public buildLayers(): void {
         // inject some HTML to make room for the map
-        this.jQ('.swf').css('display', 'flex').css('flex-direction', 'column').css('height', 'auto');
-        if (!this.jQ('#hmap').length) {
-            this.jQ('.swf').append('<div id="hmap"></div>');
-            this.jQ('#hmap').css('height', '300px').css('position', 'relative');
 
-            this.jQ('#hmap').append('<div id="hmap-menu"></div>');
-            this.jQ('#hmap-menu')
-                .css('position', 'absolute')
-                .css('bottom', '0px')
-                .css('z-index', '10')
-                .css('height', '20px')
-                .css('display', 'none');
+        const swf = document.querySelector('.swf');
+        if (swf !== null) {
+            swf.setAttribute('style', 'display:flex;flex-direction:column;height:auto');
+            if (document.querySelector('#hmap') === null) {
+                const hmap = document.createElement('div');
+                hmap.setAttribute('id', 'hmap');
+                hmap.setAttribute('style', 'height:' + this.height + 'px;position:relative');
+                swf.appendChild(hmap);
 
-            this.jQ('#hmap-menu').append('<div id="hmap-minimap-button"></div>');
-            this.jQ('#hmap-minimap-button')
-                .css('padding', '0px 5px')
-                .css('margin', '2px')
-                .css('border', '1px solid black')
-                .css('background-color', '#a13119')
-                .css('font-size', '13px')
-                .css('font-weight', '700')
-                .css('font-family', 'economica')
-                .css('color', '#eccb94')
-                .css('cursor', 'pointer')
-                .css('display', 'flex')
-                .css('align-items', 'center')
-                .css('user-select', 'none');
+                // create the menu
+                const hmapMenu = document.createElement('div');
+                hmapMenu.setAttribute('id', 'hmap-menu');
+                hmapMenu.setAttribute('style', 'position:absolute;bottom:0px;z-index:10;height:20px;display:none');
+                hmap.appendChild(hmapMenu);
 
-            this.jQ('#hmap-minimap-button').append('<img id="hmap-minimap-icon" src="https://ryder-one.github.io/hmap/assets/minimap.png"> Map');
-            this.jQ('#hmap-minimap-button').on('click', this.onMapButtonClick.bind(this));
+                const mapButton = document.createElement('div');
+                mapButton.setAttribute('id', 'hmap-minimap-button');
+                mapButton.setAttribute('class', 'hmap-button');
+                hmapMenu.appendChild(mapButton);
+                hmapMenu.onclick = this.onMapButtonClick.bind(this);
 
-            this.jQ('#hmap-minimap-icon').css('margin-right', '3px');
+                const mapIcon = document.createElement('img');
+                mapIcon.setAttribute('id', 'hmap-minimap-icon');
+                mapIcon.setAttribute('src', 'https://ryder-one.github.io/hmap/assets/minimap.png');
+                mapButton.appendChild(mapIcon);
+                mapButton.append('Map');
+                mapButton.style.marginRight = '3px';
 
-            this.jQ('#hmap-minimap-button').on('mouseenter', () => {
-                this.jQ('#hmap-minimap-button').css('outline', '1px solid #eccb94');
-            }).on('mouseleave', () => {
-                this.jQ('#hmap-minimap-button').css('outline', '0px');
-            });
-
+                // style the buttons
+                const buttons = document.querySelectorAll('.hmap-button');
+                buttons.forEach((el) => {
+                    (el as HTMLElement).onmouseleave = (e: MouseEvent) => {
+                        (e.target as HTMLElement).style.outline = '0px';
+                    };
+                    (el as HTMLElement).onmouseenter = (e: MouseEvent) => {
+                        (e.target as HTMLElement).style.outline = '1px solid #eccb94';
+                    };
+                });
+            }
         }
 
-        this.layers.set('background', new HMapBackgroundLayer(this.jQ, this));
+        this.layers.set('background', new HMapBackgroundLayer(this));
 
-        const FGLayer = new HMapForegroundLayer(this.jQ, this);
+        const FGLayer = new HMapForegroundLayer(this);
         this.layers.set('foreground', FGLayer);
         FGLayer.canvas.onmousemove = this.onMouseMove.bind(this);
         FGLayer.canvas.onmouseleave = this.onMouseLeave.bind(this);
@@ -85,7 +86,7 @@ export class HMapDesertMap extends HMapAbstractMap {
         // ie: in the DOM but not displayed. Can be usefull to make effects like
         // the distortion or the static effect at the end of the animation
         // this is not used at the moment
-        this.layers.set('buffer', new HMapBufferLayer(this.jQ, this));
+        this.layers.set('buffer', new HMapBufferLayer(this));
     }
 
     /**
@@ -135,7 +136,10 @@ export class HMapDesertMap extends HMapAbstractMap {
 
         // when preloading the pictures is finished, starts drawing
         this.imagesLoader.preloadPictures(firstCtx, () => {
-            this.jQ('#hmap-menu').css('display', 'block');
+            const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
+            if (hmapMenu !== null) {
+                hmapMenu.style.display = 'flex';
+            }
             this.startAnimation();
         });
     }

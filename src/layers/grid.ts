@@ -3,14 +3,21 @@ import { HMapGridMap } from '../maps/grid';
 
 export class HMapGridLayer extends AbstractHMapLayer {
 
-    constructor(jQ: JQueryStatic, map: HMapGridMap) {
-        super(jQ, map);
+    constructor(map: HMapGridMap) {
+        super(map);
 
-        if (!this.jQ('#canvasGrid').length) {
-            this.jQ('#hmap')
-                .append('<canvas id="canvasGrid" width="300px" height="300px" style="position:absolute;z-index:2;"></canvas>');
+        if (document.querySelector('#canvasGrid') === null && document.querySelector('#hmap') !== null) {
+            const canvas = document.createElement('canvas');
+            canvas.setAttribute('id', 'canvasGrid');
+            canvas.setAttribute('style', 'position:absolute;z-index:2;');
+            document.querySelector('#hmap')!.appendChild(canvas);
         }
         this.canvas = document.getElementById('canvasGrid') as HTMLCanvasElement;
+        this.canvas.width = map.width;
+        this.canvas.height = map.height;
+        this.canvas.style.width = map.width + 'px';
+        this.canvas.style.height = map.height + 'px';
+
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.font = '14px visitor2';
         this.type = 'grid';
@@ -21,16 +28,19 @@ export class HMapGridLayer extends AbstractHMapLayer {
      * But I didnt see any performance issues
      */
     draw(): void {
+        this.ctx.translate(0.5, 0.5); // try to fix blurry text & stuff
         const mapData = this.map.mapData!;
         const map = this.map as HMapGridMap;
         const spaceBetweenSquares = 1;
 
-        const availableSize = 275 - spaceBetweenSquares * mapData.size.height;
+        const minWidthHeight = Math.min(map.width, map.height);
+
+        const availableSize = minWidthHeight - 25 - spaceBetweenSquares * mapData.size.height;
         const squareSize = Math.floor(availableSize / mapData.size.height);
-        const padding = Math.floor((300 - spaceBetweenSquares * mapData.size.height - squareSize * mapData.size.height) / 2);
+        const padding = Math.floor((minWidthHeight - spaceBetweenSquares * mapData.size.height - squareSize * mapData.size.height) / 2);
 
         this.ctx.fillStyle = '#2b3a08';
-        this.ctx.fillRect(0, 0, 300, 300);
+        this.ctx.fillRect(0, 0, map.width, map.height);
 
         let popup = false;
         let xPopup: number, yPopup: number;
@@ -92,7 +102,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
             }
 
             if ( (position.y === mapData.position.y && position.x === mapData.position.x) || map.mouseOverIndex === i) {
-                this.ctx.strokeStyle = '#d7ff5b';
+                this.ctx.strokeStyle = '#d8fe6e';
                 this.ctx.lineWidth = 2;
                 this.ctx.strokeRect(x, y, squareSize, squareSize);
             }
@@ -111,6 +121,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
 
         // glass
         this.drawImage(map.imagesLoader.getImg('glass'), 0, 0);
+        this.ctx.translate(-0.5, -0.5);
     }
 
     private drawPopup(x: number, y: number) {
@@ -137,7 +148,8 @@ export class HMapGridLayer extends AbstractHMapLayer {
         const yPopup = Math.max(y - 15, 0);
         const popupWidth = Math.floor(this.ctx.measureText(text).width + 10);
         const popupHeight = 15;
-        const xPopup = Math.min( Math.max(x - popupWidth / 2, 0), 300 - popupWidth);
+        const minWidthHeight = Math.min(map.width, map.height);
+        const xPopup = Math.min( Math.max(x - popupWidth / 2, 0), minWidthHeight - popupWidth);
 
         this.ctx.strokeStyle = '#b9ba3e';
         this.ctx.fillStyle = '#000000';
