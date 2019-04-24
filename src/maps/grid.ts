@@ -10,8 +10,6 @@ export class HMapGridMap extends HMapAbstractMap {
     public mouse?: HMapPoint;
     public mouseOverIndex = -1;
     public mode: HMapGridMode = 'personal';
-    public enableClose = true;
-
 
     /**
      * Build the layers (HTML canvas) for this map
@@ -26,7 +24,7 @@ export class HMapGridMap extends HMapAbstractMap {
             if (document.querySelector('#hmap') === null) {
                 const hmap = document.createElement('div');
                 hmap.setAttribute('id', 'hmap');
-                hmap.setAttribute('style', 'height:' + this.height + 'px;position:relative');
+                hmap.setAttribute('style', 'width:' + this.width + 'px;height:' + this.height + 'px;position:relative');
                 swf.appendChild(hmap);
 
                 // create the menu
@@ -36,7 +34,7 @@ export class HMapGridMap extends HMapAbstractMap {
                 hmap.appendChild(hmapMenu);
 
                 // create the buttons
-                if (this.enableClose) {
+                if (this.hmap.location === 'desert') { // we can switch the grid only in desert
                     const closeButton = document.createElement('div');
                     closeButton.setAttribute('id', 'hmap-close-button');
                     closeButton.setAttribute('class', 'hmap-button');
@@ -129,7 +127,9 @@ export class HMapGridMap extends HMapAbstractMap {
 
     private onMouseClick() {
         // set the target for the pointing arrow
-        this.hmap.target = this.mapData!.getCoordinates(this.mouseOverIndex);
+        if (this.hmap.location === 'desert') {
+            this.hmap.target = this.mapData!.getCoordinates(this.mouseOverIndex);
+        }
     }
 
     private onMouseLeave(e: MouseEvent) {

@@ -20,6 +20,12 @@ export interface HMapPositionDetail {               // big array representing th
     _nvt: any;                  // when true, it has been visited but it's out of tower range
 }
 
+export interface HMapUserJSON {
+    _n: string;
+    _x: number;
+    _y: number;
+}
+
 /**
  * JSON map paramaters; feel free to complete
  */
@@ -43,7 +49,7 @@ export interface HMapDataJSON {
     _up: boolean;                        // ???
     _view: Array<number | null>;         // personnal fog of war : null is not discovered, number is building id
     _global: Array<number | null>;       // global fog of war : null is not discovered, number is building id
-    _users: null | Array<any>;           // list of users when in town
+    _users: null | Array<HMapUserJSON>;  // list of users when in town
     _editor: boolean;                    // ???
     _map: boolean;                       // ???
     _mid: number;                        // map id
@@ -199,11 +205,11 @@ export class HMapData {
     /**
      * @param rawData Binary data coming from HTML page
      */
-    constructor(rawData?: any, data?: HMapDataJSON) {
-        if (rawData) {
-            this.data = this.decode(rawData) as HMapDataJSON;
-        } else if (data) {
-            this.data = data;
+    constructor(mapDataPayload: HMapDataPayload) {
+        if (mapDataPayload.raw !== undefined) {
+            this.data = this.decode(mapDataPayload.raw) as HMapDataJSON;
+        } else if (mapDataPayload.JSON !== undefined) {
+            this.data = mapDataPayload.JSON as HMapDataJSON;
         } else {
             throw new Error('Cannot create HMapData from empty parameters');
         }

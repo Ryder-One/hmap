@@ -8,7 +8,7 @@ export class HMapRandom {
      * @warning Not using the seed.
      */
     static getRandomInteger(min: number, max: number): number {
-        return Math.floor(Math.random() * (max - min) ) + min;
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 
     constructor(seed = 0) {
@@ -36,4 +36,6 @@ export class HMapRandom {
             y: center.y + radius * Math.cos(ang * Math.PI / 180)
         };
     }
+
+
 }

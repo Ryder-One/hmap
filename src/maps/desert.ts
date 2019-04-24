@@ -6,6 +6,7 @@ import { HMapBufferLayer } from '../layers/buffer';
 import { HMapNeighbour } from '../neighbours';
 import { HMap } from '../hmap';
 import { Toast } from '../toast';
+import { Environment } from '../environment';
 
 declare var haxe: any;
 declare var js: any;
@@ -40,7 +41,7 @@ export class HMapDesertMap extends HMapAbstractMap {
             if (document.querySelector('#hmap') === null) {
                 const hmap = document.createElement('div');
                 hmap.setAttribute('id', 'hmap');
-                hmap.setAttribute('style', 'height:' + this.height + 'px;position:relative');
+                hmap.setAttribute('style', 'width:' + this.width + 'px;height:' + this.height + 'px;position:relative');
                 swf.appendChild(hmap);
 
                 // create the menu
@@ -57,7 +58,7 @@ export class HMapDesertMap extends HMapAbstractMap {
 
                 const mapIcon = document.createElement('img');
                 mapIcon.setAttribute('id', 'hmap-minimap-icon');
-                mapIcon.setAttribute('src', 'https://ryder-one.github.io/hmap/assets/minimap.png');
+                mapIcon.setAttribute('src', Environment.getInstance().url + '/assets/minimap.png');
                 mapButton.appendChild(mapIcon);
                 mapButton.append('Map');
                 mapButton.style.marginRight = '3px';
@@ -175,7 +176,7 @@ export class HMapDesertMap extends HMapAbstractMap {
             x = 0; y = 1;
         }
 
-        if (this.devMode === false) {
+        if (Environment.getInstance().devMode === false) {
             const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
 
             let hx: any;

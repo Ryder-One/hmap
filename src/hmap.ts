@@ -1,6 +1,8 @@
 import { HMapDesertMap } from './maps/desert';
 import { HMapGridMap } from './maps/grid';
 import { HMapTypeMap, HMapTypeMapStr } from './maps/abstract';
+import { Environment } from './environment';
+import { HMapDataJSON, HMapData } from './hmap-data';
 
 export interface HMapPoint {
     x: number;
@@ -18,8 +20,6 @@ declare var js: any; // haxe stuff
 
 export class HMap {
 
-    private devMode = false;
-
     private map?: HMapTypeMap;
 
     public width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
@@ -31,25 +31,25 @@ export class HMap {
     public originalOnData?: CallableFunction;
     public location?: HMapLocation;
 
-    constructor(devMode?: boolean) {
-
-        if (devMode !== undefined) {
-            this.devMode = devMode;
-        }
-    }
+    constructor() { }
 
     /**
      * Get the map data and launch the drawing of the map
      */
-    fetchMapData() {
+    fetchMapData(debugData?: HMapDataJSON) {
         if (this.map === undefined) {
             this.autoBuildMap();
         }
 
-        if (this.devMode === true) { // if we are in dev mode, serve a json
-
+        if (Environment.getInstance().devMode === true) { // if we are in dev mode, serve a json
+            // this is a bit messed up but I didnt anticipated the debug mode
             this.map!.buildLayers();
-            this.map!.completeDataReceived(); // no data passed = fake the data
+            if (debugData === undefined) {
+                debugData = HMapData.fakeData();
+            } else {
+                HMapData._fakeData = debugData; // save the fake data for the future
+            }
+            this.map!.completeDataReceived({ JSON: debugData }); // if undefined, then it will fake the data
 
         } else {
             // We will look for the flashmap, take the data, and bootstrap our map
@@ -75,7 +75,7 @@ export class HMap {
                         }
                     }
                     this.map!.buildLayers();
-                    this.map!.completeDataReceived(tempMapData);
+                    this.map!.completeDataReceived({raw: tempMapData});
 
                 } else if (++counterCheckExists === 100) {
                     clearInterval(checkExist); // timeout 10sec
@@ -168,11 +168,23 @@ export class HMap {
             hmap.parentNode.removeChild(hmap);
         }
         if (type === 'desert') {
-            this.map = new HMapDesertMap(this, this.devMode);
+            this.map = new HMapDesertMap(this);
         } else if (type === 'grid') {
-            this.map = new HMapGridMap(this, this.devMode);
+            this.map = new HMapGridMap(this);
         }
         this.fetchMapData();
+    }
+
+    /**
+     * Rebuild the map with the JSON passed in argument. For debug mode only
+     */
+    reloadMapWithData(data: any) {
+        const hmap = document.querySelector('#hmap');
+        if (hmap !== null && hmap.parentNode !== null) {
+            hmap.parentNode.removeChild(hmap);
+        }
+        this.map = new HMapDesertMap(this);
+        this.fetchMapData(data);
     }
 
     /**
@@ -180,11 +192,10 @@ export class HMap {
      */
     private autoBuildMap() {
         if (this.location === 'doors') { // in town
-            this.map = new HMapGridMap(this, this.devMode);
+            this.map = new HMapGridMap(this);
             this.map.mode = 'global'; // in town, we can see the global mode, not perso
-            this.map.enableClose = false; // in town, you cannot go back to the desert map
         } else if (this.location === 'desert') {
-            this.map = new HMapDesertMap(this, this.devMode);
+            this.map = new HMapDesertMap(this);
         } else if (this.location === 'ruin') {
             return; // @TODO
         } else {

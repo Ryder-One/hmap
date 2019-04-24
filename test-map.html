@@ -4,14 +4,53 @@
 <head>
 	<meta charset="utf-8">
 	<title>HMap - devmode</title>
+	<style type="text/css">
+		#main-page {
+			display: flex;
+			flex-direction: row;
+		}
+		#json-data {
+			margin-left : 10px;
+			width: 300px;
+			height: 300px;
+			font-family: "Courier New", Courier, monospace
+		}
+	</style>
 </head>
 
 <body>
-	<div class="swf" style="background-color: black; width: 300px; height: 300px; "></div>
+	<div id="main-page">
+		<div class="swf" style="background-color: black; width: 300px; height: 300px; "></div>
+		<div id="data">
+			<textarea id="json-data">Paste here the data to debug</textarea>
+			<button id="reload">Reload the map</button>
+		</div>
+			
+	</div>
+	
 	<script type="text/javascript">
 		var HMAP_DEVMODE = true;
+		var HMAP = null;
+		var T = document.querySelector('#json-data');
+		if ( T !== null) {
+			T.onclick = function() { T.value = ''; };
+		}
 	</script>
 	<script src="dist/hmap.user.es6.js"></script>
+	<script type="text/javascript">
+		var reload = document.querySelector('#reload');
+		var textbox = document.querySelector('#json-data');
+		if ( reload !== null && textbox !== null) {
+			reload.onclick = function() { 
+				try {
+					HMAP.reloadMapWithData(JSON.parse(textbox.value));
+				} catch (err) {
+					alert('There is something wrong with the JSON you entered');
+					console.error(err);
+				}
+			};
+		}
+	</script>
 </body>
 
 </html>

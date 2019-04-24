@@ -1,4 +1,4 @@
-import { HMapData, HMapDataPayload } from '../hmap-data';
+import { HMapData, HMapDataPayload, HMapDataJSON } from '../hmap-data';
 import { HMapLayerType } from '../layers/abstract';
 import { HMapBackgroundLayer } from '../layers/background';
 import { HMapForegroundLayer } from '../layers/foreground';
@@ -13,7 +13,6 @@ export type HMapTypeMapStr = 'grid' | 'desert';
 export type HMapTypeMap = HMapGridMap | HMapDesertMap;
 
 export abstract class HMapAbstractMap {
-    protected devMode = false;
     protected hmap: HMap;
 
     protected layers = new Map<HMapLayerType, HMapBackgroundLayer|HMapForegroundLayer|HMapBufferLayer|HMapGridLayer>();
@@ -41,26 +40,16 @@ export abstract class HMapAbstractMap {
         return this.hmap.width;
     }
 
-    constructor(hmap: HMap, devMode?: boolean) {
-
+    constructor(hmap: HMap) {
         this.hmap = hmap;
-
-        if (devMode !== undefined) {
-            this.devMode = devMode;
-        }
     }
 
     /**
      * Called when the map data has been set or totally modified
      * This is the intialization function
      */
-    completeDataReceived(data?: string) {
-        if (data === null || data === undefined) {
-            this.mapData = new HMapData(null, HMapData.fakeData());
-        } else {
-            this.mapData = new HMapData(data);
-        }
-
+    completeDataReceived(mapDataPayload: HMapDataPayload) {
+        this.mapData = new HMapData(mapDataPayload);
         const loading = new Image();
         loading.src = this.imagesLoader.get('loading').src;
         loading.onload = () => {

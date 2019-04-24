@@ -1,4 +1,5 @@
 import { HMapNeighbour, HMapNeighbours } from './neighbours';
+import { Environment } from './environment';
 
 export interface HMapImage {
     src: string;
@@ -11,25 +12,25 @@ export class HMapImagesLoader {
     constructor() {
 
         // images to preload
-        this.images.set('loading', { src: 'https://ryder-one.github.io/hmap/assets/loading.png', obj: undefined });
-        this.images.set('glass', { src: 'https://ryder-one.github.io/hmap/assets/glass.png', obj: undefined });
-        this.images.set('humanGlow', { src: 'https://ryder-one.github.io/hmap/assets/human_glow.png', obj: undefined });
-        this.images.set('map', { src: 'https://ryder-one.github.io/hmap/assets/map.png', obj: undefined });
-        this.images.set('moveArrowFill', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_fill.png', obj: undefined });
-        this.images.set('moveArrowLight', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_light.png', obj: undefined });
-        this.images.set('moveArrowOutline', { src: 'https://ryder-one.github.io/hmap/assets/move_arrow_outline.png', obj: undefined });
-        this.images.set('night', { src: 'https://ryder-one.github.io/hmap/assets/night.png', obj: undefined });
-        this.images.set('shadowFocus', { src: 'https://ryder-one.github.io/hmap/assets/shadow_focus.png', obj: undefined });
-        this.images.set('targetArrow', { src: 'https://ryder-one.github.io/hmap/assets/town_arrow.png', obj: undefined });
-        this.images.set('zombieGlow', { src: 'https://ryder-one.github.io/hmap/assets/zombie_glow.png', obj: undefined });
-        this.images.set('blood', { src: 'https://ryder-one.github.io/hmap/assets/blood.png', obj: undefined });
-        this.images.set('single', { src: 'https://ryder-one.github.io/hmap/assets/single.png', obj: undefined });
-        this.images.set('hatch', { src: 'https://ryder-one.github.io/hmap/assets/hatch.png', obj: undefined });
-        this.images.set('town', { src: 'https://ryder-one.github.io/hmap/assets/town.png', obj: undefined });
-        this.images.set('building', { src: 'https://ryder-one.github.io/hmap/assets/building.png', obj: undefined });
-        this.images.set('hatch-dense', { src: 'https://ryder-one.github.io/hmap/assets/hatch_dense.png', obj: undefined });
-        this.images.set('target', { src: 'https://ryder-one.github.io/hmap/assets/target.png', obj: undefined });
-        this.images.set('position', { src: 'https://ryder-one.github.io/hmap/assets/position.png', obj: undefined });
+        this.images.set('loading', { src: Environment.getInstance().url + '/assets/loading.png', obj: undefined });
+        this.images.set('glass', { src: Environment.getInstance().url + '/assets/glass.png', obj: undefined });
+        this.images.set('humanGlow', { src: Environment.getInstance().url + '/assets/human_glow.png', obj: undefined });
+        this.images.set('map', { src: Environment.getInstance().url + '/assets/map.png', obj: undefined });
+        this.images.set('moveArrowFill', { src: Environment.getInstance().url + '/assets/move_arrow_fill.png', obj: undefined });
+        this.images.set('moveArrowLight', { src: Environment.getInstance().url + '/assets/move_arrow_light.png', obj: undefined });
+        this.images.set('moveArrowOutline', { src: Environment.getInstance().url + '/assets/move_arrow_outline.png', obj: undefined });
+        this.images.set('night', { src: Environment.getInstance().url + '/assets/night.png', obj: undefined });
+        this.images.set('shadowFocus', { src: Environment.getInstance().url + '/assets/shadow_focus.png', obj: undefined });
+        this.images.set('targetArrow', { src: Environment.getInstance().url + '/assets/town_arrow.png', obj: undefined });
+        this.images.set('zombieGlow', { src: Environment.getInstance().url + '/assets/zombie_glow.png', obj: undefined });
+        this.images.set('blood', { src: Environment.getInstance().url + '/assets/blood.png', obj: undefined });
+        this.images.set('single', { src: Environment.getInstance().url + '/assets/single.png', obj: undefined });
+        this.images.set('hatch', { src: Environment.getInstance().url + '/assets/hatch.png', obj: undefined });
+        this.images.set('town', { src: Environment.getInstance().url + '/assets/town.png', obj: undefined });
+        this.images.set('building', { src: Environment.getInstance().url + '/assets/building.png', obj: undefined });
+        this.images.set('hatch-dense', { src: Environment.getInstance().url + '/assets/hatch_dense.png', obj: undefined });
+        this.images.set('target', { src: Environment.getInstance().url + '/assets/target.png', obj: undefined });
+        this.images.set('position', { src: Environment.getInstance().url + '/assets/position.png', obj: undefined });
     }
 
     public isset(imageId: string): boolean {
@@ -106,9 +107,9 @@ export class HMapImagesLoader {
             if (neighbour.building !== 0 && neighbour.building !== undefined && !this.issetImg('b' + neighbour.building)) {
                 let url;
                 if (neighbour.building === -1) {
-                    url = 'https://ryder-one.github.io/hmap/assets/buildings/b_m1.png';
+                    url = Environment.getInstance().url + '/assets/buildings/b_m1.png';
                 } else {
-                    url = 'https://ryder-one.github.io/hmap/assets/buildings/b_' + neighbour.building + '.png';
+                    url = Environment.getInstance().url + '/assets/buildings/b_' + neighbour.building + '.png';
                 }
                 this.set('b' + neighbour.building, {
                     src: url,

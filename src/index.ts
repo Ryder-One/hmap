@@ -1,11 +1,11 @@
 import { HMap } from './hmap';
 import { Toast } from './toast';
+import { Environment } from './environment';
 
 const FontFaceObserver = require('fontfaceobserver');
 
 declare var HMAP_DEVMODE: boolean;
-
-const dev = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
+declare var HMAP: any;
 
 /**
  * It's bootstrap time !!
@@ -13,17 +13,20 @@ const dev = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? tru
 (function() {
     try {
 
+        const env = Environment.getInstance();
+        env.devMode = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
+
         // Create the styles for the fonts and some other styles
         const style = document.createElement('style');
         style.appendChild(document.createTextNode('\
         @font-face {\
             font-family: visitor2;\
-            src: url(\'https://ryder-one.github.io/hmap/visitor2.woff2\') format(\'woff2\');\
-			src: url(\'https://ryder-one.github.io/hmap/visitor2.woff\') format(\'woff\');\
+            src: url(\'' + env.url + '/visitor2.woff2\') format(\'woff2\');\
+			src: url(\'' + env.url + '/visitor2.woff\') format(\'woff\');\
         }\
         @font-face {\
             font-family: economica;\
-            src: url(\'https://ryder-one.github.io/hmap/economica.woff2\') format(\'woff2\');\
+            src: url(\'' + env.url + '/economica.woff2\') format(\'woff2\');\
         }\
         div.hmap-button {\
             padding:0px 5px;\
@@ -57,27 +60,32 @@ const dev = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? tru
 
         // load the fonts
         Promise.all([visitor2.load(), economica.load()]).then(function () {
-
-            // start only when the fonts are loaded
-            const map = new HMap(dev);
-            if (dev === true) { // dev mode to play with the map
-                map.location = 'desert';
-                map.fetchMapData();
-            } else {
-                // wait for js.JsMap to be ready
-                let counterCheckJsMap = 0;
-                const checkLocationKnown = setInterval(function() {
-                    if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
-                        clearInterval(checkLocationKnown);
-                        map.location = map.getCurrentLocation();
-                        map.fetchMapData();
-                        // intercept every ajax request haxe is doing to know if we should start the map or not
-                        setTimeout(() => map.setupInterceptor());
-                    } else if (++counterCheckJsMap > 10) { // timeout 2s
-                        clearInterval(checkLocationKnown);
-                        map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
-                    }
-                }, 200);
+            try {
+                // start only when the fonts are loaded
+                const map = new HMap();
+                if (env.devMode === true) { // dev mode to play with the map
+                    map.location = 'desert';
+                    map.fetchMapData();
+                    HMAP = map;
+                } else {
+                    // wait for js.JsMap to be ready
+                    let counterCheckJsMap = 0;
+                    const checkLocationKnown = setInterval(function() {
+                        if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
+                            clearInterval(checkLocationKnown);
+                            map.location = map.getCurrentLocation();
+                            map.fetchMapData();
+                            // intercept every ajax request haxe is doing to know if we should start the map or not
+                            setTimeout(() => map.setupInterceptor());
+                        } else if (++counterCheckJsMap > 10) { // timeout 2s
+                            clearInterval(checkLocationKnown);
+                            map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
+                        }
+                    }, 200);
+                }
+            } catch (err) {
+                console.error(err.message);
+                Toast.show('Hmap - An error occured. Check the console to see the message.');
             }
         }).catch((err) => {
             Toast.show('Hmap - Cannot load the fonts. Try to reload the page by pressing CTRL + F5 or change your browser');
