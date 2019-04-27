@@ -1,6 +1,6 @@
 import { HMapTypeMap } from '../maps/abstract';
 
-export type HMapLayerType = 'background' | 'foreground' | 'buffer' | 'grid';
+export type HMapLayerType = 'background' | 'foreground' | 'buffer' | 'grid' | 'grid-popup';
 
 /**
  * HTML5 canvas wrapper

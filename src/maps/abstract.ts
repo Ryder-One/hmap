@@ -98,13 +98,13 @@ export abstract class HMapAbstractMap {
     /**
      * Utility function to have a nice start/stop animation
      */
-    protected startAnimation() {
+    startAnimation() {
         if (!this.animationLoopId) {
             this.animationLoopId = window.requestAnimationFrame(this.animationLoop.bind(this));
         }
     }
 
-    protected stopAnimation() {
+    stopAnimation() {
         if (this.animationLoopId) {
            window.cancelAnimationFrame(this.animationLoopId);
            this.animationLoopId = undefined;

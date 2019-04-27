@@ -115,23 +115,21 @@ export class HMap {
      */
     dataInterceptor(data: string) {
 
-        this.originalOnData!(data);
+        this.originalOnData!(data); // call the original method first
 
         const currentLocation = this.getCurrentLocation();
         if (currentLocation === 'unknown') { // unknown location, make sure the HMap is removed from the DOM
             this.location = 'unknown';
-            const hmap = document.querySelector('#hmap');
-            if (hmap !== null && hmap.parentNode !== null) {
-                hmap.parentNode.removeChild(hmap);
-            }
+            this.clearMap();
             return;
         }
 
         // now we are in an interesting place for us, check if there is data for our map
         if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
-            if (currentLocation !== this.location) { // if we changed location, reload the whole map
+            // if we changed location or we dont have jsmap.init in the message, reload the whole map
+            if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1) {
                 this.location = currentLocation;
-                this.map = undefined;
+                this.clearMap();
                 this.fetchMapData(); // it will autobuild the map
             } else { // we are still on the same location
                 if (data.indexOf('js.JsMap.init') !== -1) {
@@ -147,7 +145,7 @@ export class HMap {
     }
 
     /**
-     * Guess on what page we are (town, desert, ruin.. ) by parsing the HTML
+     * Guess on what page we are (outise or inside the town ) by parsing the URL
      */
     getCurrentLocation(): HMapLocation {
         if (window.location.href.indexOf('outside') !== -1) {
@@ -163,10 +161,7 @@ export class HMap {
      * Switch the map to a new type and reload
      */
     switchMapAndReload(type: HMapTypeMapStr) {
-        const hmap = document.querySelector('#hmap');
-        if (hmap !== null && hmap.parentNode !== null) {
-            hmap.parentNode.removeChild(hmap);
-        }
+        this.clearMap();
         if (type === 'desert') {
             this.map = new HMapDesertMap(this);
         } else if (type === 'grid') {
@@ -178,13 +173,26 @@ export class HMap {
     /**
      * Rebuild the map with the JSON passed in argument. For debug mode only
      */
-    reloadMapWithData(data: any) {
+    reloadMapWithData(data: HMapDataJSON) {
+        this.clearMap();
+        this.target = undefined;
+        this.fetchMapData(data);
+    }
+
+    /**
+     * Clear the map to draw a new one (when we switch the map from desert to grid, etc.)
+     */
+    private clearMap(): void {
+        // destroy the dom element
         const hmap = document.querySelector('#hmap');
         if (hmap !== null && hmap.parentNode !== null) {
             hmap.parentNode.removeChild(hmap);
         }
-        this.map = new HMapDesertMap(this);
-        this.fetchMapData(data);
+        // unset the objects
+        if (this.map !== undefined) {
+            this.map.stopAnimation();
+            this.map = undefined;
+        }
     }
 
     /**

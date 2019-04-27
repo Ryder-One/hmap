@@ -2,6 +2,7 @@ import { HMapAbstractMap } from './abstract';
 import { HMapGridLayer } from '../layers/grid';
 import { HMapPoint } from '../hmap';
 import { Toast } from '../toast';
+import { HMapGridPopupLayer } from '../layers/grid-popup';
 
 export type HMapGridMode = 'global' | 'personal';
 
@@ -10,6 +11,7 @@ export class HMapGridMap extends HMapAbstractMap {
     public mouse?: HMapPoint;
     public mouseOverIndex = -1;
     public mode: HMapGridMode = 'personal';
+    public popup?: HMapPoint; // when set, the popup will appear
 
     /**
      * Build the layers (HTML canvas) for this map
@@ -80,6 +82,9 @@ export class HMapGridMap extends HMapAbstractMap {
             GridLayer.canvas.onmousemove = this.onMouseMove.bind(this);
             GridLayer.canvas.onmouseleave = this.onMouseLeave.bind(this);
             GridLayer.canvas.onclick = this.onMouseClick.bind(this);
+
+            const GridPopupLayer = new HMapGridPopupLayer(this);
+            this.layers.set('grid-popup', GridPopupLayer);
         }
     }
 
@@ -88,6 +93,7 @@ export class HMapGridMap extends HMapAbstractMap {
      */
     protected animationLoop(): void {
         this.layers.get('grid')!.draw();
+        this.layers.get('grid-popup')!.draw();
 
         this.animationLoopId = undefined;
         this.startAnimation();
@@ -127,7 +133,7 @@ export class HMapGridMap extends HMapAbstractMap {
 
     private onMouseClick() {
         // set the target for the pointing arrow
-        if (this.hmap.location === 'desert') {
+        if (this.hmap.location === 'desert' || this.hmap.location === 'doors') {
             this.hmap.target = this.mapData!.getCoordinates(this.mouseOverIndex);
         }
     }

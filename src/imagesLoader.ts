@@ -31,6 +31,7 @@ export class HMapImagesLoader {
         this.images.set('hatch-dense', { src: Environment.getInstance().url + '/assets/hatch_dense.png', obj: undefined });
         this.images.set('target', { src: Environment.getInstance().url + '/assets/target.png', obj: undefined });
         this.images.set('position', { src: Environment.getInstance().url + '/assets/position.png', obj: undefined });
+        this.images.set('people', { src: Environment.getInstance().url + '/assets/people.png', obj: undefined });
     }
 
     public isset(imageId: string): boolean {

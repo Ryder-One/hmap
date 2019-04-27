@@ -1,6 +1,10 @@
 import { AbstractHMapLayer } from './abstract';
 import { HMapGridMap } from '../maps/grid';
+import { HMapRandom } from '../random';
 
+/**
+ * This layer will hold the grid view
+ */
 export class HMapGridLayer extends AbstractHMapLayer {
 
     constructor(map: HMapGridMap) {
@@ -24,14 +28,17 @@ export class HMapGridLayer extends AbstractHMapLayer {
     }
 
     /**
-     * We could be more performant splitting the drawing of static objects in a separate layer
+     * We could be more efficient by drawing only the changes
      * But I didnt see any performance issues
+     * Still @TODO
      */
     draw(): void {
-        // this.ctx.translate(0.5, 0.5); // try to fix blurry text & stuff
         const mapData = this.map.mapData!;
         const map = this.map as HMapGridMap;
         const spaceBetweenSquares = 1;
+
+        this.ctx.clearRect(0, 0, map.width, map.height);
+        map.popup = undefined;
 
         const minWidthHeight = Math.min(map.width, map.height);
 
@@ -70,7 +77,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
                     visionArray = mapData.view;
                 }
 
-                if (visionArray[i] !== undefined && visionArray[i] !== null && visionArray[i]! >= 0 ) {
+                if (visionArray[i] !== undefined && visionArray[i] !== null && visionArray[i]! >= -1 ) {
 
                     if (mapData.details[i]._nvt === true) { // outside of tower range
                         this.drawImage(map.imagesLoader.getImg('hatch'), x, y, squareSize, squareSize);
@@ -82,7 +89,7 @@ export class HMapGridLayer extends AbstractHMapLayer {
                         } else if (mapData.details[i]._z > 0) {
                             this.ctx.fillStyle = '#8f990b';
                         } else {
-                            this.ctx.fillStyle = 'transparent'; // too bright, waitng for the right color
+                            this.ctx.fillStyle = 'transparent'; // not as the original
                         }
 
                         this.ctx.fillRect(x, y, squareSize, squareSize);
@@ -92,7 +99,6 @@ export class HMapGridLayer extends AbstractHMapLayer {
                     }
 
                 } else { // position never visited
-
                     this.drawImage(map.imagesLoader.getImg('hatch-dense'), x, y, squareSize, squareSize);
                 }
 
@@ -101,8 +107,30 @@ export class HMapGridLayer extends AbstractHMapLayer {
                 }
             }
 
+            // place the users
+            if (mapData.details[i]._c !== 1 ) {
+                const users = mapData.users.get(i);
+                if (users !== undefined) {
+
+                    users.forEach(user => {
+                        let usernameAsNumber = 0; // for seeding purposes
+                        for (let k = 0; k < user._n.length; k++) {
+                            usernameAsNumber += user._n.charCodeAt(k);
+                        }
+                        const seed = (x * 10 + y) * ( y * 10 + x) + usernameAsNumber;
+                        const random = new HMapRandom(seed);
+
+                        this.drawImage(
+                            map.imagesLoader.getImg('people'),
+                            x + random.getRandomIntegerLocalSeed(0.2 * squareSize, 0.8 * squareSize),
+                            y + random.getRandomIntegerLocalSeed(0.2 * squareSize, 0.8 * squareSize)
+                        );
+                    });
+                }
+            }
+
             // square around the current position
-            if ( (position.y === mapData.position.y && position.x === mapData.position.x) || map.mouseOverIndex === i) {
+            if ( (position.y === mapData.position.y && position.x === mapData.position.x) || map.mouseOverIndex === i) { // current pos
                 this.drawImage(map.imagesLoader.getImg('position'), x, y, squareSize, squareSize);
             } else if ( mapData.details[i]._c !== 1 &&
                         position.x === map.target.x &&
@@ -115,58 +143,14 @@ export class HMapGridLayer extends AbstractHMapLayer {
                 xPopup = x;
                 yPopup = y;
             }
-        }
+        } // iterate over cases
 
-        // popup should be drawn on top of everything
-       if (popup) {
-            this.drawPopup(xPopup!, yPopup!);
-       }
+        // set the popup to draw it
+        if (popup) {
+            map.popup = {x: xPopup!, y: yPopup!};
+        }
 
         // glass
         this.drawImage(map.imagesLoader.getImg('glass'), 0, 0);
-        // this.ctx.translate(-0.5, -0.5);
-    }
-
-    private drawPopup(x: number, y: number) {
-
-        this.ctx.save();
-        const map = this.map as HMapGridMap;
-        const mapData = map.mapData!;
-        const currentPos = mapData.getCoordinates(map.mouseOverIndex);
-        const relativePos = mapData.getPositionRelativeToTown(currentPos);
-
-        let text = '';
-        if (mapData.details[map.mouseOverIndex]._c > 0 || mapData.details[map.mouseOverIndex]._c === - 1) {
-            if (mapData.details[map.mouseOverIndex]._c === 1) {
-                text = mapData.townName + ' ';
-            } else {
-                const buildingName = mapData.buildings.get(mapData.details[map.mouseOverIndex]._c);
-                if (buildingName) {
-                    text = buildingName + ' ';
-                }
-            }
-        }
-        text += '[ ' + relativePos.x + ' , ' + relativePos.y + ' ]';
-
-        const yPopup = Math.max(y - 15, 0);
-        const popupWidth = Math.floor(this.ctx.measureText(text).width + 10);
-        const popupHeight = 15;
-        const minWidthHeight = Math.min(map.width, map.height);
-        const xPopup = Math.floor(Math.min( Math.max(x - popupWidth / 2, 0), minWidthHeight - popupWidth));
-
-        this.ctx.strokeStyle = '#b9ba3e';
-        this.ctx.fillStyle = '#000000';
-        this.ctx.lineWidth = 1;
-        this.ctx.imageSmoothingEnabled = false;
-        this.ctx.globalAlpha = 0.6;
-        this.ctx.fillRect(xPopup, yPopup, popupWidth, popupHeight);
-        this.ctx.globalAlpha = 1.0;
-        this.ctx.strokeRect(xPopup, yPopup, popupWidth, popupHeight);
-        this.ctx.imageSmoothingEnabled = true;
-
-        this.ctx.fillStyle = '#d7ff5b';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText( text, Math.floor(xPopup + 5), Math.floor(yPopup + popupHeight / 2 - 1));
-        this.ctx.restore();
     }
 }

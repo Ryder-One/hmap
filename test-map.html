@@ -22,7 +22,7 @@
 	<div id="main-page">
 		<div class="swf" style="background-color: black; width: 300px; height: 300px; "></div>
 		<div id="data">
-			<textarea id="json-data">Paste here the data to debug</textarea>
+			<textarea id="json-data"></textarea>
 			<button id="reload">Reload the map</button>
 		</div>
 			
@@ -43,7 +43,14 @@
 		if ( reload !== null && textbox !== null) {
 			reload.onclick = function() { 
 				try {
-					HMAP.reloadMapWithData(JSON.parse(textbox.value));
+					const data = JSON.parse(textbox.value);
+					if ('_users' in data && data._users.length > 0) {
+						HMAP.location = 'doors';
+					} else {
+						HMAP.location = 'desert';
+					}
+					HMAP.reloadMapWithData(data);
+					
 				} catch (err) {
 					alert('There is something wrong with the JSON you entered');
 					console.error(err);

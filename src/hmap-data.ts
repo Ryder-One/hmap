@@ -75,6 +75,7 @@ export class HMapData {
     public neighbours = new HMapNeighbours();
     public town: HMapPoint;
     public buildings: Map<number, string> = new Map();
+    public users: Map<number, Array<HMapUserJSON>> = new Map();
 
     get size(): HMapSize { return { width: this.data._w, height: this.data._h }; }
     get position(): HMapPoint { return { x: this.data._x, y: this.data._y }; }
@@ -99,11 +100,11 @@ export class HMapData {
         if (HMapData._fakeData !== undefined && force === false) {
             return HMapData._fakeData;
         } else {
-            const mapSize = HMapRandom.getRandomInteger(8, 25);
+            const mapSize = HMapRandom.getRandomIntegerNoSeed(8, 25);
 
             const town = {
-                x: HMapRandom.getRandomInteger(3, mapSize - 3),
-                y: HMapRandom.getRandomInteger(3, mapSize - 3)
+                x: HMapRandom.getRandomIntegerNoSeed(3, mapSize - 3),
+                y: HMapRandom.getRandomIntegerNoSeed(3, mapSize - 3)
             };
 
             HMapData._fakeData = {
@@ -124,7 +125,7 @@ export class HMapData {
                     _m: 6,
                     _t: 0,
                     _z: 0,
-                    _zid: HMapRandom.getRandomInteger(111111, 999999)
+                    _zid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
                 },
                 _w: mapSize,
                 _x: town.x,
@@ -136,7 +137,7 @@ export class HMapData {
                 _users: null,
                 _editor: false,
                 _map: false,
-                _mid: HMapRandom.getRandomInteger(111111, 999999)
+                _mid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
             };
 
             let index = 0, townIndex = 0;
@@ -148,9 +149,9 @@ export class HMapData {
                         view = true;
                     }
                     let bid = (town.x === x && town.y === y) ?
-                        1 : (HMapRandom.getRandomInteger(0, 10) === 5 ?  HMapRandom.getRandomInteger(2, 62) : 0 );
+                        1 : (HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ?  HMapRandom.getRandomIntegerNoSeed(2, 62) : 0 );
 
-                    bid = HMapRandom.getRandomInteger(0, 10) === 5 ? -1 : bid;
+                    bid = HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? -1 : bid;
 
                     buildings.push({_id: bid, _n: 'Building ' + bid});
 
@@ -158,7 +159,7 @@ export class HMapData {
                         _c: bid,
                         _s: false,
                         _t: 0,
-                        _z: HMapRandom.getRandomInteger(0, 3) === 2 ? HMapRandom.getRandomInteger(0, 18) : 0,
+                        _z: HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
                         _nvt: view
                     });
                     if (view === true) {
@@ -202,9 +203,6 @@ export class HMapData {
         }
     }
 
-    /**
-     * @param rawData Binary data coming from HTML page
-     */
     constructor(mapDataPayload: HMapDataPayload) {
         if (mapDataPayload.raw !== undefined) {
             this.data = this.decode(mapDataPayload.raw) as HMapDataJSON;
@@ -217,6 +215,7 @@ export class HMapData {
         this.buildNeighbours();
         this.town = this.findTown();
         this.cacheBuildingsNames();
+        this.cacheUsersOutside();
     }
 
 
@@ -432,5 +431,22 @@ export class HMapData {
         this.data._b.forEach((B) => {
             this.buildings.set(B._id, B._n);
         });
+    }
+
+    /**
+     * Index the users in a good container (this.users)
+     */
+    private cacheUsersOutside(): void {
+        if (this.data._users !== null && this.data._users.length > 0) {
+            this.data._users.forEach(user => {
+                const userIndex = this.getIndex({x: user._x, y: user._y});
+                let userOnThisPosition = this.users.get(userIndex);
+                if (userOnThisPosition === undefined || userOnThisPosition === null) {
+                    userOnThisPosition = new Array();
+                }
+                userOnThisPosition.push(user);
+                this.users.set(userIndex, userOnThisPosition);
+            });
+        }
     }
 }

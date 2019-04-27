@@ -7,7 +7,7 @@ export class HMapRandom {
      * Get a random integer between min and max
      * @warning Not using the seed.
      */
-    static getRandomInteger(min: number, max: number): number {
+    static getRandomIntegerNoSeed(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
@@ -22,6 +22,14 @@ export class HMapRandom {
     random() {
         const x = Math.sin(this.seed++) * 10000;
         return x - Math.floor(x);
+    }
+
+    /**
+     * Get a random integer between min and max
+     * Using the local seed
+     */
+    getRandomIntegerLocalSeed(min: number, max: number): number {
+        return Math.floor(this.random() * (max - min)) + min;
     }
 
     /**
