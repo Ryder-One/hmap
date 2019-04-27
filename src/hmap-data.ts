@@ -370,7 +370,7 @@ export class HMapData {
         try {
             // @ts-ignore
             const page = window.wrappedJSObject;
-            if (page && page.StringTools && page.MapCommon && page.haxe) { // greasemonkey ...
+            if (page !== undefined && page.StringTools && page.MapCommon && page.haxe) { // greasemonkey ...
                 st = page.StringTools;
                 hx = page.haxe;
                 mc = page.MapCommon;

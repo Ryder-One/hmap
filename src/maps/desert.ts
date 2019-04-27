@@ -182,8 +182,8 @@ export class HMapDesertMap extends HMapAbstractMap {
             let hx: any;
 
             // @ts-ignore
-            const page = window.wrappedJSObject;
-            if (page && page.haxe) { // greasemonkey ...
+            const page: any = window.wrappedJSObject;
+            if (page !== undefined && page.haxe) { // greasemonkey ...
                 hx = page.haxe;
             } else if (haxe) { // tampermonkey
                 hx = haxe;

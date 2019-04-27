@@ -96,7 +96,7 @@ export class HMap {
         // @ts-ignore this thing is not known by the TS compiler
         const page: any = window.wrappedJSObject;
 
-        if (page.js) { // greasemonkey
+        if (page !== undefined && page.js) { // greasemonkey
             _js = page.js;
         } else { // tampermonkey
             _js = js;
