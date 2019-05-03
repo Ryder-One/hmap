@@ -1,33 +1,22 @@
-import { HMapAbstractMap } from './abstract';
 import { HMapArrow, HMapArrowDirection } from '../arrow';
-import { HMapBackgroundLayer } from '../layers/background';
-import { HMapForegroundLayer } from '../layers/foreground';
-import { HMapBufferLayer } from '../layers/buffer';
 import { HMapNeighbour } from '../neighbours';
-import { HMap } from '../hmap';
 import { Toast } from '../toast';
 import { Environment } from '../environment';
+import { HMapLang } from '../lang';
+import { HMapAbstractMap } from './abstract';
+import { HMapSVGDesertBackgroundLayer } from '../layers/svg-desert-background';
+import { HMapSVGLoadingLayer } from '../layers/svg-loading';
+import { HMapSVGDesertForegroundLayer } from '../layers/svg-desert-foreground';
 
 declare var haxe: any;
 declare var js: any;
 
-interface HMapParallax {
-    x: number;
-    y: number;
-}
 
 export class HMapDesertMap extends HMapAbstractMap {
 
-    private parallax: HMapParallax = { x: 0, y: 0 };
-
-    // boolean to prevent double move event
-    private moving?: boolean;
-
     public registredArrows = new Array<HMapArrow>();
 
-    // variables to do the translation on arrow click
-    private startTranslate?: number; // timestamp
-    private translateTo: HMapParallax = { x: 0, y: 0 };
+    private moving = false; // dirty boolean to avoid double move
 
     /**
      * Append the HTML
@@ -60,13 +49,13 @@ export class HMapDesertMap extends HMapAbstractMap {
                 mapIcon.setAttribute('id', 'hmap-minimap-icon');
                 mapIcon.setAttribute('src', Environment.getInstance().url + '/assets/minimap.png');
                 mapButton.appendChild(mapIcon);
-                mapButton.append('Map');
+                mapButton.append(HMapLang.get('mapbutton'));
                 mapButton.style.marginRight = '3px';
 
                 const debugButton = document.createElement('div');
                 debugButton.setAttribute('id', 'hmap-debug-button');
                 debugButton.setAttribute('class', 'hmap-button');
-                debugButton.innerHTML = '< >';
+                debugButton.innerHTML = HMapLang.get('debugbutton');
                 hmapMenu.appendChild(debugButton);
                 debugButton.onclick = this.onDebugButtonClick.bind(this);
 
@@ -81,54 +70,32 @@ export class HMapDesertMap extends HMapAbstractMap {
                         (e.target as HTMLElement).style.outline = '1px solid #eccb94';
                     };
                 });
+
+                hmapMenu.style.display = 'none';
+
+                hmap.onmousemove = this.onMouseMove.bind(this);
+                hmap.onmouseleave = this.onMouseLeave.bind(this);
             }
         }
 
-        this.layers.set('background', new HMapBackgroundLayer(this));
+        const backgroundLayer = new HMapSVGDesertBackgroundLayer(this);
+        this.layers.set('desert-background', backgroundLayer);
 
-        const FGLayer = new HMapForegroundLayer(this);
-        this.layers.set('foreground', FGLayer);
-        FGLayer.canvas.onmousemove = this.onMouseMove.bind(this);
-        FGLayer.canvas.onmouseleave = this.onMouseLeave.bind(this);
-        FGLayer.canvas.onclick = this.onMouseClick.bind(this);
+        const foregroundLayer = new HMapSVGDesertForegroundLayer(this);
+        this.layers.set('desert-foreground', foregroundLayer);
 
-        // this is a test : just append this one and keep all the others "virtual"
-        // ie: in the DOM but not displayed. Can be usefull to make effects like
-        // the distortion or the static effect at the end of the animation
-        // this is not used at the moment
-        this.layers.set('buffer', new HMapBufferLayer(this));
+        const LoadingLayer = new HMapSVGLoadingLayer(this);
+        this.layers.set('loading', LoadingLayer);
     }
 
-    /**
-     * The main animation loop; used for parallax effect and to emulate mouse behavior on the foreground layer
-     */
-    protected animationLoop(): void {
-        const background = this.layers.get('background')!;
-        const fg = this.layers.get('foreground')!;
+    private onMouseMove(e: MouseEvent) {
+        const layerBackground = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
+        layerBackground.onMouseMove(e);
+    }
 
-        // translation effect when we click on an arrow
-        let coef = 1; // this will be increasing from 0 to 1
-        if (this.startTranslate) {
-            const p = (Date.now() - this.startTranslate) / 300; // 300ms
-            coef = p === 1 ? 1 : 1 - Math.pow(2, - 10 * p); // exp easing
-            if (coef >= 1) { // the motion is over, reset the variables
-                this.startTranslate = undefined;
-            }
-        }
-
-        const translateX = this.translateTo.x + this.parallax.x;
-        const translateY = this.translateTo.y + this.parallax.y;
-
-        background.ctx.save();
-        background.ctx.translate(translateX * coef, translateY * coef);
-        background.draw();
-        background.ctx.restore();
-
-        fg.draw(); // we need to redraw the foreground to simulate the roll over effect on arrows
-
-        // reloop
-        this.animationLoopId = undefined;
-        this.startAnimation();
+    private onMouseLeave(e: MouseEvent) {
+        const layerBackground = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
+        layerBackground.onMouseLeave(e);
     }
 
     /**
@@ -139,25 +106,24 @@ export class HMapDesertMap extends HMapAbstractMap {
 
         this.imagesLoader.registerBuildingsToPreload(this.mapData!.neighbours);
 
-        let firstCtx = null; // loading bar when the phase is initialisation
-        if (init === true) {
-            firstCtx = this.layers.values().next().value.ctx; // take the ctx of the first layer
-        }
-
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader.preloadPictures(firstCtx, () => {
+        this.imagesLoader.preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {
                 hmapMenu.style.display = 'flex';
             }
-            this.startAnimation();
+            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer;
+            loadingLayer.hide();
+            this.layers.get('desert-background')!.draw();
+            this.layers.get('desert-foreground')!.draw();
         });
     }
 
     /**
      * Function called when the user click on a directionnal arrow
+     * The function is big due to the debug mode
      */
-    private move(direction: HMapArrowDirection) {
+    move(direction: HMapArrowDirection) {
 
         // since the move is happening in a setTimeout, we have to do this boolean trick to avoid double move
         if (this.moving === true) {
@@ -175,6 +141,8 @@ export class HMapDesertMap extends HMapAbstractMap {
         } else {
             x = 0; y = 1;
         }
+
+        const bgLayer = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
 
         if (Environment.getInstance().devMode === false) {
             const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
@@ -196,12 +164,7 @@ export class HMapDesertMap extends HMapAbstractMap {
             r.onData = (data: string) => {
                 this.hmap.originalOnData!(data); // we are sure the function has been set
 
-                // variables to manage the start effect
-                this.startTranslate = Date.now();
-                this.translateTo = { x: -100 * x, y: -100 * y };
-
-                // this is a real timeout (300ms), not a fake async method
-                setTimeout(() => {
+                bgLayer.easeMovement({ x: 100 * x, y: 100 * y }, () => {
                     // move the position
                     this.mapData!.movePosition(x, y);
 
@@ -213,10 +176,8 @@ export class HMapDesertMap extends HMapAbstractMap {
                         this.partialDataReceived({ raw: tempMapData });
                     }
 
-                    // reset the animation
-                    this.translateTo = { x: 0, y: 0 };
-                    this.moving = false;
-                }, 300);
+                    this.moving = false; // allow another move
+                });
             };
 
             r.onError = js.XmlHttp.onError;
@@ -225,10 +186,7 @@ export class HMapDesertMap extends HMapAbstractMap {
         } else { // dev mode, fake the data
 
             // variables to manage the start effect
-            this.startTranslate = Date.now();
-            this.translateTo = { x: -100 * x, y: -100 * y };
-
-            setTimeout(() => {
+            bgLayer.easeMovement({ x: 100 * x, y: 100 * y }, () => {
                 // move the position
                 this.mapData!.movePosition(x, y);
 
@@ -269,87 +227,21 @@ export class HMapDesertMap extends HMapAbstractMap {
                 }
 
                 this.partialDataReceived({ JSON: fakeData });
-                // reset the animation
-                this.translateTo = { x: 0, y: 0 };
-
-                this.moving = false;
-            }, 300);
-        }
-    }
-
-    private onMouseMove(e: MouseEvent) {
-        if (e.target) {
-            const canvas = e.target as HTMLCanvasElement;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            const centerX = 150;
-            const centerY = 150;
-
-            this.parallax.x = (centerX - mouseX) / 10;
-            this.parallax.y = (centerY - mouseY) / 10;
-
-            // mouseover the arrows
-            let overOne = false;
-            for (let i = 0, j = this.registredArrows.length; i < j; i++) {
-                const arrowRegistred = this.registredArrows[i];
-                if (mouseX > arrowRegistred.rx &&
-                    mouseX < (arrowRegistred.rx + arrowRegistred.w) &&
-                    mouseY > arrowRegistred.ry &&
-                    mouseY < (arrowRegistred.ry + arrowRegistred.h)) {
-                    arrowRegistred.over = true;
-                    overOne = true;
-                    break; // we cannot be over two arrows
-                } else {
-                    arrowRegistred.over = false;
-                }
-            }
-
-            if (overOne === true) {
-                canvas.style.cursor = 'pointer';
-            } else {
-                canvas.style.cursor = 'auto';
-            }
-        }
-    }
-
-    private onMouseClick(e: MouseEvent) {
-        if (e.target) {
-            const canvas = e.target as HTMLCanvasElement;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            for (let i = 0, j = this.registredArrows.length; i < j; i++) {
-                const arrowRegistred = this.registredArrows[i];
-                // if we clicked in the square of a directionnal arrow
-                if (mouseX > arrowRegistred.rx &&
-                    mouseX < (arrowRegistred.rx + arrowRegistred.w) &&
-                    mouseY > arrowRegistred.ry &&
-                    mouseY < (arrowRegistred.ry + arrowRegistred.h)) {
-                    this.move(this.registredArrows[i].t);
-                    break;
-                }
-            }
+                this.moving = false; // allow another move
+            });
         }
     }
 
     /**
-     * When the mouse leave the map, reset some variables
+     * The click on the map button will switch the map from desert to grid
      */
-    private onMouseLeave() {
-
-        this.parallax.x = 0;
-        this.parallax.y = 0;
-        for (let n = 0, p = this.registredArrows.length; n < p; n++) {
-            this.registredArrows[n].over = false;
-        }
-    }
-
     private onMapButtonClick() {
         this.hmap.switchMapAndReload('grid');
     }
 
+    /**
+     * The click on the debug button will copy the data to the clipboard
+     */
     private onDebugButtonClick() {
         const el = document.createElement('textarea');
         el.value = this.mapData!.prettyData;
@@ -358,7 +250,7 @@ export class HMapDesertMap extends HMapAbstractMap {
         document.execCommand('copy');
         document.body.removeChild(el);
 
-        Toast.show('Debug has been copied to clipboard');
+        Toast.show(HMapLang.get('toastdebug'));
     }
 
     /**

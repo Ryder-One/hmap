@@ -1,8 +1,11 @@
-import { HMapAbstractMap } from './abstract';
-import { HMapGridLayer } from '../layers/grid';
 import { HMapPoint } from '../hmap';
 import { Toast } from '../toast';
-import { HMapGridPopupLayer } from '../layers/grid-popup';
+import { HMapAbstractMap } from './abstract';
+import { HMapSVGGridLayer } from '../layers/svg-grid';
+import { Environment } from '../environment';
+import { HMapLang } from '../lang';
+import { HMapSVGLoadingLayer } from '../layers/svg-loading';
+import { HMapSVGGlassStaticLayer } from '../layers/svg-glass-static';
 
 export type HMapGridMode = 'global' | 'personal';
 
@@ -11,10 +14,11 @@ export class HMapGridMap extends HMapAbstractMap {
     public mouse?: HMapPoint;
     public mouseOverIndex = -1;
     public mode: HMapGridMode = 'personal';
-    public popup?: HMapPoint; // when set, the popup will appear
+    public displayTags = false;
+
 
     /**
-     * Build the layers (HTML canvas) for this map
+     * Build the layers (SVG) for this map
      */
     public buildLayers(): void {
 
@@ -40,28 +44,66 @@ export class HMapGridMap extends HMapAbstractMap {
                     const closeButton = document.createElement('div');
                     closeButton.setAttribute('id', 'hmap-close-button');
                     closeButton.setAttribute('class', 'hmap-button');
-                    closeButton.innerHTML = 'Close';
+                    closeButton.innerHTML = HMapLang.get('closebutton');
                     hmapMenu.appendChild(closeButton);
 
                     closeButton.onclick = this.onMapButtonClick.bind(this);
                 }
+
+                const displayTagsButton = document.createElement('div');
+                displayTagsButton.setAttribute('id', 'hmap-tags-button');
+                displayTagsButton.setAttribute('class', 'hmap-button');
+                hmapMenu.appendChild(displayTagsButton);
+
+                if (!this.displayTags) {
+                    const uncheckIcon = document.createElement('img');
+                    uncheckIcon.setAttribute('src', Environment.getInstance().url + '/assets/uncheck.png');
+                    uncheckIcon.style.marginRight = '3px';
+                    displayTagsButton.appendChild(uncheckIcon);
+                    displayTagsButton.append(HMapLang.get('markersbutton'));
+                } else {
+                    const checkIcon = document.createElement('img');
+                    checkIcon.setAttribute('src', Environment.getInstance().url + '/assets/check.png');
+                    checkIcon.style.marginRight = '3px';
+                    displayTagsButton.appendChild(checkIcon);
+                    displayTagsButton.append(HMapLang.get('markersbutton'));
+                    displayTagsButton.style.background = '#696486'; // blue night
+                }
+                displayTagsButton.onclick = this.toggleDisplayTags.bind(this);
+
                 const modeButton = document.createElement('div');
                 modeButton.setAttribute('id', 'hmap-mode-button');
                 modeButton.setAttribute('class', 'hmap-button');
                 hmapMenu.appendChild(modeButton);
 
-                if (this.mode === 'global') {
-                    modeButton.innerHTML = 'Personal';
+                if (this.mode !== 'global') {
+                    const uncheckIcon = document.createElement('img');
+                    uncheckIcon.setAttribute('src', Environment.getInstance().url + '/assets/uncheck.png');
+                    uncheckIcon.style.marginRight = '3px';
+                    modeButton.appendChild(uncheckIcon);
+                    modeButton.append(HMapLang.get('modebutton'));
                 } else {
-                    modeButton.innerHTML = 'Global';
+                    const checkIcon = document.createElement('img');
+                    checkIcon.setAttribute('src', Environment.getInstance().url + '/assets/check.png');
+                    checkIcon.style.marginRight = '3px';
+                    modeButton.appendChild(checkIcon);
+                    modeButton.append(HMapLang.get('modebutton'));
+                    modeButton.style.background = '#696486'; // blue night
                 }
 
                 modeButton.onclick = this.switchMode.bind(this);
 
+                const resetViewButton = document.createElement('div');
+                resetViewButton.setAttribute('id', 'hmap-reset-button');
+                resetViewButton.setAttribute('class', 'hmap-button');
+                resetViewButton.innerHTML = HMapLang.get('resetbutton');
+                hmapMenu.appendChild(resetViewButton);
+                resetViewButton.onclick = this.onResetButtonClick.bind(this);
+
                 const debugButton = document.createElement('div');
                 debugButton.setAttribute('id', 'hmap-debug-button');
                 debugButton.setAttribute('class', 'hmap-button');
-                debugButton.innerHTML = '< >';
+                debugButton.innerHTML = HMapLang.get('debugbutton');
                 hmapMenu.appendChild(debugButton);
                 debugButton.onclick = this.onDebugButtonClick.bind(this);
 
@@ -75,78 +117,60 @@ export class HMapGridMap extends HMapAbstractMap {
                         (e.target as HTMLElement).style.outline = '1px solid #eccb94';
                     };
                 });
+
+                hmapMenu.style.display = 'none';
             }
 
-            const GridLayer = new HMapGridLayer(this);
+            const GridLayer = new HMapSVGGridLayer(this);
             this.layers.set('grid', GridLayer);
-            GridLayer.canvas.onmousemove = this.onMouseMove.bind(this);
-            GridLayer.canvas.onmouseleave = this.onMouseLeave.bind(this);
-            GridLayer.canvas.onclick = this.onMouseClick.bind(this);
 
-            const GridPopupLayer = new HMapGridPopupLayer(this);
-            this.layers.set('grid-popup', GridPopupLayer);
+            const GlassStatic = new HMapSVGGlassStaticLayer(this);
+            this.layers.set('glass-static', GlassStatic);
+
+            const LoadingLayer = new HMapSVGLoadingLayer(this);
+            this.layers.set('loading', LoadingLayer);
+
         }
-    }
-
-    /**
-     * Implementation of the animation loop
-     */
-    protected animationLoop(): void {
-        this.layers.get('grid')!.draw();
-        this.layers.get('grid-popup')!.draw();
-
-        this.animationLoopId = undefined;
-        this.startAnimation();
     }
 
     /**
      * Action to execute when new data arrive
      */
     protected onDataReceived(init: boolean): void {
-        this.imagesLoader.registerBuildingsToPreload(this.mapData!.neighbours);
-
-        let firstCtx = null; // loading bar when the phase is initialisation
-        if (init === true) {
-            firstCtx = this.layers.values().next().value.ctx; // take the ctx of the first layer
-        }
 
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader.preloadPictures(firstCtx, () => {
+        this.imagesLoader.preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {
                 hmapMenu.style.display = 'flex';
             }
-            this.startAnimation();
+            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer;
+            loadingLayer.hide();
+            this.layers.get('grid')!.draw();
+            this.layers.get('glass-static')!.draw();
         });
     }
 
-    private onMouseMove(e: MouseEvent) {
-        if (e.target) {
-            const canvas = e.target as HTMLCanvasElement;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            this.mouse = { x: mouseX, y: mouseY };
-        }
-    }
-
-    private onMouseClick() {
+    /**
+     * Set the target of the grid
+     */
+    setTarget(index: HMapPoint) {
         // set the target for the pointing arrow
         if (this.hmap.location === 'desert' || this.hmap.location === 'doors') {
-            this.hmap.target = this.mapData!.getCoordinates(this.mouseOverIndex);
+            this.hmap.target = index;
         }
     }
 
-    private onMouseLeave(e: MouseEvent) {
-        this.mouse = { x: 0, y: 0 };
-        this.mouseOverIndex = -1;
-    }
-
+    /**
+     * Close the grid and show the desert
+     */
     private onMapButtonClick() {
         this.hmap.switchMapAndReload('desert');
     }
 
+    /**
+     * Copy the mapData to clipboard
+     */
     private onDebugButtonClick() {
         const el = document.createElement('textarea');
         el.value = this.mapData!.prettyData;
@@ -155,22 +179,78 @@ export class HMapGridMap extends HMapAbstractMap {
         document.execCommand('copy');
         document.body.removeChild(el);
 
-        Toast.show('Debug has been copied to clipboard');
+        Toast.show(HMapLang.get('toastdebug'));
     }
 
+    private onResetButtonClick() {
+        const layer = this.layers.get('grid')! as HMapSVGGridLayer;
+        layer.resetView();
+    }
+
+    private toggleDisplayTags() {
+        const hmapTagButton = document.querySelector('#hmap-tags-button') as HTMLElement;
+        while (hmapTagButton.lastChild) {
+            hmapTagButton.removeChild(hmapTagButton.lastChild);
+        }
+
+        if (this.displayTags) {
+            this.displayTags = false;
+            const uncheckIcon = document.createElement('img');
+            uncheckIcon.setAttribute('src', Environment.getInstance().url + '/assets/uncheck.png');
+            uncheckIcon.style.marginRight = '3px';
+            hmapTagButton.appendChild(uncheckIcon);
+            hmapTagButton.append(HMapLang.get('markersbutton'));
+            hmapTagButton.style.background = '#a13119'; // orange
+        } else {
+            this.displayTags = true;
+            const checkIcon = document.createElement('img');
+            checkIcon.setAttribute('src', Environment.getInstance().url + '/assets/check.png');
+            checkIcon.style.marginRight = '3px';
+            hmapTagButton.appendChild(checkIcon);
+            hmapTagButton.append(HMapLang.get('markersbutton'));
+            hmapTagButton.style.background = '#696486'; // blue night
+        }
+        const layer = this.layers.get('grid')! as HMapSVGGridLayer;
+        layer.draw();
+    }
+
+    /**
+     * Switch from global mode to personnal mode
+     * Called on click on mode button
+     */
     private switchMode() {
+        const hmapModeButton = document.querySelector('#hmap-mode-button') as HTMLElement;
+
         if (this.mode === 'global') {
             this.mode = 'personal';
-            const hmapModeButton = document.querySelector('#hmap-mode-button') as HTMLElement;
             if (hmapModeButton !== null) {
-                hmapModeButton.innerHTML = 'Global';
+                while (hmapModeButton.lastChild) {
+                    hmapModeButton.removeChild(hmapModeButton.lastChild);
+                }
+                const uncheckIcon = document.createElement('img');
+                uncheckIcon.setAttribute('src', Environment.getInstance().url + '/assets/uncheck.png');
+                uncheckIcon.style.marginRight = '3px';
+                hmapModeButton.appendChild(uncheckIcon);
+                hmapModeButton.append(HMapLang.get('modebutton'));
+                hmapModeButton.style.background = '#a13119'; // orange
             }
         } else {
             this.mode = 'global';
-            const hmapModeButton = document.querySelector('#hmap-mode-button') as HTMLElement;
             if (hmapModeButton !== null) {
-                hmapModeButton.innerHTML = 'Personal';
+                while (hmapModeButton.lastChild) {
+                    hmapModeButton.removeChild(hmapModeButton.lastChild);
+                }
+                const checkIcon = document.createElement('img');
+                checkIcon.setAttribute('src', Environment.getInstance().url + '/assets/check.png');
+                checkIcon.style.marginRight = '3px';
+                hmapModeButton.appendChild(checkIcon);
+                hmapModeButton.append(HMapLang.get('modebutton'));
+                hmapModeButton.style.background = '#696486'; // blue night
             }
+        }
+
+        if (this.layers.get('grid')) {
+            this.layers.get('grid')!.draw();
         }
     }
 }

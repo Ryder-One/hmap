@@ -123,7 +123,7 @@ export class HMapData {
                     _c: 1,
                     _h: 1,
                     _m: 6,
-                    _t: 0,
+                    _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
                     _z: 0,
                     _zid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
                 },
@@ -158,7 +158,7 @@ export class HMapData {
                     HMapData._fakeData._details.push({
                         _c: bid,
                         _s: false,
-                        _t: 0,
+                        _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
                         _z: HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
                         _nvt: view
                     });

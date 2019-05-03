@@ -42,8 +42,25 @@ declare var HMAP: any;
             align-items:center;\
             user-select:none;\
         }\
+        .hmap-popup {\
+            font-smooth: none;\
+            -webkit-font-smoothing: none;\
+        }\
+        .hmap-text-green {\
+            font-smooth: none;\
+            -webkit-font-smoothing: none;\
+            fill: #d7ff5b;\
+            font-family: visitor2;\
+            font-size: 13px;\
+        }\
+        .hmap-text-yellow {\
+            font-smooth: none;\
+            -webkit-font-smoothing: none;\
+            fill: #ebc369;\
+            font-family: visitor2;\
+            font-size: 13px;\
+        }\
         '));
-
         document.head.appendChild(style);
 
         // create fake content to load the fonts ( ... )
@@ -84,15 +101,16 @@ declare var HMAP: any;
                     }, 200);
                 }
             } catch (err) {
-                console.error(err.message);
+                console.error('HMap::bootstrap - loaded', err, err.message);
                 Toast.show('Hmap - An error occured. Check the console to see the message.');
             }
         }).catch((err) => {
+            console.error('HMap::promiseAll', err, err.message);
             Toast.show('Hmap - Cannot load the fonts. Try to reload the page by pressing CTRL + F5 or change your browser');
-            console.error(err.message);
         });
 
     } catch (err) {
-        console.error('HMap::bootstrap', err);
+        console.error('HMap::bootstrap', err, err.message);
+        Toast.show('Hmap - An error occured. Check the console to see the message.');
     }
 })();
