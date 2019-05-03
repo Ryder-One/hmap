@@ -244,12 +244,9 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
      */
     private attachPanZoomEvents() {
         const svgContainer = document.querySelector('#hmap')! as HTMLElement;
-        const width = this.map.width;
-        const height = this.map.height;
 
-        this.viewBox = {x : 0, y : 0, w : width, h : height};
+        this.viewBox = {x : 0, y : 0, w : this.map.width, h : this.map.height};
         this.svg.setAttributeNS(null, 'viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
-        const svgSize = {w : width, h : height};
         this.isPanning = false;
         this.startPoint = {x: 0 , y: 0};
         this.endPoint = {x: 0, y: 0};
@@ -259,15 +256,17 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
             e.preventDefault();
             const w = this.viewBox.w;
             const h = this.viewBox.h;
-            const mx = e.x; // mouse x
-            const my = e.y;
+            const rect = this.svg.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
             const dh = -1 * (w * Math.sign(e.deltaY) * 0.1);
             const dw = -1 * (h * Math.sign(e.deltaY) * 0.1);
-            const dx = dw * mx / svgSize.w;
-            const dy = dh * my / svgSize.h;
+            const dx = dw * mx / this.map.width;
+            const dy = dh * my / this.map.height;
 
             this.viewBox = {x: this.viewBox.x + dx, y: this.viewBox.y + dy, w: this.viewBox.w - dw, h: this.viewBox.h - dh};
-            this.scale = svgSize.w / this.viewBox.w;
+            this.scale = this.map.width / this.viewBox.w;
+
             this.svg.setAttributeNS(null, 'viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
         };
 

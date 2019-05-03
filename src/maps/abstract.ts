@@ -13,6 +13,10 @@ import { HMapSVGGlassStaticLayer } from '../layers/svg-glass-static';
 export type HMapTypeMapStr = 'grid' | 'desert';
 export type HMapTypeSVGMap = HMapGridMap | HMapDesertMap;
 
+/**
+ * The maps will be the components that will host all the HTML and the logic of the map itself
+ * They are split into layers, and each layer is a SVG with its own behavior
+ */
 export abstract class HMapAbstractMap {
     protected hmap: HMap;
 
