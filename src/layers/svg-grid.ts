@@ -1,6 +1,7 @@
 import { HMapRandom } from '../random';
 import { AbstractHMapLayer } from './abstract';
 import { HMapGridMap } from '../maps/grid';
+import { HMapLang, HMapTraduction } from '../lang';
 
 /**
  * This layer will hold the grid view
@@ -313,6 +314,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         const mapData = map.mapData!;
         const currentPos = mapData.getCoordinates(index);
         const relativePos = mapData.getPositionRelativeToTown(currentPos);
+        let numberOfLines = 0;
 
         // "Title" of the popup : building name & position
         let title = 'Desert ';
@@ -329,6 +331,28 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         }
         title += '[ ' + relativePos.x + ' , ' + relativePos.y + ' ]';
         maxTextWidth = ctx.measureText(title).width;
+        numberOfLines++;
+
+        // tags measurements
+        if (mapData.details[index]._t > 0 && map.displayTags) {
+            const tagName = HMapLang.get(this.getTagName(mapData.details[index]._t));
+            maxTextWidth = Math.max(ctx.measureText(tagName).width, maxTextWidth);
+            numberOfLines++;
+        }
+
+        // danger measurements
+        let dangerName: string | undefined;
+        if (mapData.details[index]._z > 0) {
+            if (mapData.details[index]._z > 9) {
+                dangerName = HMapLang.get('manyZombies');
+            } else if (mapData.details[index]._z > 5) {
+                dangerName = HMapLang.get('medZombies');
+            } else {
+                dangerName = HMapLang.get('fewZombies');
+            }
+            maxTextWidth = Math.max(ctx.measureText(dangerName).width, maxTextWidth);
+            numberOfLines++;
+        }
 
         // build arrays with user name inside (each entry is a line of 3 users)
         const users = mapData.users.get(index);
@@ -343,18 +367,20 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
                     maxTextWidth = Math.max(ctx.measureText(singleLineStr).width, maxTextWidth);
                     usernamesAllLines.push(singleLineStr);
                     singleLine = new Array();
+                    numberOfLines++;
                 }
             }
             if (singleLine.length > 0) { // last line
                 const singleLineStr = singleLine.join(', ');
                 maxTextWidth = Math.max(ctx.measureText(singleLineStr).width, maxTextWidth);
                 usernamesAllLines.push(singleLineStr);
+                numberOfLines++;
             }
         }
 
         // start the drawing of the popup itself
         const popupWidth = Math.floor(maxTextWidth + 10);
-        const popupHeight = 15 + 15 * usernamesAllLines.length;
+        const popupHeight = 15 * numberOfLines;
         const minWidthHeight = Math.min(map.width, map.height);
         const xPopup = Math.floor(Math.min( Math.max(x - popupWidth / 2, 0), minWidthHeight - popupWidth));
         const yPopup = Math.max(y - popupHeight, 0) | 0;
@@ -366,12 +392,38 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         popup.style.pointerEvents = 'none';
 
         // draw the title
+        numberOfLines = 0; // restart the counting ...
         const titleSize = ctx.measureText(title).width;
         this.text(
             xPopup + popupWidth / 2 - titleSize / 2,
             yPopup + 7.5,
             title,
             'hmap-text-green hmap-popup');
+        numberOfLines++;
+
+        // draw the tag
+        if (mapData.details[index]._t > 0 && map.displayTags) {
+            const tagName = HMapLang.get(this.getTagName(mapData.details[index]._t));
+            const tagWidth = ctx.measureText(tagName).width;
+            this.text(
+                xPopup + popupWidth / 2 - tagWidth / 2,
+                yPopup + 7.5 + 15 * numberOfLines,
+                tagName,
+                'hmap-text-green hmap-popup');
+            numberOfLines++;
+        }
+
+        // draw the danger line
+        if (dangerName !== undefined) {
+            const dangerWidth = ctx.measureText(dangerName).width;
+            const dangerText = this.text(
+                xPopup + popupWidth / 2 - dangerWidth / 2,
+                yPopup + 7.5 + 15 * numberOfLines,
+                dangerName,
+                'hmap-text-yellow hmap-popup');
+            dangerText.style.fill = '#fefe00'; // overwrite the color
+            numberOfLines++;
+        }
 
         // draw the usernames
         usernamesAllLines.forEach((lineToWrite, _index) => {
@@ -379,7 +431,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
 
             const line = this.text(
                 xPopup + popupWidth / 2 - lineSize / 2,
-                yPopup + 7.5 + (_index + 1 ) * 15,
+                yPopup + 7.5 + (_index + numberOfLines ) * 15,
                 lineToWrite,
                 'hmap-text-yellow hmap-popup'
             );
@@ -389,5 +441,36 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         document.querySelectorAll('.hmap-popup').forEach((element) => {
             (element as HTMLElement).style.zIndex = '11';
         });
+    }
+
+    private getTagName(tagIndex: number): (keyof HMapTraduction) {
+        switch (tagIndex) {
+            case 1:
+                return 'tag_1';
+            case 2:
+                return 'tag_2';
+            case 3:
+                return 'tag_3';
+            case 4:
+                return 'tag_4';
+            case 5:
+                return 'tag_5';
+            case 6:
+                return 'tag_6';
+            case 7:
+                return 'tag_7';
+            case 8:
+                return 'tag_8';
+            case 9:
+                return 'tag_9';
+            case 10:
+                return 'tag_10';
+            case 11:
+                return 'tag_11';
+            case 12:
+                return 'tag_12';
+            default:
+                throw new  Error('HMapSVGGridLayer::getTagName - Wrong tag index');
+        }
     }
 }

@@ -1,6 +1,6 @@
-type HMapLanguage = 'fr' | 'en' | 'de' | 'es';
+export type HMapLanguage = 'fr' | 'en' | 'de' | 'es';
 
-interface HMapTraduction {
+export interface HMapTraduction {
     modebutton: string;
     mapbutton: string;
     debugbutton: string;

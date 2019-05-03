@@ -68,7 +68,7 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer {
             arrowImg.style.cursor = 'pointer';
             this.img(imagesLoader.get('moveArrowOutline').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
             arrowImg.onmouseenter = () => {
-                const arrowFill = this.img(imagesLoader.get('moveArrowFill').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
+                const arrowFill = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
                 arrowFill.setAttributeNS(null, 'class', 'hmap-arrowFill');
             };
 

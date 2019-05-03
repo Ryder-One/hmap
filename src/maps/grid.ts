@@ -174,6 +174,7 @@ export class HMapGridMap extends HMapAbstractMap {
     private onDebugButtonClick() {
         const el = document.createElement('textarea');
         el.value = this.mapData!.prettyData;
+        console.log(this.mapData!.prettyData);
         document.body.appendChild(el);
         el.select();
         document.execCommand('copy');
