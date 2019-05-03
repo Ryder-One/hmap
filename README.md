@@ -43,8 +43,6 @@ That will be done :
   * The explorable ruins
   * The kills (of zombies) are not displayed on the map
   * The souls are not visible on the map
-  * The markers on the grid view
-  * Roll-over the building in desert mode
   * Some glitches in the shadows appear when moving with the map I will try to remove them
  
 That won't be done :
@@ -53,7 +51,7 @@ That won't be done :
   * The paranoid effects (static effect, distortion effect, blur..)
   * Easing on the parallax effect, easing on the green arrow
   * The fog of war is not as good as the original (neither is the blood, and other assets I made)
-  * Texts are blurry. I don't know how to fix it.
+  * Blurry text : due to the font itself.
   
 ## Known issues
 

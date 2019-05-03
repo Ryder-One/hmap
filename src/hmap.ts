@@ -1,8 +1,8 @@
-import { HMapDesertMap } from './maps/desert';
-import { HMapGridMap } from './maps/grid';
-import { HMapTypeMap, HMapTypeMapStr } from './maps/abstract';
+import { HMapTypeMapStr, HMapTypeSVGMap } from './maps/abstract';
 import { Environment } from './environment';
 import { HMapDataJSON, HMapData } from './hmap-data';
+import { HMapGridMap } from './maps/grid';
+import { HMapDesertMap } from './maps/desert';
 
 export interface HMapPoint {
     x: number;
@@ -20,7 +20,7 @@ declare var js: any; // haxe stuff
 
 export class HMap {
 
-    private map?: HMapTypeMap;
+    private map?: HMapTypeSVGMap;
 
     public width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
     public height = 300; // for debug only, the value is 300 and there is a lot of hard coded values
@@ -190,7 +190,7 @@ export class HMap {
         }
         // unset the objects
         if (this.map !== undefined) {
-            this.map.stopAnimation();
+            // this.map.stopAnimation();
             this.map = undefined;
         }
     }

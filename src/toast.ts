@@ -21,8 +21,8 @@ export class Toast {
         const newToast = document.createElement('div');
         newToast.setAttribute('id', 'toast_' + id);
         newToast.innerHTML = text;
-        const styleString = 'padding:6px;background:#333333;font-size:12px;color:#fafafa;' +
-            'font-family:Helvetica, Arial;cursor:pointer;margin-bottom:5px';
+        const styleString = 'padding:6px;background:#a13119;font-size:12px;color:#eccb94;' +
+            'font-family:Helvetica, Arial;cursor:pointer;margin-bottom:5px;border: 1px solid black';
         newToast.setAttribute('style', styleString);
         newToast.onclick = (e: MouseEvent) => {
             if (e.target !== null) {

@@ -44,7 +44,7 @@
 			reload.onclick = function() { 
 				try {
 					const data = JSON.parse(textbox.value);
-					if ('_users' in data && data._users.length > 0) {
+					if ('_users' in data && data._users && data._users.length > 0) {
 						HMAP.location = 'doors';
 					} else {
 						HMAP.location = 'desert';

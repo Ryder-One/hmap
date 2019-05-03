@@ -1,25 +1,27 @@
-import { HMapData, HMapDataPayload, HMapDataJSON } from '../hmap-data';
-import { HMapLayerType } from '../layers/abstract';
-import { HMapBackgroundLayer } from '../layers/background';
-import { HMapForegroundLayer } from '../layers/foreground';
-import { HMapBufferLayer } from '../layers/buffer';
+import { HMapData, HMapDataPayload } from '../hmap-data';
 import { HMapImagesLoader } from '../imagesLoader';
-import { HMapGridLayer } from '../layers/grid';
-import { HMapDesertMap } from './desert';
-import { HMapGridMap } from './grid';
 import { HMap, HMapPoint } from '../hmap';
+import { HMapGridMap } from './grid';
+import { HMapLayerSVGType } from '../layers/abstract';
+import { HMapSVGGridLayer } from '../layers/svg-grid';
+import { HMapDesertMap } from './desert';
+import { HMapSVGLoadingLayer } from '../layers/svg-loading';
+import { HMapSVGDesertBackgroundLayer } from '../layers/svg-desert-background';
+import { HMapSVGDesertForegroundLayer } from '../layers/svg-desert-foreground';
+import { HMapSVGGlassStaticLayer } from '../layers/svg-glass-static';
 
 export type HMapTypeMapStr = 'grid' | 'desert';
-export type HMapTypeMap = HMapGridMap | HMapDesertMap;
+export type HMapTypeSVGMap = HMapGridMap | HMapDesertMap;
 
 export abstract class HMapAbstractMap {
     protected hmap: HMap;
 
-    protected layers = new Map<HMapLayerType, HMapBackgroundLayer|HMapForegroundLayer|HMapBufferLayer|HMapGridLayer>();
+    protected layers = new Map<HMapLayerSVGType, HMapSVGGridLayer | HMapSVGLoadingLayer
+        | HMapSVGDesertForegroundLayer | HMapSVGDesertBackgroundLayer | HMapSVGGlassStaticLayer>();
 
     protected animationLoopId?: number; // hold the request animation frame id
 
-    public imagesLoader = new HMapImagesLoader();
+    public imagesLoader = HMapImagesLoader.getInstance();
     public mapData?: HMapData;
 
     get target(): HMapPoint {
@@ -53,11 +55,9 @@ export abstract class HMapAbstractMap {
         const loading = new Image();
         loading.src = this.imagesLoader.get('loading').src;
         loading.onload = () => {
-            if (this.layers.values().next().value) { // if there is a layer (can happen in debug mode)
-                const firstCtx = this.layers.values().next().value.ctx; // take the ctx of the first layer do draw the loading bar
-                if (firstCtx) {
-                    firstCtx.drawImage(loading, 0, 0);
-                }
+            const loadingLayer = this.layers.get('loading');
+            if (loadingLayer) { // if there is a layer (can happen in debug mode)
+                loadingLayer.draw();
             }
 
             this.onDataReceived(true); // custom implementation, map by map
@@ -72,9 +72,6 @@ export abstract class HMapAbstractMap {
         // patch the store with new data
         this.mapData!.patchData(tempMapData);
 
-        // stop the animation to preload the pictures
-        this.stopAnimation();
-
         // the position has changed, the arrows may be different
         this.onDataReceived(false); // custom implementation, map by map
     }
@@ -85,29 +82,8 @@ export abstract class HMapAbstractMap {
     public abstract buildLayers(): void;
 
     /**
-     * Implementation of the animation loop
-     */
-    protected abstract animationLoop(): void;
-
-    /**
      * Action to execute when new data arrive
      * @param init true when the data are coming from the initialization phase
      */
     protected abstract onDataReceived(init: boolean): void;
-
-    /**
-     * Utility function to have a nice start/stop animation
-     */
-    startAnimation() {
-        if (!this.animationLoopId) {
-            this.animationLoopId = window.requestAnimationFrame(this.animationLoop.bind(this));
-        }
-    }
-
-    stopAnimation() {
-        if (this.animationLoopId) {
-           window.cancelAnimationFrame(this.animationLoopId);
-           this.animationLoopId = undefined;
-        }
-    }
 }

@@ -1,5 +1,7 @@
 import { HMapNeighbour, HMapNeighbours } from './neighbours';
 import { Environment } from './environment';
+import { Toast } from './toast';
+import { HMapSVGLoadingLayer } from './layers/svg-loading';
 
 export interface HMapImage {
     src: string;
@@ -7,7 +9,17 @@ export interface HMapImage {
 }
 
 export class HMapImagesLoader {
+
+    static _instance: HMapImagesLoader;
+
     private images = new Map<string, HMapImage>();
+
+    static getInstance(): HMapImagesLoader {
+        if (this._instance === undefined) {
+            this._instance = new HMapImagesLoader();
+        }
+        return this._instance;
+    }
 
     constructor() {
 
@@ -32,6 +44,15 @@ export class HMapImagesLoader {
         this.images.set('target', { src: Environment.getInstance().url + '/assets/target.png', obj: undefined });
         this.images.set('position', { src: Environment.getInstance().url + '/assets/position.png', obj: undefined });
         this.images.set('people', { src: Environment.getInstance().url + '/assets/people.png', obj: undefined });
+        this.images.set('uncheck', { src: Environment.getInstance().url + '/assets/uncheck.png', obj: undefined });
+        this.images.set('check', { src: Environment.getInstance().url + '/assets/check.png', obj: undefined });
+        this.images.set('destination', { src: Environment.getInstance().url + '/assets/destination.png', obj: undefined });
+
+        for (let tag = 1; tag <= 11; tag++) {
+            this.images.set('tag_' + tag, { src: Environment.getInstance().url + '/assets/tags/' + tag + '.png', obj: undefined });
+        }
+        // tag 12 is a gif
+        this.images.set('tag_12', { src: Environment.getInstance().url + '/assets/tags/12.gif', obj: undefined });
     }
 
     public isset(imageId: string): boolean {
@@ -51,46 +72,39 @@ export class HMapImagesLoader {
     }
 
     public getImg(imageId: string): HTMLImageElement | undefined {
-        if (!this.get(imageId)) {
-        }
         return this.get(imageId).obj;
     }
 
     /**
       * Preload the pictures and complete the images meta object
       * It will also display the loading animation on the layer BG
-      * @param ctx ctx to draw the progressbar evolution or null if no progress bar
+      * @param loadingLayer layer with the progress bar
+      * @param init boolean to tell if we are in initialisation phaseor not (display bar or not)
       * @param onFinished callback to be called when it's done
       */
-     public preloadPictures (ctx: CanvasRenderingContext2D | null, onFinished: CallableFunction) {
+     public preloadPictures (loadingLayer: HMapSVGLoadingLayer, init: boolean, onFinished: CallableFunction) {
         let loaded = 0;
 
-        if (ctx) {
-            ctx.fillStyle = '#ebc369';
-            ctx.fillText('by ryderone', 120, 195);
-        }
-
-        this.images.forEach((value) => {
+        this.images.forEach((value: HMapImage) => {
             if (value.obj === undefined) { // not already loaded, then load it
                 const img = new Image();
                 img.src = value.src;
                 img.onload = () => {
-                    if (ctx) {
-                        window.requestAnimationFrame(() =>  { // progress bar
-                            ctx.fillRect(75, 170, loaded / this.images.size * 155, 6);
-                        });
+                    if (init) {
+                        loadingLayer.progress(loaded / this.images.size);
                     }
 
                     if (++loaded === this.images.size && onFinished) {
                         onFinished(); // when it's done, start the drawing
                     }
                 };
+                img.onerror = () => {
+                    Toast.show('Cannot load ressource : ' + value.src);
+                };
                 value.obj = img;
             } else { // already loaded, skip it with the same code. That's ugly but I got myself trapped
-                if (ctx) {
-                    window.requestAnimationFrame(() =>  { // progress bar
-                        ctx.fillRect(75, 170, loaded / this.images.size * 155, 6);
-                    });
+                if (init) {
+                    loadingLayer.progress(loaded / this.images.size * 155);
                 }
                 if (++loaded === this.images.size && onFinished) {
                     onFinished(); // when it's done, start the drawing
