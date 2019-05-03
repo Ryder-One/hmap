@@ -35,8 +35,13 @@ export class HMap {
 
     /**
      * Get the map data and launch the drawing of the map
+     * This method is not straightfoward. It handles debug mode,
+     * and the fact the data can be outdated in the HTML (initialized)
+     * but uptodate in the store
+     * @param forceData when passed, it will use this dataset instead of
+     * fetching the HTML
      */
-    fetchMapData(debugData?: HMapDataJSON) {
+    fetchMapData(forceData?: HMapDataJSON) {
         if (this.map === undefined) {
             this.autoBuildMap();
         }
@@ -44,43 +49,48 @@ export class HMap {
         if (Environment.getInstance().devMode === true) { // if we are in dev mode, serve a json
             // this is a bit messed up but I didnt anticipated the debug mode
             this.map!.buildLayers();
-            if (debugData === undefined) {
-                debugData = HMapData.fakeData();
+            if (forceData === undefined) {
+                forceData = HMapData.fakeData();
             } else {
-                HMapData._fakeData = debugData; // save the fake data for the future
+                HMapData._fakeData = forceData; // save the fake data for the future
             }
-            this.map!.completeDataReceived({ JSON: debugData }); // if undefined, then it will fake the data
+            this.map!.completeDataReceived({ JSON: forceData }); // if undefined, then it will fake the data
 
-        } else {
-            // We will look for the flashmap, take the data, and bootstrap our map
-            let counterCheckExists = 0;
-            const checkExist = setInterval(() => {
-                if (document.querySelector('#swfCont') !== null) {
-                    clearInterval(checkExist);
+        } else { // production mode
+            if (forceData) {
+                this.map!.buildLayers();
+                this.map!.completeDataReceived({ JSON: forceData });
+            } else { // fetch from the HTML
+                // We will look for the flashmap, take the data, and bootstrap our map
+                let counterCheckExists = 0;
+                const checkExist = setInterval(() => {
+                    if (document.querySelector('#swfCont') !== null) {
+                        clearInterval(checkExist);
 
-                    let tempMapData;
-                    if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                        tempMapData = document.querySelector('#FlashMap')!.getAttribute('flashvars')!.substring(13);
-                    } else { // if this is only the JS code supposed to bootstrap flash
-                        if (document.querySelector('#gameLayout') !== null) {
+                        let tempMapData;
+                        if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
+                            tempMapData = document.querySelector('#FlashMap')!.getAttribute('flashvars')!.substring(13);
+                        } else { // if this is only the JS code supposed to bootstrap flash
+                            if (document.querySelector('#gameLayout') !== null) {
 
-                            const scriptStr = document.querySelector('#gameLayout')!.innerHTML;
-                            const mapMarker = scriptStr.indexOf('mapLoader.swf');
-                            if (mapMarker === -1) {
-                                return;
+                                const scriptStr = document.querySelector('#gameLayout')!.innerHTML;
+                                const mapMarker = scriptStr.indexOf('mapLoader.swf');
+                                if (mapMarker === -1) {
+                                    return;
+                                }
+                                const startVar = scriptStr.indexOf('data', mapMarker) + 8;
+                                const stopVar = scriptStr.indexOf('\');', startVar);
+                                tempMapData = scriptStr.substring(startVar, stopVar);
                             }
-                            const startVar = scriptStr.indexOf('data', mapMarker) + 8;
-                            const stopVar = scriptStr.indexOf('\');', startVar);
-                            tempMapData = scriptStr.substring(startVar, stopVar);
                         }
-                    }
-                    this.map!.buildLayers();
-                    this.map!.completeDataReceived({raw: tempMapData});
+                        this.map!.buildLayers();
+                        this.map!.completeDataReceived({raw: tempMapData});
 
-                } else if (++counterCheckExists === 100) {
-                    clearInterval(checkExist); // timeout 10sec
-                }
-            }, 100); // 10 sec then give up
+                    } else if (++counterCheckExists === 100) {
+                        clearInterval(checkExist); // timeout 10sec
+                    }
+                }, 100); // 10 sec then give up
+            }
         }
 
     }
@@ -161,13 +171,14 @@ export class HMap {
      * Switch the map to a new type and reload
      */
     switchMapAndReload(type: HMapTypeMapStr) {
+        const store = this.map!.mapData!.data;
         this.clearMap();
         if (type === 'desert') {
             this.map = new HMapDesertMap(this);
         } else if (type === 'grid') {
             this.map = new HMapGridMap(this);
         }
-        this.fetchMapData();
+        this.fetchMapData(store);
     }
 
     /**

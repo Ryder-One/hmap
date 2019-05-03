@@ -20,8 +20,8 @@ export abstract class AbstractHMapLayer {
      */
     protected rect(x: number, y: number, width: number, height: number, fill?: string, stroke?: string, strokeWidth = 2): SVGRectElement {
         const rect = document.createElementNS(this.ns, 'rect');
-        rect.setAttributeNS(null, 'x', x + '');
-        rect.setAttributeNS(null, 'y', y + '');
+        rect.setAttributeNS(null, 'x', (x | 0) + '');
+        rect.setAttributeNS(null, 'y', (y | 0) + '');
         rect.setAttributeNS(null, 'width', width + '');
         rect.setAttributeNS(null, 'height', height + '');
         if (fill !== undefined) {
@@ -54,8 +54,8 @@ export abstract class AbstractHMapLayer {
         img.setAttributeNS(null, 'height', height + '');
         img.setAttributeNS(null, 'width', width + '');
         img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
-        img.setAttributeNS(null, 'x', x + '');
-        img.setAttributeNS(null, 'y', y + '');
+        img.setAttributeNS(null, 'x', (x | 0) + '');
+        img.setAttributeNS(null, 'y', (y | 0) + '');
         img.setAttributeNS(null, 'shape-rendering', 'crispEdges');
         img.style.pointerEvents = 'none';
         this.g.appendChild(img);
@@ -71,8 +71,8 @@ export abstract class AbstractHMapLayer {
      */
     protected textDetached (x: number, y: number, text: string, cssclass?: string): SVGTextElement {
         const element = document.createElementNS(this.ns, 'text');
-        element.setAttributeNS(null, 'x', x + '');
-        element.setAttributeNS(null, 'y', y + '');
+        element.setAttributeNS(null, 'x', (x | 0) + '');
+        element.setAttributeNS(null, 'y', (y | 0) + '');
         element.setAttributeNS(null, 'shape-rendering', 'crispEdges');
         element.setAttributeNS(null, 'dominant-baseline', 'middle');
         const txt = document.createTextNode(text);

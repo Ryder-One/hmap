@@ -104,7 +104,7 @@ export class HMapImagesLoader {
                 value.obj = img;
             } else { // already loaded, skip it with the same code. That's ugly but I got myself trapped
                 if (init) {
-                    loadingLayer.progress(loaded / this.images.size * 155);
+                    loadingLayer.progress(loaded / this.images.size);
                 }
                 if (++loaded === this.images.size && onFinished) {
                     onFinished(); // when it's done, start the drawing

@@ -56,7 +56,7 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer {
         // position text
         const relativePos = mapData.getPositionRelativeToTown(mapData.position);
         const positionText = 'position : ' + (relativePos.x) + ' / ' + (relativePos.y);
-        const positionTextElement = this.text(map.width - 10, map.height - 25, positionText, 'hmap-text-yellow');
+        const positionTextElement = this.text(map.width - 10, map.height - 25, positionText, 'hmap-text-green');
         positionTextElement.setAttributeNS(null, 'text-anchor', 'end');
         positionTextElement.style.fontSize = '14px';
 
@@ -86,16 +86,16 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer {
         // scout class
         if (mapData.scoutArray && mapData.scoutArray.length === 4) {
             if (mapData.neighbours.neighbours.get('top_center')!.outbounds === false) {
-                this.text(148, 30, '' + mapData.scoutArray[0], 'hmap-text-yellow');
+                this.text(148, 30, '' + mapData.scoutArray[0], 'hmap-text-green');
             }
             if (mapData.neighbours.neighbours.get('middle_right')!.outbounds === false) {
-                this.text(270, 152, '' + mapData.scoutArray[1], 'hmap-text-yellow');
+                this.text(270, 150, '' + mapData.scoutArray[1], 'hmap-text-green');
             }
             if (mapData.neighbours.neighbours.get('bottom_center')!.outbounds === false) {
-                this.text(148, 270, '' + mapData.scoutArray[2], 'hmap-text-yellow');
+                this.text(148, 270, '' + mapData.scoutArray[2], 'hmap-text-green');
             }
             if (mapData.neighbours.neighbours.get('middle_left')!.outbounds === false) {
-                this.text(30, 152, '' + mapData.scoutArray[3], 'hmap-text-yellow');
+                this.text(30, 150, '' + mapData.scoutArray[3], 'hmap-text-green');
             }
         }
         this.svg.appendChild(this.g);

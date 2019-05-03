@@ -36,7 +36,7 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer {
     }
 
     onMouseMove(e: MouseEvent) {
-        if (this.translateTo.x !== 0 || this.translateTo.y !== 0) {
+        if (this.translateTo.x !== 0 || this.translateTo.y !== 0 || !this.g) {
             return;
         }
         const rect = this.svg.getBoundingClientRect();

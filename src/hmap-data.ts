@@ -12,12 +12,12 @@ export interface HMapDataPayload {
     JSON?: Object;
 }
 
-export interface HMapPositionDetail {               // big array representing the map
+export interface HMapPositionDetail {
     _c: number;                 // building id
     _s: boolean;                // ??? (soul ?)
     _t: number;                 // tag
     _z: number;                 // zombies
-    _nvt: any;                  // when true, it has been visited but it's out of tower range
+    _nvt: any;                  // if true, it has been visited but it's out of tower range. If false I'm not sure. I don't fully understand this one
 }
 
 export interface HMapUserJSON {
@@ -41,7 +41,7 @@ export interface HMapDataJSON {
     }>;
     _e: Array<any>;                      // ???
     _h: number;                          // height
-    _r: HMapPatchDataJSON;
+    _r: HMapPatchDataJSON;               // local informations
     _w: number;                          // width
     _x: number;                          // current X position (0,0 is top left)
     _y: number;                          // current Y position
@@ -248,6 +248,9 @@ export class HMapData {
         this.data._details[indexNewPosition]._c = this.data._r._c;
         this.data._details[indexNewPosition]._t = this.data._r._t;
         this.data._details[indexNewPosition]._z = this.data._r._z;
+        if (this.data._details[indexNewPosition]._nvt === null) {
+            this.data._details[indexNewPosition]._nvt = false;
+        }
         this.data._view[indexNewPosition] = this.data._r._c;
 
         // dont forget to rebuild the neighbours (its usually done in the constructor)
