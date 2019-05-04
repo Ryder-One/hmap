@@ -67,6 +67,10 @@ export interface HMapPatchDataJSON { // current position
     _zid: number;               // zone id
 }
 
+/**
+ * This class is the store of the map. It handles the data originally
+ * passed to flash, and expose it in a JSON format with lots of accessors
+ */
 export class HMapData {
 
     public static _fakeData: HMapDataJSON;

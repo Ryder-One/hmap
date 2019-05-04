@@ -1,3 +1,6 @@
+/**
+ * Toaster to display messages to the user; under used
+ */
 export class Toast {
     static count = 0;
 
@@ -34,7 +37,7 @@ export class Toast {
 
         Toast.count++;
 
-
+        // toasts disappear after 5 seconds
         setTimeout( () => {
             const toast = document.querySelector('#toast_' + id);
             if (toast !== null && toast.parentNode !== null) {

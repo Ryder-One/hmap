@@ -11,7 +11,7 @@ export class Environment {
 
     get url(): string {
         if (this.devMode === true) {
-            return './docs';
+            return '.';
         } else {
             return 'https://ryder-one.github.io/hmap';
         }

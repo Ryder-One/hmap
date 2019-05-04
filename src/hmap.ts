@@ -24,8 +24,9 @@ export class HMap {
 
     public width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
     public height = 300; // for debug only, the value is 300 and there is a lot of hard coded values
+    public displayFlashMap = false;
 
-    // little green arrow target. Held here because mapdata is rebuild at each map switch
+    // little green arrow target
     public target?: HMapPoint;
 
     public originalOnData?: CallableFunction;

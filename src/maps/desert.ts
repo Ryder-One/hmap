@@ -27,6 +27,14 @@ export class HMapDesertMap extends HMapAbstractMap {
         const swf = document.querySelector('.swf');
         if (swf !== null) {
             swf.setAttribute('style', 'display:flex;flex-direction:column;height:auto');
+
+            if (this.hmap.displayFlashMap === false) {
+                const originalMap = document.querySelector('#swfCont') as HTMLElement;
+                if (originalMap) {
+                    originalMap.style.display = 'none';
+                }
+            }
+
             if (document.querySelector('#hmap') === null) {
                 const hmap = document.createElement('div');
                 hmap.setAttribute('id', 'hmap');

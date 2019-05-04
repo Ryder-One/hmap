@@ -8,6 +8,9 @@ export interface HMapImage {
     obj?: HTMLImageElement;
 }
 
+/**
+ * This class is a helper to help preload the images
+ */
 export class HMapImagesLoader {
 
     static _instance: HMapImagesLoader;
@@ -114,7 +117,7 @@ export class HMapImagesLoader {
     }
 
     /**
-     * Register the buildings to preload the pics
+     * Register the buildings to preload the pics (this is done to avoid the preloading of the 60+ pics of buildings)
      */
     public registerBuildingsToPreload(neighbours: HMapNeighbours) {
         // register the buildings to draw it later

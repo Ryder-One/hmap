@@ -1,5 +1,8 @@
 export type HMapArrowDirection = 'left' | 'right' | 'top' | 'bottom';
 
+/**
+ * @TODO ATM this class is useless and will be replaced by an interface
+ */
 export class HMapArrow {
     public ax: number; // x position of the pic
     public ay: number; // y position of the pic
@@ -21,6 +24,5 @@ export class HMapArrow {
         this.t = t;
         this.a = a;
         this.over = over;
-
     }
 }

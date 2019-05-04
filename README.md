@@ -36,27 +36,36 @@ I tried to target a wide set of browsers with babel, so my code should be compat
   
 ## Things to do
 
-Any help is appreciated 
-
 That will be done :
 
   * The explorable ruins
-  * The kills (of zombies) are not displayed on the map
-  * The souls are not visible on the map
-  * Some glitches in the shadows appear when moving with the map I will try to remove them
- 
-That won't be done :
+  * The kills (of zombies) are not displayed on the map, I will do it
+  * The souls are not visible on the map. Can a shaman send me some screenshots of it please ?
+  * The construction site "upgraded map" is not done, since I never encouter this blueprint before ... Can someone send me some screenshots and the debug informations from a map with this upgrade please ?
+
+## Help needeed
+
+Due to a lack of personnal time, I won't do these things by myself.
 
   * Expeditions (use external tools for that)
   * The paranoid effects (static effect, distortion effect, blur..)
   * Easing on the parallax effect, easing on the green arrow
-  * The fog of war is not as good as the original (neither is the blood, and other assets I made)
-  * Blurry text : due to the font itself.
-  
+
+Any help is appreciated.
+
 ## Known issues
 
-The map is still in a very early stage, so there are probably a lot of issues. Please read the list of issues carefully before posting new ones, I don't have much time to spend in this project.
- 
+The map is still in a very early stage, so there are probably a lot of issues. Please read the list of issues carefully before posting new ones.
+
+Below are issues I don't want to fix or I can't fix :
+
+  * The fog of war is not as good as the original (neither is the blood, the night mode, and other assets I made)
+  * Blurry text : due to the font itself. ( https://stackoverflow.com/questions/55894889/strange-blurry-text-in-html-canvas-and-svg )
+  * Popups are displayed behind the broken glass
+  * Some glitches in the shadows appear when moving with the map (white or black glitches)
+
+If you want to fix this issues, feel free to PR
+
 ## Contributing
  
 If you are a developer and you want to help me, here is something to start.
@@ -72,8 +81,10 @@ npm install
 npm run build
 ```
 
-You can test the code locally with test-map.html
+You can test the code locally with docs/index-local.html
 
 I didn't use Gulp or Grunt, this is just plain tools called one after another. Since this is very straightforward, I won't answer questions about it. If you cannot run the map in dev mode, then you probably cannot help me.
 
 Please if you have something interesting to share, do a pull request instead of forking silently the project. 
+
+I did a major switch during the project, from HTML canvas to SVG elements. This information can help you understand the code better, since it's originally designed to work with HTML canvas (layers, draw functions, etc.). Refactoring everything does not worth the time.
