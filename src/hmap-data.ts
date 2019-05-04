@@ -256,6 +256,7 @@ export class HMapData {
             this.data._details[indexNewPosition]._nvt = false;
         }
         this.data._view[indexNewPosition] = this.data._r._c;
+        this.data._global[indexNewPosition] = this.data._r._c;
 
         // dont forget to rebuild the neighbours (its usually done in the constructor)
         this.buildNeighbours();
