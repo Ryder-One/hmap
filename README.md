@@ -20,17 +20,17 @@ forking the project with the assets until then.
 
 ## How to use
  
-At the moment the project is just a userscript, you can use your favorite userscript extension to install it.
+At the moment the project is just a userscript and it's working with tampermonkey only.
+
+You need to install tampermonkey first, then use this URL to install the script.
  
 https://github.com/Ryder-One/hmap/releases/latest/download/hmap.user.js
  
-It has been tested with tampermonkey. You can learn how to use it here : https://tampermonkey.net/faq.php
+It has been tested successfully with tampermonkey. You can learn how to use it here : https://tampermonkey.net/faq.php
 
 IT IS CURRENTLY NOT WORKING WITH GREASEMONKEY
 
 ## Browser support
-
-I'm not sure about userscript : your browser has to support userscripts or plugins that enable userscripts.
 
 I tried to target a wide set of browsers with babel, so my code should be compatible with any major browser.
   
@@ -50,6 +50,7 @@ Due to a lack of personnal time, I won't do these things by myself.
   * Expeditions (use external tools for that)
   * The paranoid effects (static effect, distortion effect, blur..)
   * Easing on the parallax effect, easing on the green arrow
+  * Greasemokey compatibility
 
 Any help is appreciated.
 
