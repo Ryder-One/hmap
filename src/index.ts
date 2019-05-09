@@ -1,11 +1,13 @@
 import { HMap } from './hmap';
 import { Toast } from './toast';
 import { Environment } from './environment';
+import { HMapData } from './hmap-data';
 
 const FontFaceObserver = require('fontfaceobserver');
 
 declare var HMAP_DEVMODE: boolean;
 declare var HMAP: any;
+declare var HMAPDATA: any;
 
 /**
  * It's bootstrap time !!
@@ -84,6 +86,7 @@ declare var HMAP: any;
                     map.location = 'desert';
                     map.fetchMapData();
                     HMAP = map;
+                    HMAPDATA = HMapData;
                 } else {
                     // wait for js.JsMap to be ready
                     let counterCheckJsMap = 0;
