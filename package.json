@@ -1,6 +1,6 @@
 {
     "name": "hmap",
-    "version": "2.1.2",
+    "version": "2.1.3",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
         "build-ts": "tsc",

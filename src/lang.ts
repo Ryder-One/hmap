@@ -24,6 +24,7 @@ export interface HMapTraduction {
     manyZombies: string;
     toastdebug: string;
     toasterror: string;
+    undigged: string;
 }
 
 const french: HMapTraduction = {
@@ -49,7 +50,8 @@ const french: HMapTraduction = {
     'medZombies' : 'Meute de zombies',
     'manyZombies': 'Horde de zombies',
     'toastdebug' : 'Le debug a été copié dans le presse papier',
-    'toasterror': 'Une erreur est survenue. Ouvrez la console pour plus d\'informations'
+    'toasterror': 'Une erreur est survenue. Ouvrez la console pour plus d\'informations',
+    'undigged': 'Secteur inexploitable'
 };
 
 const english: HMapTraduction = {
@@ -75,7 +77,8 @@ const english: HMapTraduction = {
     'medZombies' : 'Pack of zombies',
     'manyZombies': 'Horde of zombies',
     'toastdebug' : 'Debug has been copied to clipboard',
-    'toasterror': 'An error occured. Check the console for more informations'
+    'toasterror': 'An error occured. Check the console for more informations',
+    'undigged' : 'Unsearchable zone'
 };
 
 export class HMapLang {

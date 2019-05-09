@@ -319,11 +319,14 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         // "Title" of the popup : building name & position
         let title = 'Desert ';
         let maxTextWidth = 0;
-        if (mapData.details[index]._c > 0 || mapData.details[index]._c === - 1) {
-            if (mapData.details[index]._c === 1) {
+        const buildingId = mapData.details[index]._c;
+        if (buildingId > 0 || buildingId === - 1) {
+            if (buildingId === 1) {
                 title = mapData.townName + ' ';
+            } else if (buildingId === -1) {
+                title = HMapLang.get('undigged') + ' ';
             } else {
-                const buildingName = mapData.buildings.get(mapData.details[index]._c);
+                const buildingName = mapData.buildings.get(buildingId);
                 if (buildingName) {
                     title = buildingName + ' ';
                 }
