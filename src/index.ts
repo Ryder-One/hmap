@@ -1,13 +1,20 @@
 import { HMap } from './hmap';
 import { Toast } from './toast';
 import { Environment } from './environment';
-import { HMapData } from './hmap-data';
+import { HMapDesertData } from './data/hmap-desert-data';
+import { HMapRuinData } from './data/hmap-ruin-data';
 
-const FontFaceObserver = require('fontfaceobserver');
+declare var FontFaceObserver: any;
+
+if (typeof require !== 'undefined') {
+    console.log(typeof require);
+    require('fontfaceobserver');
+}
 
 declare var HMAP_DEVMODE: boolean;
 declare var HMAP: any;
-declare var HMAPDATA: any;
+declare var HMAPDESERTDATA: any;
+declare var HMAPRUINDATA: any;
 
 /**
  * It's bootstrap time !!
@@ -84,9 +91,10 @@ declare var HMAPDATA: any;
                 const map = new HMap();
                 if (env.devMode === true) { // dev mode to play with the map
                     map.location = 'desert';
-                    map.fetchMapData();
+                    map.reloadMapWithData();
                     HMAP = map;
-                    HMAPDATA = HMapData;
+                    HMAPDESERTDATA = HMapDesertData;
+                    HMAPRUINDATA = HMapRuinData;
                 } else {
                     // wait for js.JsMap to be ready
                     let counterCheckJsMap = 0;

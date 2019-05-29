@@ -7,16 +7,32 @@ import { HMapAbstractMap } from './abstract';
 import { HMapSVGDesertBackgroundLayer } from '../layers/svg-desert-background';
 import { HMapSVGLoadingLayer } from '../layers/svg-loading';
 import { HMapSVGDesertForegroundLayer } from '../layers/svg-desert-foreground';
+import { HMapDesertDataJSON, HMapDesertLocalDataJSON, HMapDesertData } from '../data/hmap-desert-data';
+import { HMapPoint } from '../hmap';
+import { HMapDataPayload } from '../data/abstract';
 
 declare var haxe: any;
 declare var js: any;
 
 
-export class HMapDesertMap extends HMapAbstractMap {
+export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     public registredArrows = new Array<HMapArrow>();
-
     private moving = false; // dirty boolean to avoid double move
+
+    protected generateMapData(payload?: HMapDataPayload) {
+        return new HMapDesertData(payload);
+    }
+
+    get target(): HMapPoint {
+        if (this.hmap.target) {
+            return this.hmap.target;
+        } else if (this.mapData) {
+            return (this.mapData as HMapDesertData).town;
+        } else {
+            throw new Error('target and map data are not set');
+        }
+    }
 
     /**
      * Append the HTML
@@ -24,7 +40,7 @@ export class HMapDesertMap extends HMapAbstractMap {
     public buildLayers(): void {
         // inject some HTML to make room for the map
 
-        const swf = document.querySelector('.swf');
+        const swf = document.querySelector(this.hmap.cssSelector);
         if (swf !== null) {
             swf.setAttribute('style', 'display:flex;flex-direction:column;height:auto');
 
@@ -112,15 +128,18 @@ export class HMapDesertMap extends HMapAbstractMap {
     protected onDataReceived(init: boolean): void {
         this.registerArrows();
 
-        this.imagesLoader.registerBuildingsToPreload(this.mapData!.neighbours);
+        const mapData = this.mapData as HMapDesertData;
+
+        this.imagesLoader.registerBuildingsToPreload(mapData.neighbours);
 
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader.preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer, init, () => {
+        this.imagesLoader
+            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {
                 hmapMenu.style.display = 'flex';
             }
-            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer;
+            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>;
             loadingLayer.hide();
             this.layers.get('desert-background')!.draw();
             this.layers.get('desert-foreground')!.draw();
@@ -132,6 +151,8 @@ export class HMapDesertMap extends HMapAbstractMap {
      * The function is big due to the debug mode
      */
     move(direction: HMapArrowDirection) {
+
+        const mapData = this.mapData as HMapDesertData;
 
         // since the move is happening in a setTimeout, we have to do this boolean trick to avoid double move
         if (this.moving === true) {
@@ -153,7 +174,7 @@ export class HMapDesertMap extends HMapAbstractMap {
         const bgLayer = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
 
         if (Environment.getInstance().devMode === false) {
-            const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + this.mapData!.zoneId + js.JsMap.sh;
+            const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsMap.sh;
 
             let hx: any;
 
@@ -174,7 +195,7 @@ export class HMapDesertMap extends HMapAbstractMap {
 
                 bgLayer.easeMovement({ x: 100 * x, y: 100 * y }, () => {
                     // move the position
-                    this.mapData!.movePosition(x, y);
+                    mapData.movePosition(x, y);
 
                     if (data.indexOf('js.JsMap.init') !== -1) {
                         const startVar = data.indexOf('js.JsMap.init') + 16;
@@ -196,9 +217,9 @@ export class HMapDesertMap extends HMapAbstractMap {
             // variables to manage the start effect
             bgLayer.easeMovement({ x: 100 * x, y: 100 * y }, () => {
                 // move the position
-                this.mapData!.movePosition(x, y);
+                mapData.movePosition(x, y);
 
-                const newIndex = this.mapData!.index;
+                const newIndex = mapData.index;
 
                 // fake the move with already known data
                 const fakeData = {
@@ -213,18 +234,18 @@ export class HMapDesertMap extends HMapAbstractMap {
                     _zid: 42424545
                 };
 
-                if (newIndex - this.mapData!.size.height > 0) {
-                    fakeData._neig.push(this.mapData!.data._details[newIndex - this.mapData!.size.height]._z);
+                if (newIndex - mapData.size.height > 0) {
+                    fakeData._neig.push(this.mapData!.data._details[newIndex - mapData.size.height]._z);
                 } else {
                     fakeData._neig.push(0);
                 }
-                if (newIndex + 1 < (this.mapData!.size.width * this.mapData!.size.height)) {
+                if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
                     fakeData._neig.push(this.mapData!.data._details[newIndex + 1]._z);
                 } else {
                     fakeData._neig.push(0);
                 }
-                if (newIndex + this.mapData!.size.height < (this.mapData!.size.height * this.mapData!.size.height)) {
-                    fakeData._neig.push(this.mapData!.data._details[newIndex + this.mapData!.size.height]._z);
+                if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
+                    fakeData._neig.push(this.mapData!.data._details[newIndex + mapData.size.height]._z);
                 } else {
                     fakeData._neig.push(0);
                 }
@@ -268,8 +289,9 @@ export class HMapDesertMap extends HMapAbstractMap {
     private registerArrows() {
         this.registredArrows = new Array<HMapArrow>();
         if (this.mapData) {
-            if (this.mapData.actionPoints > 0) { // if we can move
-                this.mapData.neighbours.neighbours.forEach((neighbour: HMapNeighbour) => {
+            const mapData = this.mapData as HMapDesertData;
+            if (mapData.actionPoints > 0) { // if we can move
+                mapData.neighbours.neighbours.forEach((neighbour: HMapNeighbour) => {
                     let offsetY, offsetX;
                     if (neighbour.outbounds === false) { // not on the edge of the map
                         if (neighbour.position === 'top_center') {

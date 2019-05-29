@@ -1,17 +1,18 @@
 import { HMapAbstractMap } from '../maps/abstract';
 
-export type HMapLayerSVGType = 'loading' | 'grid' | 'glass-static' | 'desert-background' | 'desert-foreground';
+export type HMapLayerSVGType = 'loading' | 'grid' | 'glass-static' | 'desert-background' | 'desert-foreground'
+    | 'ruin-background' | 'ruin-foreground';
 
-export abstract class AbstractHMapLayer {
+export abstract class AbstractHMapLayer<DataJSON, LocalDataJSON> {
 
     public svg!: HTMLObjectElement; // assigned in derivated class
     protected g!: SVGElement; // contains the main drawing
     protected type!: HMapLayerSVGType; // assigned in derivated class
-    protected map: HMapAbstractMap;
+    protected map: HMapAbstractMap<DataJSON, LocalDataJSON>;
 
     protected readonly ns = 'http://www.w3.org/2000/svg';
 
-    constructor(map: HMapAbstractMap) {
+    constructor(map: HMapAbstractMap<DataJSON, LocalDataJSON>) {
         this.map = map;
     }
 
@@ -39,9 +40,13 @@ export abstract class AbstractHMapLayer {
     /**
      * Draw a path onto the SVG, append it to the main group and return it
      */
-    protected path(d: string): SVGPathElement {
+    protected path(d: string, stroke?: string, strokeWidth = 2): SVGPathElement {
         const path = document.createElementNS(this.ns, 'path');
         path.setAttributeNS(null, 'd', d);
+        if (stroke !== undefined) {
+            path.setAttributeNS(null, 'stroke', stroke);
+            path.setAttributeNS(null, 'stroke-width', strokeWidth + '');
+        }
         this.g.appendChild(path);
         return path;
     }
@@ -49,7 +54,7 @@ export abstract class AbstractHMapLayer {
     /**
      * Embbed an image in the SVG; append it to the main group and return it
      */
-    protected img (url: string, x: number, y: number, width: number, height: number, angle?: number): SVGImageElement {
+    protected img (url: string, x: number, y: number, width: number, height: number, angle?: number, cssClass?: string): SVGImageElement {
         const img = document.createElementNS(this.ns, 'image');
         img.setAttributeNS(null, 'height', height + '');
         img.setAttributeNS(null, 'width', width + '');
@@ -57,6 +62,9 @@ export abstract class AbstractHMapLayer {
         img.setAttributeNS(null, 'x', (x | 0) + '');
         img.setAttributeNS(null, 'y', (y | 0) + '');
         img.setAttributeNS(null, 'shape-rendering', 'crispEdges');
+        if (cssClass) {
+            img.setAttributeNS(null, 'class', cssClass);
+        }
         img.style.pointerEvents = 'none';
         this.g.appendChild(img);
 

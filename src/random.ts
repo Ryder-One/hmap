@@ -11,6 +11,16 @@ export class HMapRandom {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
+
+    /**
+     * Return one of random the element in array
+     * @warning NOT using the local seed
+     */
+    static getOneOfNoSeed<T>(elements: Array<T>): T {
+        return elements[Math.floor(Math.random() * elements.length)];
+    }
+
+
     constructor(seed = 0) {
         this.seed = seed;
     }
@@ -30,6 +40,14 @@ export class HMapRandom {
      */
     getRandomIntegerLocalSeed(min: number, max: number): number {
         return Math.floor(this.random() * (max - min)) + min;
+    }
+
+    /**
+     * Return one of random the element in array
+     * Using the local seed
+     */
+    getOneOfLocalSeed<T>(elements: Array<T>): T {
+        return elements[Math.floor(this.random() * elements.length)];
     }
 
     /**

@@ -2,11 +2,12 @@ import { HMapRandom } from '../random';
 import { AbstractHMapLayer } from './abstract';
 import { HMapGridMap } from '../maps/grid';
 import { HMapLang, HMapTraduction } from '../lang';
+import { HMapDesertDataJSON, HMapDesertLocalDataJSON, HMapDesertData } from '../data/hmap-desert-data';
 
 /**
  * This layer will hold the grid view
  */
-export class HMapSVGGridLayer extends AbstractHMapLayer {
+export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     private spaceBetweenSquares = 1;
     private squareSize?: number;
@@ -44,7 +45,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         const oldGroup = this.g;
         this.g = document.createElementNS(this.ns, 'g');
 
-        const mapData = this.map.mapData!;
+        const mapData = this.map.mapData as HMapDesertData;
         const map = this.map as HMapGridMap;
         const minWidthHeight = Math.min(map.width, map.height);
         const availableSize = minWidthHeight - 25 - this.spaceBetweenSquares * mapData.size.height;
@@ -174,7 +175,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         const rect = e.target as HTMLObjectElement;
         const index = (rect.getAttributeNS(null, 'index') !== null) ? +rect.getAttributeNS(null, 'index')! : undefined ;
         if (index !== undefined && this.squareSize && this.padding) {
-            const mapData = this.map.mapData!;
+            const mapData = this.map.mapData as HMapDesertData;
             const position = mapData.getCoordinates(index);
             const x = this.padding + position.x * (this.squareSize + this.spaceBetweenSquares);
             const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
@@ -214,12 +215,12 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
 
         // create new target
         if (index !== undefined && this.squareSize && this.padding) {
-            const mapData = this.map.mapData!;
+            const mapData = this.map.mapData as HMapDesertData;
             const position = mapData.getCoordinates(index);
             const x = this.padding + position.x * (this.squareSize + this.spaceBetweenSquares);
             const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
 
-            map.setTarget(this.map.mapData!.getCoordinates(index));
+            map.setTarget(mapData.getCoordinates(index));
             const target = this.img(map.imagesLoader.get('target').src, x, y, this.squareSize, this.squareSize);
             target.setAttributeNS(null, 'class', 'hmap-target');
         }
@@ -311,7 +312,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer {
         ctx.font = '13px visitor2';
 
         const map = this.map as HMapGridMap;
-        const mapData = map.mapData!;
+        const mapData = map.mapData as HMapDesertData;
         const currentPos = mapData.getCoordinates(index);
         const relativePos = mapData.getPositionRelativeToTown(currentPos);
         let numberOfLines = 0;

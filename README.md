@@ -36,8 +36,6 @@ I tried to target a wide set of browsers with babel, so my code should be compat
   
 ## Things to do
 
-That will be done :
-
   * The explorable ruins
   * The kills (of zombies) are not displayed on the map, I will do it
   * The souls are not visible on the map. Can a shaman send me some screenshots of it please ?
@@ -60,10 +58,10 @@ The map is still in a very early stage, so there are probably a lot of issues. P
 
 Below are issues I don't want to fix or I can't fix :
 
-  * The fog of war is not as good as the original (neither is the blood, the night mode, and other assets I made)
-  * Blurry text : due to the font itself. ( https://stackoverflow.com/questions/55894889/strange-blurry-text-in-html-canvas-and-svg )
-  * Popups are displayed behind the broken glass
-  * Some glitches in the shadows appear when moving with the map (white or black glitches)
+  * The fog of war is not as good as the original (neither is the blood, the night mode, and other assets I made) I'm limited by my artistic talent
+  * Blurry text : due to the font itself, cannot fix ( https://stackoverflow.com/questions/55894889/strange-blurry-text-in-html-canvas-and-svg )
+  * Popups are displayed behind the broken glass : too much refactoring if I want to bring them over the glass
+  * Some glitches in the shadows appear when moving with the map (white or black glitches) : I have no idea why
 
 If you want to fix this issues, feel free to PR
 
@@ -72,17 +70,17 @@ If you want to fix this issues, feel free to PR
 If you are a developer and you want to help me, here is something to start.
  
 ```
-npm install -g browserify typescript tslint uglify-js npx
+npm install -g browserify typescript tslint uglify-js npx browsersync nodemon
 ```
 
 Then pull the code, and run the build with 
 
 ```
 npm install
-npm run build
+npm run serve
 ```
 
-You can test the code locally with docs/index-local.html
+You can test the code locally with docs/index.html. Sometimes I'm using a custom index page, named index-local.html. This page is non versionned. The toolchain may contains the name of this page hardcoded
 
 I didn't use Gulp or Grunt, this is just plain tools called one after another. Since this is very straightforward, I won't answer questions about it. If you cannot run the map in dev mode, then you probably cannot help me.
 

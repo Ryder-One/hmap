@@ -1,4 +1,3 @@
-import { HMapData, HMapDataPayload } from '../hmap-data';
 import { HMapImagesLoader } from '../imagesLoader';
 import { HMap, HMapPoint } from '../hmap';
 import { HMapGridMap } from './grid';
@@ -9,34 +8,29 @@ import { HMapSVGLoadingLayer } from '../layers/svg-loading';
 import { HMapSVGDesertBackgroundLayer } from '../layers/svg-desert-background';
 import { HMapSVGDesertForegroundLayer } from '../layers/svg-desert-foreground';
 import { HMapSVGGlassStaticLayer } from '../layers/svg-glass-static';
+import { HMapRuin } from './ruin';
+import { HMapData, HMapDataPayload } from '../data/abstract';
+import { HMapSVGRuinBackgroundLayer } from '../layers/svg-ruin-background';
+import { HMapSVGRuinForegroundLayer } from '../layers/svg-ruin-foreground';
 
-export type HMapTypeMapStr = 'grid' | 'desert';
-export type HMapTypeSVGMap = HMapGridMap | HMapDesertMap;
+export type HMapTypeMapStr = 'grid' | 'desert' | 'ruin';
+export type HMapTypeSVGMap = HMapGridMap | HMapDesertMap | HMapRuin;
 
 /**
  * The maps will be the components that will host all the HTML and the logic of the map itself
  * They are split into layers, and each layer is a SVG with its own behavior
  */
-export abstract class HMapAbstractMap {
+export abstract class HMapAbstractMap<DataJSON, LocalDataJSON> {
     protected hmap: HMap;
 
-    protected layers = new Map<HMapLayerSVGType, HMapSVGGridLayer | HMapSVGLoadingLayer
-        | HMapSVGDesertForegroundLayer | HMapSVGDesertBackgroundLayer | HMapSVGGlassStaticLayer>();
+    protected layers = new Map<HMapLayerSVGType, HMapSVGGridLayer | HMapSVGLoadingLayer<DataJSON, LocalDataJSON>
+        | HMapSVGDesertForegroundLayer | HMapSVGDesertBackgroundLayer | HMapSVGGlassStaticLayer | HMapSVGRuinBackgroundLayer |
+        HMapSVGRuinForegroundLayer>();
 
     protected animationLoopId?: number; // hold the request animation frame id
 
     public imagesLoader = HMapImagesLoader.getInstance();
-    public mapData?: HMapData;
-
-    get target(): HMapPoint {
-        if (this.hmap.target) {
-            return this.hmap.target;
-        } else if (this.mapData) {
-            return this.mapData.town;
-        } else {
-            throw new Error('target and map data are not set');
-        }
-    }
+    public mapData?: HMapData<DataJSON, LocalDataJSON>; // @TODO clean the any
 
     get height(): number {
         return this.hmap.height;
@@ -55,7 +49,8 @@ export abstract class HMapAbstractMap {
      * This is the intialization function
      */
     completeDataReceived(mapDataPayload: HMapDataPayload) {
-        this.mapData = new HMapData(mapDataPayload);
+        console.log('complete data');
+        this.mapData = this.generateMapData(mapDataPayload);
         const loading = new Image();
         loading.src = this.imagesLoader.get('loading').src;
         loading.onload = () => {
@@ -90,4 +85,6 @@ export abstract class HMapAbstractMap {
      * @param init true when the data are coming from the initialization phase
      */
     protected abstract onDataReceived(init: boolean): void;
+
+    protected abstract generateMapData(mapDataPayload?: HMapDataPayload): HMapData<DataJSON, LocalDataJSON>;
 }

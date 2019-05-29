@@ -3,58 +3,280 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>HMap - devmode</title>
+	<title>HMap - Map for Die2nite</title>
 	<style type="text/css">
-		#main-page {
+		html, body {
+			border: 0;
+			margin: 0;
+			padding: 0;
+		}
+		.hbox {
 			display: flex;
 			flex-direction: row;
 		}
+		.vbox {
+			display: flex;
+			flex-direction: column;
+		}
+		.center {
+			justify-content: center;
+			align-items: center;
+		}
+
+		#fr-icon, #en-icon {
+			cursor: pointer;
+		}
+		#top {
+			background-color: #78C165;
+			height: 300px;
+			text-align: center;
+		}
+		#title {
+			color: white;
+			font-family: "Avenir Next", Helvetica, sans-serif;
+			font-size: 40px;
+			text-align: center;
+			margin-top: 60px;
+			font-weight: 700;
+		}
+		#subtitle {
+			color: white;
+			font-family: "Avenir Next", Helvetica, sans-serif;
+			font-size: 20px;
+			text-align: center;
+			font-weight: 700;
+			text-transform: uppercase;
+		}
+		#signature  {
+			color: white;
+			font-family: "Avenir Next", Helvetica, sans-serif;
+			font-size: 12px;
+		}
+		#download {
+			margin-top: 30px;
+			border: 1px solid white;
+			border-radius: 5px;
+			color: white;
+			cursor: pointer;
+			display: inline-block;
+			font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+			font-size: 20px;
+			height: 47px;
+			line-height: 45px;
+			padding-left: 32px;
+			padding-right: 32px;
+			text-align: center;
+			text-decoration: none;
+			transition: all 200ms ease-out;
+			width: 250px;
+		}
+		#download:hover {
+			background-color: rgba(255,255,255,.2);
+		}
+		#bottom {
+			padding: 40px;
+		}
+
+		.button {
+			-moz-box-shadow:inset 0px 1px 0px 0px #9acc85;
+			-webkit-box-shadow:inset 0px 1px 0px 0px #9acc85;
+			box-shadow:inset 0px 1px 0px 0px #9acc85;
+			background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #78C165), color-stop(1, #68a54b));
+			background:-moz-linear-gradient(top, #78C165 5%, #68a54b 100%);
+			background:-webkit-linear-gradient(top, #78C165 5%, #68a54b 100%);
+			background:-o-linear-gradient(top, #78C165 5%, #68a54b 100%);
+			background:-ms-linear-gradient(top, #78C165 5%, #68a54b 100%);
+			background:linear-gradient(to bottom, #78C165 5%, #68a54b 100%);
+			filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#78C165', endColorstr='#68a54b',GradientType=0);
+			background-color:#78C165;
+			border:1px solid #3b6e22;
+			display:inline-block;
+			cursor:pointer;
+			color:#ffffff;
+			font-family:Arial;
+			font-size:13px;
+			font-weight:bold;
+			padding:6px 12px;
+			text-decoration:none;
+		}
+		.button:hover {
+			background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #68a54b), color-stop(1, #78C165));
+			background:-moz-linear-gradient(top, #68a54b 5%, #78C165 100%);
+			background:-webkit-linear-gradient(top, #68a54b 5%, #78C165 100%);
+			background:-o-linear-gradient(top, #68a54b 5%, #78C165 100%);
+			background:-ms-linear-gradient(top, #68a54b 5%, #78C165 100%);
+			background:linear-gradient(to bottom, #68a54b 5%, #78C165 100%);
+			filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#68a54b', endColorstr='#78C165',GradientType=0);
+			background-color:#68a54b;
+		}
+		.button:active {
+			position:relative;
+			top:1px;
+		}
+		#data {
+			margin-left : 30px;
+		}
 		#json-data {
-			margin-left : 10px;
 			width: 300px;
 			height: 300px;
-			font-family: "Courier New", Courier, monospace
+			font-family: "Courier New", Courier, monospace;
 		}
+		#how-to {
+			background-color: #f1f1f1;
+			height: 300px;
+			color: #333333;
+			font-family: "Avenir Next", Helvetica, sans-serif;
+		}
+		#how-to-title {
+			
+			font-size: 40px;
+			text-align: center;
+			margin-top: 60px;
+			font-weight: 700;
+		}
+		#steps {
+			width: 600px;
+		}
+		.step {
+			margin-top : 15px;
+		}
+		#language-selector {
+			position: fixed;
+			top : 10px;
+			right : 10px;
+		}
+		#banner {
+			font-size: 10px;
+			margin-top: 30px;
+			text-align: center;
+		}
+		#button-bar {
+			margin-top: 20px;
+		}
+		#reload {
+			margin-left: 10px; 
+		}
+		
+		
 	</style>
 </head>
 
 <body>
-	<div id="main-page">
-		<div class="swf" style="background-color: black; width: 300px; height: 300px; "></div>
-		<div id="data">
-			<textarea id="json-data"></textarea>
-			<button id="reload">Reload the map</button>
+	<div id="language-selector">
+		<img id="fr-icon" width="24" height="24" src="assets/france.png">
+		<img id="en-icon" width="24" height="24" src="assets/uk.png">
+	</div>
+	<div id="main-page" class="vbox">
+		<div id="top">
+			<div id="title">HMAP</div>
+			<div id="subtitle"></div>
+			<div id="signature"></div>
+			<a id="download" href="https://github.com/Ryder-One/hmap/releases" target="_blank"></a>
 		</div>
+		<div id="bottom" class="vbox center">
+			<div class="hbox center">
+				<div id="hmap-container" class="vbox">
+					<div class="swf" style="background-color: black; width: 300px; height: 300px; "></div>
+				</div>
+				<div id="data" class="vbox">
+					<textarea id="json-data"></textarea>
+				</div>
+			</div>
 			
+			<div class="hbox center" id="button-bar">
+				<input type="checkbox" id="ruin-mode"><label for="ruin-mode"></label>
+				<button class="button" id="reload"></button>
+			</div>
+			
+		</div>
+		
+		<div id="how-to" class="vbox center">
+			<div id="how-to-title"></div>
+			<div id="steps">
+				<div id="step1" class="step">
+					<b id="step1-b"></b>&nbsp;-&nbsp;<span id="step1-span"></span>
+				</div>
+				<div id="step2" class="step">
+					<b id="step2-b"></b>&nbsp;-&nbsp;<span id="step2-span"></span>
+				</div>
+				<div id="step3" class="step">
+					<b id="step3-b"></b>&nbsp;-&nbsp;<span id="step3-span"></span>
+				</div>
+				<div id="step4" class="step">
+					<b id="step4-b"></b>&nbsp;-&nbsp;<span id="step4-span"></span>
+				</div>
+			</div>
+			<div id="banner">
+				<div>Flags icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+				<div>Game assets by <a href="https://motion-twin.com" target="_blank">MotionTwin</a>. All rights reserved.</div>
+			</div>
+			
+		</div>
 	</div>
 	
 	<script type="text/javascript">
 		var HMAP_DEVMODE = true;
 		var HMAP = null;
-		var HMAPDATA = null;
+		var HMAPDESERTDATA = null;
+		var HMAPRUINDATA = null;
 		var T = document.querySelector('#json-data');
 		if ( T !== null) {
 			T.onclick = function() { T.value = ''; };
 		}
 	</script>
-	<script src="https://github.com/Ryder-One/hmap/releases/latest/download/hmap.user.js"></script>
+	<script src="swfobject.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.js" integrity="sha256-hneXGxGczbgq9pf/DgjyGEkNFRFvIh1EMB8cyHl+Z9Q=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.5/jquery.i18n.js" integrity="sha256-jVzWNEkuMshRoEipwyY2dsurvqBbVXnDkyYQyIYwvuE=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.5/jquery.i18n.messagestore.min.js" integrity="sha256-mnmAZ20bByyKZAXa5gp9Dmf4cM09GYS+zfTIxf2vVcI=" crossorigin="anonymous"></script>
+	<script src="i18n.js"></script>
+	<script src="http://www.hordes.fr/js/horde2.js?v=45"></script>
+	<script src="hmap.user.es6.js"></script>
 	<script type="text/javascript">
 		var reload = document.querySelector('#reload');
 		var textbox = document.querySelector('#json-data');
-		if ( reload !== null && textbox !== null) {
+		var ruinCheckbox = document.querySelector('#ruin-mode');
+		if ( reload !== null && textbox !== null && ruinCheckbox !== null ) {
 			reload.onclick = function() { 
+				const ruinMode = ruinCheckbox.checked;
+				// try to parse the data
 				let data;
 				try {
 					data = JSON.parse(textbox.value);
-					if ('_users' in data && data._users && data._users.length > 0) {
-						HMAP.location = 'doors';
-					} else {
-						HMAP.location = 'desert';
-					}
-					HMAP.reloadMapWithData(data);
 				} catch (err) {
-					alert('There is something wrong with the JSON you entered');
-					console.error(err);
+					// cannot parse : it's not JSON, it's raw data
+					try  {
+						
+						if (ruinMode === true) {
+							const dataObj = new HMAPRUINDATA({raw: textbox.value});
+							data = dataObj.data;
+						} else {
+							const dataObj = new HMAPDESERTDATA({raw: textbox.value});
+							data = dataObj.data;
+						}
+					} catch (err) {
+						alert('There is something wrong with the data you entered');
+						console.error(err);
+						return;
+					}
+				}
+				console.log('Data', data);
+
+				// build the map
+				if (data !== null && data !== undefined) {
+					try {
+						if (ruinMode === true) {
+							HMAP.location = 'ruin';
+						} else if ('_users' in data && data._users && data._users.length > 0) {
+							HMAP.location = 'doors';
+						} else {
+							HMAP.location = 'desert';
+						}
+						HMAP.reloadMapWithData(data);
+					} catch (err) {
+						alert('Cannot build the map with the data you provided');
+						console.error(err);
+					}
 				}
 			};
 		}

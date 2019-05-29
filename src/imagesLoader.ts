@@ -2,6 +2,7 @@ import { HMapNeighbour, HMapNeighbours } from './neighbours';
 import { Environment } from './environment';
 import { Toast } from './toast';
 import { HMapSVGLoadingLayer } from './layers/svg-loading';
+import { HMapRuinType } from './maps/ruin';
 
 export interface HMapImage {
     src: string;
@@ -58,6 +59,37 @@ export class HMapImagesLoader {
         this.images.set('tag_12', { src: Environment.getInstance().url + '/assets/tags/12.gif', obj: undefined });
     }
 
+    public loadRuinPics(location: HMapRuinType) {
+        this.images.set('0001', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0001.png', obj: undefined });
+        this.images.set('0010', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0010.png', obj: undefined });
+        this.images.set('0011', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0011.png', obj: undefined });
+        this.images.set('0100', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0100.png', obj: undefined });
+        this.images.set('0101', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0101.png', obj: undefined });
+        this.images.set('0110', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0110.png', obj: undefined });
+        this.images.set('0111', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0111.png', obj: undefined });
+        this.images.set('1000', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1000.png', obj: undefined });
+        this.images.set('1001', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1001.png', obj: undefined });
+        this.images.set('1010', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1010.png', obj: undefined });
+        this.images.set('1011', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1011.png', obj: undefined });
+        this.images.set('1100', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1100.png', obj: undefined });
+        this.images.set('1101', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1101.png', obj: undefined });
+        this.images.set('1110', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1110.png', obj: undefined });
+        this.images.set('1111', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1111.png', obj: undefined });
+        this.images.set('dead', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/dead.png', obj: undefined });
+        this.images.set('elem1', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem1.png', obj: undefined });
+        this.images.set('elem2', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem2.png', obj: undefined });
+        this.images.set('elem3', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem3.png', obj: undefined });
+        this.images.set('elem4', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem4.png', obj: undefined });
+        this.images.set('elem5', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem5.png', obj: undefined });
+        this.images.set('light', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/light.png', obj: undefined });
+        this.images.set('exit', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/exit.png', obj: undefined });
+        this.images.set('room', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/room.png', obj: undefined });
+        this.images.set('zombiegif', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/zombie.gif', obj: undefined });
+        this.images.set('you', { src: Environment.getInstance().url + '/assets/ruin/you.gif', obj: undefined });
+        this.images.set('you-noox', { src: Environment.getInstance().url + '/assets/ruin/you_noox.gif', obj: undefined });
+        this.images.set('scanner', { src: Environment.getInstance().url + '/assets/ruin/scanner.gif', obj: undefined });
+    }
+
     public isset(imageId: string): boolean {
         return (this.images.get(imageId) !== undefined);
     }
@@ -85,7 +117,7 @@ export class HMapImagesLoader {
       * @param init boolean to tell if we are in initialisation phaseor not (display bar or not)
       * @param onFinished callback to be called when it's done
       */
-     public preloadPictures (loadingLayer: HMapSVGLoadingLayer, init: boolean, onFinished: CallableFunction) {
+     public preloadPictures (loadingLayer: HMapSVGLoadingLayer<Object, Object>, init: boolean, onFinished: CallableFunction) {
         let loaded = 0;
 
         this.images.forEach((value: HMapImage) => {

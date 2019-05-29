@@ -3,12 +3,13 @@ import { HMapAbstractMap } from '../maps/abstract';
 
 /**
  * This layer is dedicated to the loading screen
+ * This is a bit stupid to extend desertdatajson but I'm stuck with it
  */
-export class HMapSVGLoadingLayer extends AbstractHMapLayer {
+export class HMapSVGLoadingLayer<DataJSON, LocalDataJSON> extends  AbstractHMapLayer<DataJSON, LocalDataJSON> {
 
     private loadingBar?: SVGRectElement;
 
-    constructor(map: HMapAbstractMap) {
+    constructor(map: HMapAbstractMap<DataJSON, LocalDataJSON>) {
         super(map);
 
         const hmap = document.querySelector('#hmap') as HTMLElement;

@@ -6,23 +6,38 @@ import { Environment } from '../environment';
 import { HMapLang } from '../lang';
 import { HMapSVGLoadingLayer } from '../layers/svg-loading';
 import { HMapSVGGlassStaticLayer } from '../layers/svg-glass-static';
+import { HMapDesertLocalDataJSON, HMapDesertDataJSON, HMapDesertData } from '../data/hmap-desert-data';
+import { HMapDataPayload } from '../data/abstract';
 
 export type HMapGridMode = 'global' | 'personal';
 
-export class HMapGridMap extends HMapAbstractMap {
+export class HMapGridMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     public mouse?: HMapPoint;
     public mouseOverIndex = -1;
     public mode: HMapGridMode = 'personal';
     public displayTags = false;
 
+    protected generateMapData(payload?: HMapDataPayload) {
+        return new HMapDesertData(payload);
+    }
+
+    get target(): HMapPoint {
+        if (this.hmap.target) {
+            return this.hmap.target;
+        } else if (this.mapData) {
+            return (this.mapData as HMapDesertData).town;
+        } else {
+            throw new Error('target and map data are not set');
+        }
+    }
 
     /**
      * Build the layers (SVG) for this map
      */
     public buildLayers(): void {
 
-        const swf = document.querySelector('.swf');
+        const swf = document.querySelector(this.hmap.cssSelector);
 
         if (swf !== null) {
             swf.setAttribute('style', 'display:flex;flex-direction:column;height:auto');
@@ -146,12 +161,13 @@ export class HMapGridMap extends HMapAbstractMap {
     protected onDataReceived(init: boolean): void {
 
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader.preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer, init, () => {
+        this.imagesLoader
+            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {
                 hmapMenu.style.display = 'flex';
             }
-            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer;
+            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>;
             loadingLayer.hide();
             this.layers.get('grid')!.draw();
             this.layers.get('glass-static')!.draw();

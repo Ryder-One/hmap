@@ -3,14 +3,18 @@
     "version": "3.0.0",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
-        "build-ts": "tsc",
-        "browserify": "browserify dist/ -o dist/hmap.user.es6.js",
         "lint": "tslint --project tslint.json ./src/*.ts",
+        "browserify": "browserify dist/ -o dist/hmap.user.es6.js",
         "babel": "npx babel dist/hmap.user.es6.js > dist/hmap.user.es5.js",
         "uglify": "uglifyjs dist/hmap.user.es5.js > dist/hmap.user.js",
         "copy-headers": "echo \"$(cat header-userscript)\n$(cat dist/hmap.user.js)\" > dist/hmap.user.js",
         "version": "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
-        "build": "npm run build-ts && npm run browserify && npm run babel && npm run uglify && npm run copy-headers && npm run version"
+        "copy-es6": "cp dist/hmap.user.es6.js docs/hmap.user.es6.js",
+        "build": "npm run lint && tsc && npm run browserify && npm run babel && npm run uglify && npm run copy-headers && npm run version && npm run copy-es6",
+        "browsersync" : "browser-sync start -f \"docs\" -s \"docs\" --index \"index-local.html\" --no-open",
+        "watch-ts" : "tsc --target es6 --module system --outFile docs/hmap.user.system.js -w",
+        "serve": "npm run watch-ts & npm run browsersync",
+        "serve2": "nodemon -e ts,html --watch src --exec 'npm run build-dev && npm run browsersync'"
     },
     "author": "RyderOne",
     "dependencies": {

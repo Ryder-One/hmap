@@ -1,11 +1,12 @@
 import { AbstractHMapLayer } from './abstract';
 import { HMapGridMap } from '../maps/grid';
+import { HMapDesertLocalDataJSON, HMapDesertDataJSON } from '../data/hmap-desert-data';
 
 /**
  * This layer is independant to avoid beeing moved by the zoom/pan behavior
  * We won't reuse this for the other map since this is a bit overkill
  */
-export class HMapSVGGlassStaticLayer extends AbstractHMapLayer {
+export class HMapSVGGlassStaticLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     constructor(map: HMapGridMap) {
         super(map);

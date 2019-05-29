@@ -1,7 +1,9 @@
 import { AbstractHMapLayer } from './abstract';
 import { HMapDesertMap } from '../maps/desert';
+import { HMapDesertDataJSON, HMapDesertLocalDataJSON, HMapDesertData } from '../data/hmap-desert-data';
+import { HMapLang } from '../lang';
 
-export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer {
+export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     constructor(map: HMapDesertMap) {
         super(map);
@@ -29,7 +31,7 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer {
         this.g = document.createElementNS(this.ns, 'g');
 
         const map = this.map as HMapDesertMap;
-        const mapData = this.map.mapData!;
+        const mapData = this.map.mapData as HMapDesertData;
         const imagesLoader = this.map.imagesLoader;
 
         // focus lens shadow (433x433)
@@ -55,7 +57,7 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer {
 
         // position text
         const relativePos = mapData.getPositionRelativeToTown(mapData.position);
-        const positionText = 'position : ' + (relativePos.x) + ' / ' + (relativePos.y);
+        const positionText = HMapLang.get('position') + ' : ' + (relativePos.x) + ' / ' + (relativePos.y);
         const positionTextElement = this.text(map.width - 10, map.height - 25, positionText, 'hmap-text-green');
         positionTextElement.setAttributeNS(null, 'text-anchor', 'end');
         positionTextElement.style.fontSize = '14px';

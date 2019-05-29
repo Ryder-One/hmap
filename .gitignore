@@ -3,3 +3,5 @@ dist/
 mapData.json*
 docs/index-local.html
 docs/lib.js
+
+docs/assets/shapes/shapes/

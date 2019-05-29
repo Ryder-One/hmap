@@ -3,8 +3,9 @@ import { HMapDesertMap } from '../maps/desert';
 import { HMapRandom } from '../random';
 import { HMapNeighbour } from '../neighbours';
 import { HMapPoint } from '../hmap';
+import { HMapDesertLocalDataJSON, HMapDesertDataJSON, HMapDesertData } from '../data/hmap-desert-data';
 
-export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer {
+export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     private translation: HMapPoint = {x : 0, y : 0}; // translation really applied
 
@@ -109,7 +110,7 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer {
         this.g = document.createElementNS(this.ns, 'g');
 
         const map = this.map;
-        const mapData = this.map.mapData!;
+        const mapData = this.map.mapData as HMapDesertData;
 
         const imagesLoader = this.map.imagesLoader;
         const seed = mapData.zoneId;
@@ -205,7 +206,7 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer {
         const buildingId = +target.getAttributeNS(null, 'hmap-bid')!;
 
         const map = this.map;
-        const mapData = map.mapData!;
+        const mapData = map.mapData as HMapDesertData;
 
         const buildingName = (buildingId === 1) ? mapData.townName : mapData.buildings.get(buildingId)!;
 

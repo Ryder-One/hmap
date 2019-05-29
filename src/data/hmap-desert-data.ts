@@ -1,16 +1,12 @@
-import { HMapNeighbour, HMapPosition, HMapNeighbours } from './neighbours';
-import { HMapRandom } from './random';
-import { HMapPoint, HMapSize } from './hmap';
+import { HMapNeighbour, HMapPosition, HMapNeighbours } from '../neighbours';
+import { HMapRandom } from '../random';
+import { HMapPoint, HMapSize } from '../hmap';
+import { HMapData, HMapDataPayload } from './abstract';
 
 // declared in host page
 declare var haxe: any;
 declare var StringTools: any;
 declare var MapCommon: any;
-
-export interface HMapDataPayload {
-    raw?: string;
-    JSON?: Object;
-}
 
 export interface HMapPositionDetail {
     _c: number;                 // building id
@@ -30,7 +26,7 @@ export interface HMapUserJSON {
 /**
  * JSON map paramaters; feel free to complete
  */
-export interface HMapDataJSON {
+export interface HMapDesertDataJSON {
     _details: Array<HMapPositionDetail>; // big array representing the map
     _city: string;                       // city name
     _hour: number;                       // server hour
@@ -42,7 +38,7 @@ export interface HMapDataJSON {
     }>;
     _e: Array<any>;                      // ???
     _h: number;                          // height
-    _r: HMapPatchDataJSON;               // local informations
+    _r: HMapDesertLocalDataJSON;         // local informations
     _w: number;                          // width
     _x: number;                          // current X position (0,0 is top left)
     _y: number;                          // current Y position
@@ -56,7 +52,7 @@ export interface HMapDataJSON {
     _mid: number;                        // map id
 }
 
-export interface HMapPatchDataJSON { // current position
+export interface HMapDesertLocalDataJSON { // current position
     _neigDrops: Array<any>;     // ???
     _neig: Array<number>;       // number of zombies of [0] => north [1] => east, etc.
     _state: boolean;            // true = loose control of the position
@@ -72,11 +68,8 @@ export interface HMapPatchDataJSON { // current position
  * This class is the store of the map. It handles the data originally
  * passed to flash, and expose it in a JSON format with lots of accessors
  */
-export class HMapData {
+export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
-    public static _fakeData: HMapDataJSON;
-
-    public data: HMapDataJSON;
     public neighbours = new HMapNeighbours();
     public town: HMapPoint;
     public buildings: Map<number, string> = new Map();
@@ -96,122 +89,11 @@ export class HMapData {
     get global(): Array<number|null> { return this.data._global; }
     get view(): Array<number|null> { return this.data._view; }
     get townName(): string { return this.data._city; }
-    get prettyData(): string { return JSON.stringify(this.data, undefined, 4); }
-
-    /**
-     * create a fake JSON to debug the map
-     */
-    static fakeData(force = false): HMapDataJSON {
-        if (HMapData._fakeData !== undefined && force === false) {
-            return HMapData._fakeData;
-        } else {
-            const mapSize = HMapRandom.getRandomIntegerNoSeed(8, 25);
-
-            const town = {
-                x: HMapRandom.getRandomIntegerNoSeed(3, mapSize - 3),
-                y: HMapRandom.getRandomIntegerNoSeed(3, mapSize - 3)
-            };
-
-            HMapData._fakeData = {
-                _details: new Array(),
-                _city: 'Oh yeah',
-                _hour: 17,
-                _path: null,
-                _slow: true,
-                _b: new Array(),
-                _e: new Array(),
-                _h: mapSize,
-                _r: {
-                    _neigDrops: new Array(),
-                    _neig: new Array(),
-                    _state: false,
-                    _c: 1,
-                    _h: 1,
-                    _m: 6,
-                    _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
-                    _z: 0,
-                    _zid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
-                },
-                _w: mapSize,
-                _x: town.x,
-                _y: town.y,
-                _town: false,
-                _up: false,
-                _view: new Array(),
-                _global: new Array(),
-                _users: null,
-                _editor: false,
-                _map: false,
-                _mid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
-            };
-
-            let index = 0, townIndex = 0;
-            const buildings = new Array();
-            for (let y = 0; y < mapSize; y++) {
-                for (let x = 0; x < mapSize; x++) {
-                        let view = false;
-                    if (x < town.x + 5 && x > town.x - 5 && y < town.y + 5 && y > town.y - 5) {
-                        view = true;
-                    }
-                    let bid = (town.x === x && town.y === y) ?
-                        1 : (HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ?  HMapRandom.getRandomIntegerNoSeed(2, 62) : 0 );
-
-                    bid = HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? -1 : bid;
-
-                    buildings.push({_id: bid, _n: 'Building ' + bid});
-
-                    HMapData._fakeData._details.push({
-                        _c: bid,
-                        _s: false,
-                        _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
-                        _z: HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
-                        _nvt: view
-                    });
-                    if (view === true) {
-                        HMapData._fakeData._view.push(bid);
-                    } else {
-                        HMapData._fakeData._view.push(null);
-                    }
-
-                    if (bid === 1) {
-                        townIndex = index;
-                    }
-                    index++;
-                }
-            }
-            HMapData._fakeData._global = HMapData._fakeData._view;
-            HMapData._fakeData._b = buildings;
-
-            HMapData._fakeData._r._neig = new Array();
-            if (townIndex - mapSize > 0) {
-                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex - mapSize]._z);
-            } else {
-                HMapData._fakeData._r._neig.push(0);
-            }
-            if (townIndex + 1 < (mapSize * mapSize) ) {
-                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex + 1]._z);
-            } else {
-                HMapData._fakeData._r._neig.push(0);
-            }
-            if (townIndex + mapSize < (mapSize * mapSize) ) {
-                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex + mapSize]._z);
-            } else {
-                HMapData._fakeData._r._neig.push(0);
-            }
-            if (townIndex - 1 > 0 ) {
-                HMapData._fakeData._r._neig.push(HMapData._fakeData._details[townIndex - 1]._z);
-            } else {
-                HMapData._fakeData._r._neig.push(0);
-            }
-
-            return HMapData._fakeData;
-        }
-    }
 
     /**
      * Decode the url encoded flashvar
      */
-    static decode(urlEncoded: string): Object {
+    decode(urlEncoded: string): Object {
         let st: any, hx: any, mc: any;
 
         try {
@@ -228,62 +110,15 @@ export class HMapData {
             }
 
             const tempMapData = st.urlDecode(urlEncoded);
-            return hx.Unserializer.run(HMapData.binaryToMessage(mc.genKey(tempMapData.length), mc.permute(tempMapData)));
+            return hx.Unserializer.run(this.binaryToMessage(mc.genKey(tempMapData.length), mc.permute(tempMapData)));
         } catch (err) {
-            console.error('HMapData::decode - caught an exception during decoding', err, urlEncoded);
+            console.error('HMapDesertData::decode - caught an exception during decoding', err, urlEncoded);
             throw err;
         }
     }
 
-    /**
-     * @param char Type script does not have a type for
-     */
-    static translate(char: any): any | null {
-        if (char >= 65 && char <= 90) {
-            return char - 65;
-        }
-        if (char >= 97 && char <= 122) {
-            return char - 71;
-        }
-        if (char >= 48 && char <= 57) {
-            return char + 4;
-        }
-        return null;
-    }
-
-    /**
-     * @param key generated by haxe
-     * @param message message to decode
-     */
-    static binaryToMessage(key: any, message: any) {
-        const keyArray = new Array();
-        for (let i = 0, j = key.length; i < j; i++) {
-            const char = HMapData.translate(key.charCodeAt(i));
-            if (char != null) {
-                keyArray.push(char);
-            }
-        }
-        if (keyArray.length === 0) {
-            keyArray.push(0);
-        }
-
-        let returnStr = '';
-        for (let n = 0, p = message.length; n < p; n++) {
-            const k = message.charCodeAt(n) ^ keyArray[(n + message.length) % keyArray.length];
-            returnStr += String.fromCharCode((k !== 0) ? k : message.charCodeAt(n));
-        }
-        return returnStr;
-    }
-
-    constructor(mapDataPayload: HMapDataPayload) {
-        if (mapDataPayload.raw !== undefined) {
-            this.data = HMapData.decode(mapDataPayload.raw) as HMapDataJSON;
-        } else if (mapDataPayload.JSON !== undefined) {
-            this.data = mapDataPayload.JSON as HMapDataJSON;
-        } else {
-            throw new Error('Cannot create HMapData from empty parameters');
-        }
-
+    constructor(mapDataPayload?: HMapDataPayload) {
+        super(mapDataPayload);
         this.buildNeighbours();
         this.town = this.findTown();
         this.cacheBuildingsNames();
@@ -292,27 +127,9 @@ export class HMapData {
 
 
     /**
-     * Patch the mapData with a new set of data (only _r)
-     * @warning : this method wont rebuild the neighbours because it should be
-     * done when patch data AND move position are done
-     */
-    patchData(data: HMapDataPayload) {
-        let decodedData: HMapPatchDataJSON;
-        if (data.raw) {
-            decodedData = HMapData.decode(data.raw) as HMapPatchDataJSON;
-        } else if (data.JSON) {
-            decodedData = data.JSON as HMapPatchDataJSON;
-        } else {
-            throw new Error('HMapData::patchData - Cannot patch empty data');
-        }
-
-        this.patchDataJSON(decodedData!);
-    }
-
-    /**
      * JSON patching separated to enable dev mode
      */
-    private patchDataJSON(data: HMapPatchDataJSON) {
+    protected patchDataJSON(data: HMapDesertLocalDataJSON) {
         this.data._r = data;
 
         // update the details and the view
@@ -457,6 +274,116 @@ export class HMapData {
                 userOnThisPosition.push(user);
                 this.users.set(userIndex, userOnThisPosition);
             });
+        }
+    }
+
+    /**
+     * create a fake JSON to debug the map
+     */
+    fakeData(force = false): HMapDesertDataJSON {
+        if (this._fakeData !== undefined && force === false) {
+            return this._fakeData;
+        } else {
+            const mapSize = HMapRandom.getRandomIntegerNoSeed(8, 25);
+
+            const town = {
+                x: HMapRandom.getRandomIntegerNoSeed(3, mapSize - 3),
+                y: HMapRandom.getRandomIntegerNoSeed(3, mapSize - 3)
+            };
+
+            this._fakeData = {
+                _details: new Array(),
+                _city: 'Oh yeah',
+                _hour: 17,
+                _path: null,
+                _slow: true,
+                _b: new Array(),
+                _e: new Array(),
+                _h: mapSize,
+                _r: {
+                    _neigDrops: new Array(),
+                    _neig: new Array(),
+                    _state: false,
+                    _c: 1,
+                    _h: 1,
+                    _m: 6,
+                    _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
+                    _z: 0,
+                    _zid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
+                },
+                _w: mapSize,
+                _x: town.x,
+                _y: town.y,
+                _town: false,
+                _up: false,
+                _view: new Array(),
+                _global: new Array(),
+                _users: null,
+                _editor: false,
+                _map: false,
+                _mid: HMapRandom.getRandomIntegerNoSeed(111111, 999999)
+            };
+
+            let index = 0, townIndex = 0;
+            const buildings = new Array();
+            for (let y = 0; y < mapSize; y++) {
+                for (let x = 0; x < mapSize; x++) {
+                        let view = false;
+                    if (x < town.x + 5 && x > town.x - 5 && y < town.y + 5 && y > town.y - 5) {
+                        view = true;
+                    }
+                    let bid = (town.x === x && town.y === y) ?
+                        1 : (HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ?  HMapRandom.getRandomIntegerNoSeed(2, 62) : 0 );
+
+                    bid = HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? -1 : bid;
+
+                    buildings.push({_id: bid, _n: 'Building ' + bid});
+
+                    this._fakeData._details.push({
+                        _c: bid,
+                        _s: false,
+                        _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
+                        _z: HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
+                        _nvt: view
+                    });
+                    if (view === true) {
+                        this._fakeData._view.push(bid);
+                    } else {
+                        this._fakeData._view.push(null);
+                    }
+
+                    if (bid === 1) {
+                        townIndex = index;
+                    }
+                    index++;
+                }
+            }
+            this._fakeData._global = this._fakeData._view;
+            this._fakeData._b = buildings;
+
+            this._fakeData._r._neig = new Array();
+            if (townIndex - mapSize > 0) {
+                this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
+            } else {
+                this._fakeData._r._neig.push(0);
+            }
+            if (townIndex + 1 < (mapSize * mapSize) ) {
+                this._fakeData._r._neig.push(this._fakeData._details[townIndex + 1]._z);
+            } else {
+                this._fakeData._r._neig.push(0);
+            }
+            if (townIndex + mapSize < (mapSize * mapSize) ) {
+                this._fakeData._r._neig.push(this._fakeData._details[townIndex + mapSize]._z);
+            } else {
+                this._fakeData._r._neig.push(0);
+            }
+            if (townIndex - 1 > 0 ) {
+                this._fakeData._r._neig.push(this._fakeData._details[townIndex - 1]._z);
+            } else {
+                this._fakeData._r._neig.push(0);
+            }
+
+            return this._fakeData;
         }
     }
 }

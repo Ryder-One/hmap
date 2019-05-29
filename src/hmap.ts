@@ -1,8 +1,9 @@
 import { HMapTypeMapStr, HMapTypeSVGMap } from './maps/abstract';
 import { Environment } from './environment';
-import { HMapDataJSON, HMapData } from './hmap-data';
 import { HMapGridMap } from './maps/grid';
 import { HMapDesertMap } from './maps/desert';
+import { HMapRuin } from './maps/ruin';
+import { HMapRuinDataJSON } from './data/hmap-ruin-data';
 
 export interface HMapPoint {
     x: number;
@@ -32,7 +33,13 @@ export class HMap {
     public originalOnData?: CallableFunction;
     public location?: HMapLocation;
 
-    constructor() { }
+    public cssSelector = '.swf'; // selector of the map container, default is production value
+
+    constructor(cssSelector?: string) {
+        if (cssSelector !== undefined) {
+            this.cssSelector = cssSelector;
+        }
+    }
 
     /**
      * Get the map data and launch the drawing of the map
@@ -42,58 +49,40 @@ export class HMap {
      * @param forceData when passed, it will use this dataset instead of
      * fetching the HTML
      */
-    fetchMapData(forceData?: HMapDataJSON) {
+    fetchMapData() {
         if (this.map === undefined) {
             this.autoBuildMap();
         }
 
-        if (Environment.getInstance().devMode === true) { // if we are in dev mode, serve a json
-            // this is a bit messed up but I didnt anticipated the debug mode
-            this.map!.buildLayers();
-            if (forceData === undefined) {
-                forceData = HMapData.fakeData();
-            } else {
-                HMapData._fakeData = forceData; // save the fake data for the future
-            }
-            this.map!.completeDataReceived({ JSON: forceData }); // if undefined, then it will fake the data
+        // We will look for the flashmap, take the data, and bootstrap our map
+        let counterCheckExists = 0;
+        const checkExist = setInterval(() => {
+            if (document.querySelector('#swfCont') !== null) {
+                clearInterval(checkExist);
 
-        } else { // production mode
-            if (forceData) {
-                this.map!.buildLayers();
-                this.map!.completeDataReceived({ JSON: forceData });
-            } else { // fetch from the HTML
-                // We will look for the flashmap, take the data, and bootstrap our map
-                let counterCheckExists = 0;
-                const checkExist = setInterval(() => {
-                    if (document.querySelector('#swfCont') !== null) {
-                        clearInterval(checkExist);
+                let tempMapData;
+                if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
+                    tempMapData = document.querySelector('#FlashMap')!.getAttribute('flashvars')!.substring(13);
+                } else { // if this is only the JS code supposed to bootstrap flash
+                    if (document.querySelector('#gameLayout') !== null) {
 
-                        let tempMapData;
-                        if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                            tempMapData = document.querySelector('#FlashMap')!.getAttribute('flashvars')!.substring(13);
-                        } else { // if this is only the JS code supposed to bootstrap flash
-                            if (document.querySelector('#gameLayout') !== null) {
-
-                                const scriptStr = document.querySelector('#gameLayout')!.innerHTML;
-                                const mapMarker = scriptStr.indexOf('mapLoader.swf');
-                                if (mapMarker === -1) {
-                                    return;
-                                }
-                                const startVar = scriptStr.indexOf('data', mapMarker) + 8;
-                                const stopVar = scriptStr.indexOf('\');', startVar);
-                                tempMapData = scriptStr.substring(startVar, stopVar);
-                            }
+                        const scriptStr = document.querySelector('#gameLayout')!.innerHTML;
+                        const mapMarker = scriptStr.indexOf('mapLoader.swf');
+                        if (mapMarker === -1) {
+                            return;
                         }
-                        this.map!.buildLayers();
-                        this.map!.completeDataReceived({raw: tempMapData});
-
-                    } else if (++counterCheckExists === 100) {
-                        clearInterval(checkExist); // timeout 10sec
+                        const startVar = scriptStr.indexOf('data', mapMarker) + 8;
+                        const stopVar = scriptStr.indexOf('\');', startVar);
+                        tempMapData = scriptStr.substring(startVar, stopVar);
                     }
-                }, 100); // 10 sec then give up
-            }
-        }
+                }
+                this.map!.buildLayers();
+                this.map!.completeDataReceived({raw: tempMapData});
 
+            } else if (++counterCheckExists === 100) {
+                clearInterval(checkExist); // timeout 10sec
+            }
+        }, 100); // 10 sec then give up
     }
 
     /**
@@ -163,6 +152,8 @@ export class HMap {
             return 'desert';
         } else if (window.location.href.indexOf('door') !== -1) {
             return 'doors';
+        } else if (window.location.href.indexOf('explo') !== -1) {
+            return 'ruin';
         } else {
             return 'unknown';
         }
@@ -178,17 +169,22 @@ export class HMap {
             this.map = new HMapDesertMap(this);
         } else if (type === 'grid') {
             this.map = new HMapGridMap(this);
+        } else if (type === 'ruin') {
+            this.map = new HMapRuin(this);
         }
-        this.fetchMapData(store);
+        this.map!.buildLayers();
+        this.map!.completeDataReceived({ JSON: store });
     }
 
     /**
      * Rebuild the map with the JSON passed in argument. For debug mode only
      */
-    reloadMapWithData(data: HMapDataJSON) {
+    reloadMapWithData(data?: any) { // @TODO fix the any ?
         this.clearMap();
         this.target = undefined;
-        this.fetchMapData(data);
+        this.autoBuildMap();
+        this.map!.buildLayers();
+        this.map!.completeDataReceived({ JSON: data });
     }
 
     /**
@@ -201,10 +197,7 @@ export class HMap {
             hmap.parentNode.removeChild(hmap);
         }
         // unset the objects
-        if (this.map !== undefined) {
-            // this.map.stopAnimation();
-            this.map = undefined;
-        }
+        this.map = undefined;
     }
 
     /**
@@ -217,9 +210,9 @@ export class HMap {
         } else if (this.location === 'desert') {
             this.map = new HMapDesertMap(this);
         } else if (this.location === 'ruin') {
-            return; // @TODO
+            this.map = new HMapRuin(this);
         } else {
-            throw new Error('HMap::fetchMapData - could not detect location');
+            throw new Error('HMap::autoBuildMap - could not detect location');
         }
     }
 }
