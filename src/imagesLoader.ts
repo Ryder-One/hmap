@@ -7,6 +7,8 @@ import { HMapRuinType } from './maps/ruin';
 export interface HMapImage {
     src: string;
     obj?: HTMLImageElement;
+    width: number;
+    height: number;
 }
 
 /**
@@ -28,66 +30,122 @@ export class HMapImagesLoader {
     constructor() {
 
         // images to preload
-        this.images.set('loading', { src: Environment.getInstance().url + '/assets/loading.png', obj: undefined });
-        this.images.set('glass', { src: Environment.getInstance().url + '/assets/glass.png', obj: undefined });
-        this.images.set('humanGlow', { src: Environment.getInstance().url + '/assets/human_glow.png', obj: undefined });
-        this.images.set('map', { src: Environment.getInstance().url + '/assets/map.png', obj: undefined });
-        this.images.set('moveArrowFill', { src: Environment.getInstance().url + '/assets/move_arrow_fill.png', obj: undefined });
-        this.images.set('moveArrowLight', { src: Environment.getInstance().url + '/assets/move_arrow_light.png', obj: undefined });
-        this.images.set('moveArrowOutline', { src: Environment.getInstance().url + '/assets/move_arrow_outline.png', obj: undefined });
-        this.images.set('night', { src: Environment.getInstance().url + '/assets/night.png', obj: undefined });
-        this.images.set('shadowFocus', { src: Environment.getInstance().url + '/assets/shadow_focus.png', obj: undefined });
-        this.images.set('targetArrow', { src: Environment.getInstance().url + '/assets/town_arrow.png', obj: undefined });
-        this.images.set('zombieGlow', { src: Environment.getInstance().url + '/assets/zombie_glow.png', obj: undefined });
-        this.images.set('blood', { src: Environment.getInstance().url + '/assets/blood.png', obj: undefined });
-        this.images.set('single', { src: Environment.getInstance().url + '/assets/single.png', obj: undefined });
-        this.images.set('hatch', { src: Environment.getInstance().url + '/assets/hatch.png', obj: undefined });
-        this.images.set('town', { src: Environment.getInstance().url + '/assets/town.png', obj: undefined });
-        this.images.set('building', { src: Environment.getInstance().url + '/assets/building.png', obj: undefined });
-        this.images.set('hatch-dense', { src: Environment.getInstance().url + '/assets/hatch_dense.png', obj: undefined });
-        this.images.set('target', { src: Environment.getInstance().url + '/assets/target.png', obj: undefined });
-        this.images.set('position', { src: Environment.getInstance().url + '/assets/position.png', obj: undefined });
-        this.images.set('people', { src: Environment.getInstance().url + '/assets/people.png', obj: undefined });
-        this.images.set('uncheck', { src: Environment.getInstance().url + '/assets/uncheck.png', obj: undefined });
-        this.images.set('check', { src: Environment.getInstance().url + '/assets/check.png', obj: undefined });
-        this.images.set('destination', { src: Environment.getInstance().url + '/assets/destination.png', obj: undefined });
+        const url = Environment.getInstance().url + '/assets/';
+        this.images.set('loading',          { src: url + 'loading.png',            obj: undefined, width: 300, height: 300});
+        this.images.set('glass',            { src: url + 'glass.png',              obj: undefined, width: 300, height: 300});
+        this.images.set('humanGlow',        { src: url + 'human_glow.png',         obj: undefined, width: 18,  height: 18});
+        this.images.set('map',              { src: url + 'map.png',                obj: undefined, width: 950, height: 950});
+        this.images.set('moveArrowFill',    { src: url + 'move_arrow_fill.png',    obj: undefined, width: 82,  height: 27});
+        this.images.set('moveArrowLight',   { src: url + 'move_arrow_light.png',   obj: undefined, width: 82,  height: 27});
+        this.images.set('moveArrowOutline', { src: url + 'move_arrow_outline.png', obj: undefined, width: 83,  height: 28});
+        this.images.set('night',            { src: url + 'night.png',              obj: undefined, width: 950, height: 950});
+        this.images.set('shadowFocus',      { src: url + 'shadow_focus.png',       obj: undefined, width: 433, height: 433});
+        this.images.set('targetArrow',      { src: url + 'town_arrow.png',         obj: undefined, width: 9,   height: 17});
+        this.images.set('zombieGlow',       { src: url + 'zombie_glow.png',        obj: undefined, width: 18,  height: 18});
+        this.images.set('blood',            { src: url + 'blood.png',              obj: undefined, width: 300, height: 300});
+        this.images.set('single',           { src: url + 'single.png',             obj: undefined, width: 200, height: 200});
+        this.images.set('hatch',            { src: url + 'hatch.png',              obj: undefined, width: 26,  height: 26});
+        this.images.set('town',             { src: url + 'town.png',               obj: undefined, width: 26,  height: 26});
+        this.images.set('building',         { src: url + 'building.png',           obj: undefined, width: 25,  height: 25});
+        this.images.set('hatch-dense',      { src: url + 'hatch_dense.png',        obj: undefined, width: 25,  height: 25});
+        this.images.set('target',           { src: url + 'target.png',             obj: undefined, width: 25,  height: 25});
+        this.images.set('position',         { src: url + 'position.png',           obj: undefined, width: 25,  height: 25});
+        this.images.set('people',           { src: url + 'people.png',             obj: undefined, width: 5,   height: 5});
+        this.images.set('uncheck',          { src: url + 'uncheck.png',            obj: undefined, width: 12,  height: 13});
+        this.images.set('check',            { src: url + 'check.png',              obj: undefined, width: 12,  height: 13});
+        this.images.set('destination',      { src: url + 'destination.png',        obj: undefined, width: 12,  height: 12});
 
         for (let tag = 1; tag <= 11; tag++) {
-            this.images.set('tag_' + tag, { src: Environment.getInstance().url + '/assets/tags/' + tag + '.png', obj: undefined });
+            this.images.set('tag_' + tag,   { src: url + 'tags/' + tag + '.png',   obj: undefined, width: 16,  height: 16});
         }
         // tag 12 is a gif
-        this.images.set('tag_12', { src: Environment.getInstance().url + '/assets/tags/12.gif', obj: undefined });
+        this.images.set('tag_12',           { src: url + 'tags/12.gif',            obj: undefined, width: 16,  height: 16});
     }
 
     public loadRuinPics(location: HMapRuinType) {
-        this.images.set('0001', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0001.png', obj: undefined });
-        this.images.set('0010', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0010.png', obj: undefined });
-        this.images.set('0011', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0011.png', obj: undefined });
-        this.images.set('0100', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0100.png', obj: undefined });
-        this.images.set('0101', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0101.png', obj: undefined });
-        this.images.set('0110', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0110.png', obj: undefined });
-        this.images.set('0111', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/0111.png', obj: undefined });
-        this.images.set('1000', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1000.png', obj: undefined });
-        this.images.set('1001', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1001.png', obj: undefined });
-        this.images.set('1010', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1010.png', obj: undefined });
-        this.images.set('1011', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1011.png', obj: undefined });
-        this.images.set('1100', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1100.png', obj: undefined });
-        this.images.set('1101', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1101.png', obj: undefined });
-        this.images.set('1110', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1110.png', obj: undefined });
-        this.images.set('1111', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/1111.png', obj: undefined });
-        this.images.set('dead', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/dead.png', obj: undefined });
-        this.images.set('elem1', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem1.png', obj: undefined });
-        this.images.set('elem2', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem2.png', obj: undefined });
-        this.images.set('elem3', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem3.png', obj: undefined });
-        this.images.set('elem4', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem4.png', obj: undefined });
-        this.images.set('elem5', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/elem5.png', obj: undefined });
-        this.images.set('light', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/light.png', obj: undefined });
-        this.images.set('exit', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/exit.png', obj: undefined });
-        this.images.set('room', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/room.png', obj: undefined });
-        this.images.set('zombiegif', { src: Environment.getInstance().url + '/assets/ruin/' + location + '/zombie.gif', obj: undefined });
-        this.images.set('you', { src: Environment.getInstance().url + '/assets/ruin/you.gif', obj: undefined });
-        this.images.set('you-noox', { src: Environment.getInstance().url + '/assets/ruin/you_noox.gif', obj: undefined });
-        this.images.set('scanner', { src: Environment.getInstance().url + '/assets/ruin/scanner.gif', obj: undefined });
+        const url = Environment.getInstance().url + '/assets/ruin/';
+        this.images.set('0001',                     { src: url + location + '/0001.png',   obj: undefined, width: 300, height: 300});
+        this.images.set('0010',                     { src: url + location + '/0010.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('0011',                     { src: url + location + '/0011.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('0100',                     { src: url + location + '/0100.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('0101',                     { src: url + location + '/0101.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('0110',                     { src: url + location + '/0110.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('0111',                     { src: url + location + '/0111.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1000',                     { src: url + location + '/1000.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1001',                     { src: url + location + '/1001.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1010',                     { src: url + location + '/1010.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1011',                     { src: url + location + '/1011.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1100',                     { src: url + location + '/1100.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1101',                     { src: url + location + '/1101.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1110',                     { src: url + location + '/1110.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('1111',                     { src: url + location + '/1111.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('dead',                     { src: url + location + '/dead.png',   obj: undefined, width: 23,  height: 36  });
+        // this.images.set('light',                    { src: url + location + '/light.png',  obj: undefined, width: , height:  });
+        this.images.set('exit',                     { src: url + location + '/exit.png',   obj: undefined, width: 62 , height: 57  });
+        this.images.set('room',                     { src: url + location + '/room.png',   obj: undefined, width: 300, height: 300 });
+        this.images.set('zombiegif',                { src: url + location + '/zombie.gif', obj: undefined, width: 25 , height: 38  });
+        this.images.set('door-top-closed',          { src: url + location + '/dtc.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-top-open',            { src: url + location + '/dto.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-top-right-closed',    { src: url + location + '/dtrc.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-top-right-open',      { src: url + location + '/dtro.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-top-left-closed',     { src: url + location + '/dtlc.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-top-left-open',       { src: url + location + '/dtlo.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-bottom-closed',       { src: url + location + '/dbc.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-bottom-open',         { src: url + location + '/dbo.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-bottom-right-closed', { src: url + location + '/dbrc.png',   obj: undefined, width: 30,  height: 30  });
+        this.images.set('door-bottom-right-open',   { src: url + location + '/dbro.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-bottom-left-closed',  { src: url + location + '/dblc.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-bottom-left-open',    { src: url + location + '/dblo.png',   obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-left-closed',         { src: url + location + '/dlc.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-left-open',           { src: url + location + '/dlo.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-right-closed',        { src: url + location + '/drc.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('door-right-open',          { src: url + location + '/dro.png',    obj: undefined, width: 30 , height: 30  });
+        this.images.set('you',                      { src: url + 'you.gif',                obj: undefined, width: 16 , height: 32  });
+        this.images.set('you-noox',                 { src: url + 'you_noox.gif',           obj: undefined, width: 16 , height: 34  });
+        this.images.set('scanner',                  { src: url + 'scanner.gif',            obj: undefined, width: 38 , height: 27  });
+
+        if (location === 'motel') {
+            this.images.set('wall_bench_A',         { src: url + location + '/wall_bench_A.png',      obj: undefined, width: 42, height: 22 });
+            this.images.set('wall_bench_B',         { src: url + location + '/wall_bench_B.png',      obj: undefined, width: 42, height: 22 });
+            this.images.set('wall_bench_G',         { src: url + location + '/wall_bench_G.png',      obj: undefined, width: 42, height: 22 });
+            this.images.set('wall_bench_H',         { src: url + location + '/wall_bench_H.png',      obj: undefined, width: 42, height: 22 });
+            this.images.set('wall_flowers_D',       { src: url + location + '/wall_flowers_D.png',    obj: undefined, width: 22, height: 39 });
+            this.images.set('wall_flowers_E',       { src: url + location + '/wall_flowers_E.png',    obj: undefined, width: 22, height: 39 });
+            this.images.set('wall_palmtree_B',      { src: url + location + '/wall_palmtree_B.png',   obj: undefined, width: 25, height: 35 });
+            this.images.set('wall_palmtree_G',      { src: url + location + '/wall_palmtree_G.png',   obj: undefined, width: 25, height: 35 });
+            this.images.set('zone_dead_bottom',     { src: url + location + '/zone_dead_bottom.png',  obj: undefined, width: 28, height: 53 });
+            this.images.set('zone_dead_left',       { src: url + location + '/zone_dead_left.png',    obj: undefined, width: 53, height: 28 });
+            this.images.set('zone_dead_right',      { src: url + location + '/zone_dead_right.png',   obj: undefined, width: 53, height: 28 });
+            this.images.set('zone_dead_top',        { src: url + location + '/zone_dead_top.png',     obj: undefined, width: 28, height: 53 });
+            this.images.set('zone_stain_bottom',    { src: url + location + '/zone_stain_bottom.png', obj: undefined, width: 70, height: 95 });
+            this.images.set('zone_stain_left',      { src: url + location + '/zone_stain_left.png',   obj: undefined, width: 95, height: 70 });
+            this.images.set('zone_stain_right',     { src: url + location + '/zone_stain_right.png',  obj: undefined, width: 95, height: 70 });
+            this.images.set('zone_stain_top',       { src: url + location + '/zone_stain_top.png',    obj: undefined, width: 70, height: 95 });
+        } else if (location === 'hospital') {
+            this.images.set('wall_bed_D',           { src: url + location + '/wall_bed_D.png',        obj: undefined, width: 20, height: 51 });
+            this.images.set('wall_bed_E',           { src: url + location + '/wall_bed_E.png',        obj: undefined, width: 20, height: 51 });
+            this.images.set('wall_dead_D',          { src: url + location + '/wall_dead_D.png',       obj: undefined, width: 30, height: 32 });
+            this.images.set('wall_dead_E',          { src: url + location + '/wall_dead_E.png',       obj: undefined, width: 30, height: 32 });
+            this.images.set('wall_grid_J',          { src: url + location + '/wall_grid_J.png',       obj: undefined, width: 12, height: 25 });
+            this.images.set('wall_grid_K',          { src: url + location + '/wall_grid_K.png',       obj: undefined, width: 12, height: 25 });
+            this.images.set('zone_dead_bottom',     { src: url + location + '/zone_dead_bottom.png',  obj: undefined, width: 28, height: 27 });
+            this.images.set('zone_dead_left',       { src: url + location + '/zone_dead_left.png',    obj: undefined, width: 27, height: 28 });
+            this.images.set('zone_dead_right',      { src: url + location + '/zone_dead_right.png',   obj: undefined, width: 27, height: 28 });
+            this.images.set('zone_dead_top',        { src: url + location + '/zone_dead_top.png',     obj: undefined, width: 28, height: 27 });
+        } else if (location === 'bunker') {
+            this.images.set('wall_barrel_D',        { src: url + location + '/wall_barrel_D.png',     obj: undefined, width: 18, height: 27 });
+            this.images.set('wall_barrel_E',        { src: url + location + '/wall_barrel_E.png',     obj: undefined, width: 18, height: 27 });
+            this.images.set('wall_grid_D',          { src: url + location + '/wall_grid_D.png',       obj: undefined, width: 12, height: 54 });
+            this.images.set('wall_grid_E',          { src: url + location + '/wall_grid_E.png',       obj: undefined, width: 12, height: 54 });
+            this.images.set('wall_gutter_B',        { src: url + location + '/wall_gutter_B.png',     obj: undefined, width: 32, height: 21 });
+            this.images.set('wall_gutter_G',        { src: url + location + '/wall_gutter_G.png',     obj: undefined, width: 32, height: 21 });
+            this.images.set('wall_hatch_A',         { src: url + location + '/wall_hatch_A.png',      obj: undefined, width: 25, height: 14 });
+            this.images.set('wall_hatch_B',         { src: url + location + '/wall_hatch_B.png',      obj: undefined, width: 25, height: 14 });
+            this.images.set('wall_hatch_G',         { src: url + location + '/wall_hatch_G.png',      obj: undefined, width: 25, height: 14 });
+            this.images.set('wall_hatch_H',         { src: url + location + '/wall_hatch_H.png',      obj: undefined, width: 25, height: 14 });
+            this.images.set('wall_pipe_D',          { src: url + location + '/wall_pipe_D.png',       obj: undefined, width: 42, height: 59 });
+            this.images.set('wall_pipe_E',          { src: url + location + '/wall_pipe_E.png',       obj: undefined, width: 42, height: 59 });
+        }
     }
 
     public isset(imageId: string): boolean {
@@ -161,10 +219,7 @@ export class HMapImagesLoader {
                 } else {
                     url = Environment.getInstance().url + '/assets/buildings/b_' + neighbour.building + '.png';
                 }
-                this.set('b' + neighbour.building, {
-                    src: url,
-                    obj: undefined
-                });
+                this.set('b' + neighbour.building, { src: url, obj: undefined, height: 100, width: 100 });
             }
         });
     }

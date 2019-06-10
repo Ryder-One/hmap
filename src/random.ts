@@ -30,8 +30,12 @@ export class HMapRandom {
     * @see https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
     */
     random() {
+        /*
         const x = Math.sin(this.seed++) * 10000;
         return x - Math.floor(x);
+        */
+       this.seed = (this.seed * 9301 + 49297) % 233280;
+       return this.seed / 233280;
     }
 
     /**
@@ -44,10 +48,17 @@ export class HMapRandom {
 
     /**
      * Return one of random the element in array
+     * We can pass an array of exceptions : the function will never return them
      * Using the local seed
      */
-    getOneOfLocalSeed<T>(elements: Array<T>): T {
-        return elements[Math.floor(this.random() * elements.length)];
+    getOneOfLocalSeed<T>(elements: Array<T>, exceptions?: Array<T>): T {
+        const random = this.random();
+        const element = elements[Math.floor(random * elements.length)];
+        if (exceptions !== undefined && exceptions.length > 0 && exceptions.indexOf(element) !== -1) {
+            return this.getOneOfLocalSeed(elements, exceptions);
+        } else {
+            return element;
+        }
     }
 
     /**

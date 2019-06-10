@@ -93,7 +93,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
             if (visionArray[i] !== undefined && visionArray[i] !== null && visionArray[i]! >= -1 ) {
 
                 if (mapData.details[i]._nvt === true) { // outside of tower range
-                    this.img(map.imagesLoader.get('hatch').src, x, y, this.squareSize, this.squareSize);
+                    this.imgFromObj('hatch', x, y, undefined, undefined, this.squareSize, this.squareSize);
                 } else if (mapData.details[i]._nvt === false) { // inside of tower range
                     // apparently nothing to do in this case, but I'm not sure so I let the if
                 } else {
@@ -101,14 +101,14 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                 }
 
             } else { // position never visited
-                this.img(map.imagesLoader.get('hatch-dense').src, x, y, this.squareSize, this.squareSize);
+                this.imgFromObj('hatch-dense', x, y, undefined, undefined, this.squareSize, this.squareSize);
             }
 
             if (mapData.details[i]._c > 0 || mapData.details[i]._c === -1) { // another building than town
                 if (mapData.details[i]._c === 1) { // town
-                    this.img(map.imagesLoader.get('town').src, x, y, this.squareSize, this.squareSize);
+                    this.imgFromObj('town', x, y, undefined, undefined, this.squareSize, this.squareSize);
                 } else {
-                    this.img(map.imagesLoader.get('building').src, x, y, this.squareSize, this.squareSize);
+                    this.imgFromObj('building', x, y, undefined, undefined, this.squareSize, this.squareSize);
                 }
             }
 
@@ -124,12 +124,10 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                         const seed = (x * 10 + y) * ( y * 10 + x) + usernameAsNumber;
                         const random = new HMapRandom(seed);
 
-                        const userImg = this.img(
-                            map.imagesLoader.get('people').src,
+                        const userImg = this.imgFromObj(
+                            'people',
                             x + random.getRandomIntegerLocalSeed(0.2 * this.squareSize!, 0.8 * this.squareSize!),
-                            y + random.getRandomIntegerLocalSeed(0.2 * this.squareSize!, 0.8 * this.squareSize!),
-                            5,
-                            5
+                            y + random.getRandomIntegerLocalSeed(0.2 * this.squareSize!, 0.8 * this.squareSize!)
                         );
                         userImg.setAttributeNS(null, 'class', 'hmap-user');
                     });
@@ -142,10 +140,12 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                 if ( tag > 0 && tag < 13) {
                     const tagSize = Math.min(this.squareSize / 1.5, 16);
 
-                    const tagImg = this.img(
-                        map.imagesLoader.get('tag_' + tag).src,
+                    const tagImg = this.imgFromObj(
+                        'tag_' + tag,
                         x + this.squareSize / 2 - tagSize / 2,
                         y + this.squareSize / 2 - tagSize / 2,
+                        undefined,
+                        undefined,
                         tagSize,
                         tagSize);
                     tagImg.setAttributeNS(null, 'class', 'hmap-tag');
@@ -157,7 +157,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                         !currentPos &&
                         position.x === map.target.x &&
                         position.y === map.target.y) { // not town && target && not current pos
-                const target = this.img(map.imagesLoader.get('target').src, x, y, this.squareSize, this.squareSize);
+                const target = this.imgFromObj('target', x, y, undefined, undefined, this.squareSize, this.squareSize);
                 target.setAttributeNS(null, 'class', 'hmap-target');
             }
         } // iterate over the grid
@@ -221,7 +221,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
             const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
 
             map.setTarget(mapData.getCoordinates(index));
-            const target = this.img(map.imagesLoader.get('target').src, x, y, this.squareSize, this.squareSize);
+            const target = this.imgFromObj('target', x, y, undefined, undefined, this.squareSize, this.squareSize);
             target.setAttributeNS(null, 'class', 'hmap-target');
         }
     }

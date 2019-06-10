@@ -9,6 +9,7 @@ import { HMapArrowDirection, HMapArrow } from '../arrow';
 import { Environment } from '../environment';
 import { HMapRandom } from '../random';
 import { HMapSVGRuinForegroundLayer } from '../layers/svg-ruin-foreground';
+import { HMapImagesLoader } from '../imagesLoader';
 
 declare var haxe: any;
 declare var js: any;
@@ -95,13 +96,13 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
         this.type = (this.mapData as HMapRuinData).ruinType;
 
         if (init) {
-            this.imagesLoader.loadRuinPics(this.type);
+            HMapImagesLoader.getInstance().loadRuinPics(this.type);
         }
 
         this.registerArrows();
 
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader
+        HMapImagesLoader.getInstance()
             .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapRuinDataJSON, HMapRuinLocalDataJSON>, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {
@@ -219,9 +220,9 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 _d: {
                     _exit: exit,
                     _room: random.getOneOfLocalSeed<HMapRuinRoomJSON | null>([ {
-                            _locked: random.getRandomIntegerLocalSeed(1, 4) === 2 ? false : true,
-                            _doorKind: random.getRandomIntegerLocalSeed(1, 4)
-                        }, null, null, null, null, null]),
+                            _locked: random.getOneOfLocalSeed<boolean>([true, false]),
+                            _doorKind: random.getOneOfLocalSeed<number>([1, 2, 3])
+                        }]),
                     _seed: seed,
                     _k: random.getRandomIntegerLocalSeed(0, 3),
                     _w: true,
@@ -244,39 +245,83 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
     }
 
     /**
+     * Function called when the user click on a door
+     */
+    enterRoom() {
+
+        const mapData = this.mapData as HMapRuinData;
+
+        if (Environment.getInstance().devMode === false) {
+            // @TODO
+        } else { // dev mode, fake the data
+
+            // fake the data
+            const fakeData: HMapRuinLocalDataJSON = mapData.data._r;
+            fakeData._r = true;
+
+            this.partialDataReceived({ JSON: fakeData });
+        }
+    }
+
+    /**
+     * Function called when the user exit the room
+     */
+    exitRoom() {
+
+        const mapData = this.mapData as HMapRuinData;
+
+        if (Environment.getInstance().devMode === false) {
+            // @TODO
+        } else { // dev mode, fake the data
+
+            // fake the data
+            const fakeData: HMapRuinLocalDataJSON = mapData.data._r;
+            fakeData._r = false;
+
+            this.partialDataReceived({ JSON: fakeData });
+        }
+    }
+
+    /**
      * Register the available directionnal arrows
      */
     private registerArrows() {
         this.registredArrows = new Array<HMapArrow>();
         if (this.mapData) {
             const mapData = this.mapData as HMapRuinData;
-
-            if (mapData.oxygen > 0) { // if we can move
-                let offsetY, offsetX;
-                const direction = mapData.directions;
-                if (direction[1] === true) {
-                    offsetY = 15;
-                    offsetX = - 41 + 150;
-                    const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
-                    this.registredArrows.push(A);
-                }
-                if (direction[3] === true) {
-                    offsetY = 250;
-                    offsetX = - 41 + 150;
-                    const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
-                    this.registredArrows.push(A);
-                }
-                if (direction[2] === true) {
-                    offsetX = 230;
-                    offsetY = - 14 + 150;
-                    const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
-                    this.registredArrows.push(A);
-                }
-                if (direction[0] === true) {
-                    offsetX = -10;
-                    offsetY = - 14 + 150;
-                    const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
-                    this.registredArrows.push(A);
+            let offsetY, offsetX;
+            if (mapData.room) {
+                offsetY = 250;
+                offsetX = - 41 + 150;
+                const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
+                this.registredArrows.push(A);
+            } else {
+                if (mapData.oxygen > 0) { // if we can move
+                    const direction = mapData.directions;
+                    if (direction[1] === true) {
+                        offsetY = 15;
+                        offsetX = - 41 + 150;
+                        const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
+                        this.registredArrows.push(A);
+                    }
+                    if (direction[3] === true) {
+                        offsetY = 250;
+                        offsetX = - 41 + 150;
+                        const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
+                        this.registredArrows.push(A);
+                    }
+                    if (direction[2] === true) {
+                        offsetX = 230;
+                        offsetY = - 14 + 150;
+                        const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
+                        this.registredArrows.push(A);
+                    }
+                    if (direction[0] === true) {
+                        offsetX = -10;
+                        offsetY = - 14 + 150;
+                        const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
+                        this.registredArrows.push(A);
+                    }
                 }
             }
         }

@@ -36,7 +36,7 @@ export class HMapSVGLoadingLayer<DataJSON, LocalDataJSON> extends  AbstractHMapL
 
         const map = this.map;
 
-        this.img(map.imagesLoader.get('loading').src, 0, 0, 300, 300); // image is 300x300
+        this.imgFromObj('loading', 0, 0); // image is 300x300
 
         this.text(120, 185, 'by ryderone', 'hmap-text-yellow');
 

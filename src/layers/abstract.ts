@@ -1,4 +1,5 @@
 import { HMapAbstractMap } from '../maps/abstract';
+import { HMapImagesLoader } from '../imagesLoader';
 
 export type HMapLayerSVGType = 'loading' | 'grid' | 'glass-static' | 'desert-background' | 'desert-foreground'
     | 'ruin-background' | 'ruin-foreground';
@@ -54,7 +55,7 @@ export abstract class AbstractHMapLayer<DataJSON, LocalDataJSON> {
     /**
      * Embbed an image in the SVG; append it to the main group and return it
      */
-    protected img (url: string, x: number, y: number, width: number, height: number, angle?: number, cssClass?: string): SVGImageElement {
+    private img (url: string, x: number, y: number, width: number, height: number, angle?: number, cssClass?: string): SVGImageElement {
         const img = document.createElementNS(this.ns, 'image');
         img.setAttributeNS(null, 'height', height + '');
         img.setAttributeNS(null, 'width', width + '');
@@ -73,6 +74,23 @@ export abstract class AbstractHMapLayer<DataJSON, LocalDataJSON> {
         }
         return img;
     }
+
+    /**
+     * Use the image preloader to create an image into the SVG
+     * @Warning the order of the parameters is not the same, by purpose
+     */
+    protected imgFromObj (id: string, x: number, y: number, angle?: number, cssClass?: string, height?: number, width?: number): SVGImageElement {
+        const url = HMapImagesLoader.getInstance().get(id).src;
+        if (width === undefined) {
+            width = HMapImagesLoader.getInstance().get(id).width;
+        }
+        if (height === undefined) {
+            height = HMapImagesLoader.getInstance().get(id).height;
+        }
+
+        return this.img(url, x, y, width, height, angle, cssClass);
+    }
+
 
     /**
      * Draw a text on the SVG and return it

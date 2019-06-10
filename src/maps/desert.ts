@@ -10,6 +10,7 @@ import { HMapSVGDesertForegroundLayer } from '../layers/svg-desert-foreground';
 import { HMapDesertDataJSON, HMapDesertLocalDataJSON, HMapDesertData } from '../data/hmap-desert-data';
 import { HMapPoint } from '../hmap';
 import { HMapDataPayload } from '../data/abstract';
+import { HMapImagesLoader } from '../imagesLoader';
 
 declare var haxe: any;
 declare var js: any;
@@ -130,10 +131,10 @@ export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDeser
 
         const mapData = this.mapData as HMapDesertData;
 
-        this.imagesLoader.registerBuildingsToPreload(mapData.neighbours);
+        HMapImagesLoader.getInstance().registerBuildingsToPreload(mapData.neighbours);
 
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader
+        HMapImagesLoader.getInstance()
             .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {

@@ -31,7 +31,7 @@ export class HMapSVGGlassStaticLayer extends AbstractHMapLayer<HMapDesertDataJSO
     draw() {
         const oldGroup = this.g; // delete the group after drawing the new one to avoid flickering
         this.g = document.createElementNS(this.ns, 'g');
-        this.img(this.map.imagesLoader.get('glass').src, 0, 0, 300, 300, );
+        this.imgFromObj('glass', 0, 0);
         this.svg.appendChild(this.g);
         if (oldGroup) {
             this.svg.removeChild(oldGroup);

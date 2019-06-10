@@ -165,12 +165,16 @@ System.register("toast", [], function (exports_4, context_4) {
         }
     };
 });
-System.register("layers/abstract", [], function (exports_5, context_5) {
+System.register("layers/abstract", ["imagesLoader"], function (exports_5, context_5) {
     "use strict";
-    var AbstractHMapLayer;
+    var imagesLoader_1, AbstractHMapLayer;
     var __moduleName = context_5 && context_5.id;
     return {
-        setters: [],
+        setters: [
+            function (imagesLoader_1_1) {
+                imagesLoader_1 = imagesLoader_1_1;
+            }
+        ],
         execute: function () {
             AbstractHMapLayer = class AbstractHMapLayer {
                 constructor(map) {
@@ -230,6 +234,20 @@ System.register("layers/abstract", [], function (exports_5, context_5) {
                         img.setAttributeNS(null, 'transform', 'rotate(' + angle + ' ' + (x + width / 2) + ' ' + (y + height / 2) + ')');
                     }
                     return img;
+                }
+                /**
+                 * Use the image preloader to create an image into the SVG
+                 * @Warning the order of the parameters is not the same, by purpose
+                 */
+                imgFromObj(id, x, y, angle, cssClass, height, width) {
+                    const url = imagesLoader_1.HMapImagesLoader.getInstance().get(id).src;
+                    if (width === undefined) {
+                        width = imagesLoader_1.HMapImagesLoader.getInstance().get(id).width;
+                    }
+                    if (height === undefined) {
+                        height = imagesLoader_1.HMapImagesLoader.getInstance().get(id).height;
+                    }
+                    return this.img(url, x, y, width, height, angle, cssClass);
                 }
                 /**
                  * Draw a text on the SVG and return it
@@ -299,7 +317,7 @@ System.register("layers/svg-loading", ["layers/abstract"], function (exports_6, 
                     const oldGroup = this.g;
                     this.g = document.createElementNS(this.ns, 'g');
                     const map = this.map;
-                    this.img(map.imagesLoader.get('loading').src, 0, 0, 300, 300); // image is 300x300
+                    this.imgFromObj('loading', 0, 0); // image is 300x300
                     this.text(120, 185, 'by ryderone', 'hmap-text-yellow');
                     this.loadingBar = this.rect(75, 170, 1, 6, '#ebc369');
                     this.svg.appendChild(this.g);
@@ -825,8 +843,12 @@ System.register("random", [], function (exports_9, context_9) {
                 * @see https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
                 */
                 random() {
+                    /*
                     const x = Math.sin(this.seed++) * 10000;
                     return x - Math.floor(x);
+                    */
+                    this.seed = (this.seed * 9301 + 49297) % 233280;
+                    return this.seed / 233280;
                 }
                 /**
                  * Get a random integer between min and max
@@ -837,10 +859,18 @@ System.register("random", [], function (exports_9, context_9) {
                 }
                 /**
                  * Return one of random the element in array
+                 * We can pass an array of exceptions : the function will never return them
                  * Using the local seed
                  */
-                getOneOfLocalSeed(elements) {
-                    return elements[Math.floor(this.random() * elements.length)];
+                getOneOfLocalSeed(elements, exceptions) {
+                    const random = this.random();
+                    const element = elements[Math.floor(random * elements.length)];
+                    if (exceptions !== undefined && exceptions.length > 0 && exceptions.indexOf(element) !== -1) {
+                        return this.getOneOfLocalSeed(elements, exceptions);
+                    }
+                    else {
+                        return element;
+                    }
                 }
                 /**
                  * Get a random position inside a circle
@@ -880,159 +910,127 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
             HMapRuinData = class HMapRuinData extends abstract_2.HMapData {
                 constructor(mapDataPayload) {
                     super(mapDataPayload);
+                    this.walls = {
+                        'motel': {
+                            'A': ['wall_bench_A'],
+                            'B': ['wall_bench_B', 'wall_palmtree_B'],
+                            'C': [],
+                            'D': ['wall_flowers_D'],
+                            'E': ['wall_flowers_E'],
+                            'F': [],
+                            'G': ['wall_bench_G', 'wall_palmtree_G'],
+                            'H': ['wall_bench_H'],
+                            'I': [],
+                            'J': [],
+                            'K': [],
+                            'L': []
+                        },
+                        'bunker': {
+                            'A': ['wall_hatch_A'],
+                            'B': [/*'wall_gutter_B', */ 'wall_hatch_B'],
+                            'C': [],
+                            'D': ['wall_barrel_D', 'wall_grid_D', 'wall_pipe_D'],
+                            'E': ['wall_barrel_E', 'wall_grid_E', 'wall_pipe_E'],
+                            'F': [],
+                            'G': [/*'wall_gutter_G', */ 'wall_hatch_G'],
+                            'H': ['wall_hatch_H'],
+                            'I': [],
+                            'J': [],
+                            'K': [],
+                            'L': []
+                        },
+                        'hospital': {
+                            'A': [],
+                            'B': [],
+                            'C': [],
+                            'D': ['wall_bed_D', 'wall_dead_D'],
+                            'E': ['wall_bed_E', 'wall_dead_E'],
+                            'F': [],
+                            'G': [],
+                            'H': [],
+                            'I': [],
+                            'J': ['wall_grid_J'],
+                            'K': ['wall_grid_K'],
+                            'L': []
+                        }
+                    };
+                    this.zones = {
+                        'motel': {
+                            'Z1': ['zone_dead_left', 'zone_stain_left'],
+                            'Z2': ['zone_dead_top', 'zone_stain_top'],
+                            'Z3': ['zone_dead_right', 'zone_stain_right'],
+                            'Z4': ['zone_dead_bottom', 'zone_stain_bottom'],
+                            'Z5': ['zone_dead_left', 'zone_dead_right']
+                        },
+                        'bunker': {
+                            'Z1': [],
+                            'Z2': [],
+                            'Z3': [],
+                            'Z4': [],
+                            'Z5': []
+                        },
+                        'hospital': {
+                            'Z1': ['zone_dead_left'],
+                            'Z2': ['zone_dead_top'],
+                            'Z3': ['zone_dead_right'],
+                            'Z4': ['zone_dead_bottom'],
+                            'Z5': ['zone_dead_left', 'zone_dead_right']
+                        }
+                    };
                     this.fakeRuinDirections = [
                         [
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false]
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, true],
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false]
                         ],
                         [
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, true],
-                            [false, false, false, false],
-                            [false, false, true, true],
-                            [true, true, true, false],
-                            [true, false, true, false],
-                            [true, false, true, false],
-                            [true, false, true, true],
-                            [true, false, true, false],
-                            [true, false, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false]
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, true], [false, false, false, false], [false, false, true, true], [true, true, true, false],
+                            [true, false, true, false], [true, false, true, false], [true, false, true, true], [true, false, true, false],
+                            [true, false, false, true], [false, false, false, false], [false, false, false, false]
                         ],
                         [
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, true, true],
-                            [true, true, true, false],
-                            [true, false, true, false],
-                            [true, true, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, true],
-                            [false, false, false, false],
-                            [false, true, true, true],
-                            [true, false, false, false],
-                            [false, false, false, false]
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, true, true],
+                            [true, true, true, false], [true, false, true, false], [true, true, false, true], [false, false, false, false],
+                            [false, false, false, false], [false, false, false, false], [false, true, false, true], [false, false, false, false],
+                            [false, true, true, true], [true, false, false, false], [false, false, false, false]
                         ],
                         [
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, true, false],
-                            [true, false, true, false],
-                            [true, false, true, false],
-                            [true, false, true, false],
-                            [true, true, true, true],
-                            [true, false, true, false],
-                            [true, true, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false]
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, true, false, true],
+                            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, false],
+                            [true, false, true, false], [true, false, true, false], [true, true, true, true], [true, false, true, false],
+                            [true, true, false, true], [false, false, false, false], [false, false, false, false]
                         ],
                         [
-                            [false, false, true, true],
-                            [true, false, true, false],
-                            [true, false, true, false],
-                            [true, true, false, false],
-                            [false, false, false, false],
-                            [false, false, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, true],
-                            [false, false, false, false],
-                            [false, true, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false]
+                            [false, false, true, true], [true, false, true, false], [true, false, true, false], [true, true, false, false],
+                            [false, false, false, false], [false, false, false, true], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, false], [false, false, false, false], [false, true, false, true], [false, false, false, false],
+                            [false, true, false, true], [false, false, false, false], [false, false, false, false]
                         ],
                         [
-                            [false, true, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, true, true],
-                            [true, false, true, false],
-                            [true, false, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, true, false],
-                            [true, false, true, false],
-                            [true, true, true, false],
-                            [true, false, false, true],
-                            [false, false, false, false]
+                            [false, true, false, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, false], [false, true, true, true], [true, false, true, false], [true, false, false, true],
+                            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, false],
+                            [true, true, true, false], [true, false, false, true], [false, false, false, false]
                         ],
                         [
-                            [false, true, true, false],
-                            [true, false, true, false],
-                            [true, false, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, true],
-                            [false, false, false, false],
-                            [false, true, true, false],
-                            [true, false, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, true],
-                            [false, false, false, false]
+                            [false, true, true, false], [true, false, true, false], [true, false, false, true], [false, false, false, false],
+                            [false, false, false, false], [false, true, false, true], [false, false, false, false], [false, true, true, false],
+                            [true, false, false, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, false], [false, true, false, true], [false, false, false, false]
                         ],
                         [
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, true, false],
-                            [true, false, true, true],
-                            [true, false, true, false],
-                            [true, true, false, true],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, true, false],
-                            [true, false, true, true],
-                            [true, false, true, false],
-                            [true, false, false, true],
-                            [false, false, false, false],
-                            [false, true, false, false],
-                            [false, false, false, false]
+                            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, true],
+                            [true, false, true, false], [true, true, false, true], [false, false, false, false], [false, false, false, false],
+                            [false, true, true, false], [true, false, true, true], [true, false, true, false], [true, false, false, true],
+                            [false, false, false, false], [false, true, false, false], [false, false, false, false]
                         ],
                         [
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, false],
-                            [false, false, false, false],
-                            [false, true, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, true, false, false],
-                            [false, false, false, false],
-                            [false, true, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false],
-                            [false, false, false, false]
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, true, false, false],
+                            [false, false, false, false], [false, true, false, false], [false, false, false, false], [false, false, false, false],
+                            [false, false, false, false], [false, true, false, false], [false, false, false, false], [false, true, false, false],
+                            [false, false, false, false], [false, false, false, false], [false, false, false, false]
                         ]
                     ];
                 }
@@ -1057,7 +1055,9 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
                 get exit() { return this.data._r._d._exit; }
                 get seed() { return this.data._r._d._seed; }
                 get zombies() { return this.data._r._d._z; }
-                get room() { return this.data._r._d._room; }
+                get door() { return this.data._r._d._room; }
+                get room() { return this.data._r._r; }
+                get kills() { return this.data._r._d._k; }
                 /**
                  * Decode the url encoded flashvar
                  */
@@ -1101,7 +1101,7 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
                         this._fakeData = {
                             _d: true,
                             _h: 9,
-                            _k: 1,
+                            _k: random_1.HMapRandom.getOneOfNoSeed([0, 1, 2]),
                             _r: {
                                 _dirs: [false, false, false, true],
                                 _move: true,
@@ -1136,9 +1136,9 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
         }
     };
 });
-System.register("layers/svg-ruin-background", ["layers/abstract", "random"], function (exports_11, context_11) {
+System.register("layers/svg-ruin-background", ["layers/abstract", "random", "imagesLoader"], function (exports_11, context_11) {
     "use strict";
-    var abstract_3, random_2, HMapSVGRuinBackgroundLayer;
+    var abstract_3, random_2, imagesLoader_2, HMapSVGRuinBackgroundLayer;
     var __moduleName = context_11 && context_11.id;
     return {
         setters: [
@@ -1147,6 +1147,9 @@ System.register("layers/svg-ruin-background", ["layers/abstract", "random"], fun
             },
             function (random_2_1) {
                 random_2 = random_2_1;
+            },
+            function (imagesLoader_2_1) {
+                imagesLoader_2 = imagesLoader_2_1;
             }
         ],
         execute: function () {
@@ -1157,60 +1160,141 @@ System.register("layers/svg-ruin-background", ["layers/abstract", "random"], fun
                 constructor(map) {
                     super(map);
                     this.translation = { x: 0, y: 0 }; // translation really applied
+                    this.availableWalls = new Array();
+                    this.availableZones = new Array();
                     this.translateTo = { x: 0, y: 0 }; // target (translation to achieve after easing)
                     const hmap = document.querySelector('#hmap');
-                    if (document.querySelector('#svgRuin') === null && hmap) {
+                    if (document.querySelector('#svgRuinBackground') === null && hmap) {
                         const SVG = document.createElementNS(this.ns, 'svg');
-                        SVG.setAttributeNS(null, 'id', 'svgRuin');
+                        SVG.setAttributeNS(null, 'id', 'svgRuinBackground');
                         SVG.setAttributeNS(null, 'style', 'position:absolute;z-index:10;');
                         hmap.appendChild(SVG);
                         SVG.style.pointerEvents = 'none';
                     }
-                    this.svg = document.getElementById('svgRuin');
+                    this.svg = document.getElementById('svgRuinBackground');
                     this.svg.setAttributeNS(null, 'width', map.width + 'px');
                     this.svg.setAttributeNS(null, 'height', map.height + 'px');
                     this.svg.style.width = map.width + 'px';
                     this.svg.style.height = map.height + 'px';
                     this.type = 'ruin-background';
+                    this.random = new random_2.HMapRandom();
                 }
                 draw() {
                     const oldGroup = this.g;
                     this.g = document.createElementNS(this.ns, 'g');
+                    const imagesLoader = imagesLoader_2.HMapImagesLoader.getInstance();
                     const map = this.map;
                     const mapData = this.map.mapData;
-                    const imagesLoader = map.imagesLoader;
-                    const center = { x: map.width / 2, y: map.height / 2 };
-                    const directions = mapData.directionsStr;
-                    const walls = this.availableWalls();
-                    const zones = this.availableZones();
-                    this.img(imagesLoader.get(directions).src, 0, 0, 300, 300);
-                    // the main door
-                    if (mapData.exit) {
-                        this.img(imagesLoader.get('exit').src, 117, 90, 64, 60);
+                    this.random = new random_2.HMapRandom(mapData.seed);
+                    const typeOfRuin = mapData.ruinType;
+                    this.availableWalls = this.buildAvailableWalls();
+                    this.availableZones = this.buildAvailableZones();
+                    if (mapData.room === true) {
+                        this.imgFromObj('room', 0, 0);
                     }
-                    if (mapData.room) {
-                        console.log(mapData.room, walls, zones);
-                    }
-                    // you
-                    const you = this.img(imagesLoader.get('you').src, 142, 136, 16, 32);
-                    you.setAttributeNS(null, 'id', 'hmap-ruin-you');
-                    // zombies
-                    const random = new random_2.HMapRandom(mapData.seed);
-                    for (let n = 1; n <= mapData.zombies; n++) {
-                        const newPosZ = random.randomCircle(center, Math.floor(random.random() * 20) + 5);
-                        this.img(imagesLoader.get('zombiegif').src, newPosZ.x, newPosZ.y, 25, 38);
+                    else {
+                        const directions = mapData.directionsStr;
+                        this.imgFromObj(directions, 0, 0);
+                        // the main door
+                        if (mapData.exit) {
+                            this.imgFromObj('exit', 117, 90);
+                        }
+                        // position the doors
+                        if (mapData.door) {
+                            const coord = this.getRandomWallCoordinatesForDoors(30, 30, ['D', 'E', 'K', 'J']);
+                            if (coord) {
+                                const openClosed = (mapData.door._locked) ? 'closed' : 'open';
+                                const door = this.imgFromObj('door-' + coord.direction + '-' + openClosed, coord.x, coord.y);
+                                door.style.cursor = 'pointer';
+                                door.style.pointerEvents = 'auto';
+                                door.onclick = (event) => {
+                                    map.enterRoom();
+                                };
+                            }
+                            else {
+                                throw new Error('HMapSVGRuinBackground::draw - out of walls for doors');
+                            }
+                        }
+                        // zombies, we generate now and display after to ensure they are on top of everything (dont move this code under)
+                        const zombies = new Array();
+                        for (let n = 1; n <= mapData.zombies; n++) {
+                            const zombieObj = imagesLoader.get('zombiegif');
+                            const newPos = this.getRandomFloorCoordinates(zombieObj.width, zombieObj.height, false, // false because zombies are stackable on zone
+                            undefined, 20); // 20 = offset, to concentrate zombies around the player
+                            if (newPos) {
+                                zombies.push(newPos);
+                            }
+                            else {
+                                throw new Error('HMapSVGRuinBackground::draw - out of zones for zombies');
+                            }
+                        }
+                        // kills, we generate now and display after to ensure they are on top of everything (dont move this code under)
+                        const kills = new Array();
+                        for (let n = 1; n <= mapData.kills; n++) {
+                            const killsObj = imagesLoader.get('dead');
+                            const newPos = this.getRandomFloorCoordinates(killsObj.width, killsObj.height, false, // false because kills are stackable on zone
+                            undefined, 20); // 20 = offset, to concentrate kills around the player
+                            if (newPos) {
+                                kills.push(newPos);
+                            }
+                            else {
+                                throw new Error('HMapSVGRuinBackground::draw - out of zones for zombies');
+                            }
+                        }
+                        // randomize some objects on the floor
+                        const numberOfObjectsOnTheFloor = this.random.getOneOfLocalSeed([0, 0, 0, 0, 0, 0, 1, 2]); // change this array to change the probability
+                        for (let i = 0; i < numberOfObjectsOnTheFloor; i++) {
+                            const randomZone = this.random.getOneOfLocalSeed(this.availableZones);
+                            if (randomZone) {
+                                const imageId = this.random.getOneOfLocalSeed(mapData.zones[typeOfRuin][randomZone]);
+                                if (imageId) {
+                                    const imageObj = imagesLoader.get(imageId);
+                                    const coordinates = this.getRandomFloorCoordinates(imageObj.width, imageObj.height, true, randomZone);
+                                    if (coordinates) {
+                                        this.imgFromObj(imageId, coordinates.x, coordinates.y);
+                                    }
+                                }
+                            }
+                        }
+                        // randomize some objects on the walls
+                        const numberOfObjectsOnTheWall = this.random.getOneOfLocalSeed([5]); // change this array to change the probability
+                        for (let i = 0; i < numberOfObjectsOnTheWall; i++) {
+                            const randomWall = this.random.getOneOfLocalSeed(this.availableWalls);
+                            if (randomWall) {
+                                this.availableWalls = this.removeFromArray(randomWall, this.availableWalls);
+                                const imageId = this.random.getOneOfLocalSeed(mapData.walls[typeOfRuin][randomWall]);
+                                if (imageId) {
+                                    const coordinates = this.getCoordinates(imageId);
+                                    if (coordinates) {
+                                        this.imgFromObj(imageId, coordinates.x, coordinates.y);
+                                    }
+                                }
+                            }
+                        }
+                        zombies.forEach((coord) => { this.imgFromObj('zombiegif', coord.x, coord.y); });
+                        kills.forEach((coord) => { this.imgFromObj('dead', coord.x, coord.y); });
+                        // you
+                        const you = this.imgFromObj('you', 142, 136);
+                        you.setAttributeNS(null, 'id', 'hmap-ruin-you');
                     }
                     this.svg.appendChild(this.g);
                     if (oldGroup) {
                         window.setTimeout(() => this.svg.removeChild(oldGroup), 100);
                     }
                 }
+                /**
+                 * Append the next tile before we move to avoid blank area
+                 */
                 appendNextTile(shiftX, shiftY, dirs) {
                     const map = this.map;
-                    const imagesLoader = map.imagesLoader;
                     const directions = '' + (+dirs[0]) + (+dirs[1]) + (+dirs[2]) + (+dirs[3]);
-                    this.img(imagesLoader.get(directions).src, shiftX * 300, shiftY * 300, 300, 300);
+                    this.imgFromObj(directions, shiftX * 300, shiftY * 300);
                 }
+                /**
+                 * Translate the background with an ease movement
+                 * @param target target of the movement
+                 * @param callback called once the move is done
+                 */
                 easeMovement(target, callback) {
                     this.startTranslate = Date.now();
                     this.translateTo = target;
@@ -1243,9 +1327,228 @@ System.register("layers/svg-ruin-background", ["layers/abstract", "random"], fun
                     }
                 }
                 /**
+                 * I didnt manage to make it generic ...
+                 */
+                getCoordinates(imageId) {
+                    const mapData = this.map.mapData;
+                    const imagesLoader = imagesLoader_2.HMapImagesLoader.getInstance();
+                    const imageObj = imagesLoader.get(imageId);
+                    const height = imageObj.height;
+                    const width = imageObj.width;
+                    switch (mapData.ruinType) {
+                        case 'bunker':
+                            switch (imageId) {
+                                case 'wall_hatch_A':
+                                    return { x: 40, y: 185 };
+                                case 'wall_gutter_B':
+                                    return { x: 78, y: 128 - height };
+                                case 'wall_hatch_B':
+                                    return { x: 40, y: 115 - height };
+                                case 'wall_barrel_D':
+                                    return { x: 130 - width, y: 60 };
+                                case 'wall_grid_D':
+                                    return { x: 114 - width, y: 55 };
+                                case 'wall_pipe_D':
+                                    return { x: 139 - width, y: 60 };
+                                case 'wall_barrel_E':
+                                    return { x: 170, y: 70 };
+                                case 'wall_grid_E':
+                                    return { x: 186, y: 55 };
+                                case 'wall_pipe_E':
+                                    return { x: 161, y: 60 };
+                                case 'wall_gutter_G':
+                                    return { x: 222 - width, y: 128 - height };
+                                case 'wall_hatch_G':
+                                    return { x: 260 - width, y: 115 - height };
+                                case 'wall_hatch_H':
+                                    return { x: 260 - width, y: 185 };
+                                default:
+                                    throw new Error('Make the compiler happy');
+                            }
+                        case 'hospital':
+                            switch (imageId) {
+                                case 'wall_bed_D':
+                                    return { x: 130 - width, y: 65 };
+                                case 'wall_dead_D':
+                                    return { x: 130 - width, y: 70 };
+                                case 'wall_bed_E':
+                                    return { x: 170, y: 65 };
+                                case 'wall_dead_E':
+                                    return { x: 170, y: 70 };
+                                case 'wall_grid_J':
+                                    return { x: 170, y: 260 - height };
+                                case 'wall_grid_K':
+                                    return { x: 130 - width, y: 260 - height };
+                                default:
+                                    throw new Error('Make the compiler happy');
+                            }
+                        case 'motel':
+                            switch (imageId) {
+                                case 'wall_bench_A':
+                                    return { x: 40, y: 175 };
+                                case 'wall_bench_B':
+                                    return { x: 40, y: 125 - height };
+                                case 'wall_palmtree_B':
+                                    return { x: 80, y: 125 - height };
+                                case 'wall_flowers_D':
+                                    return { x: 130 - width, y: 70 };
+                                case 'wall_flowers_E':
+                                    return { x: 170, y: 70 };
+                                case 'wall_bench_G':
+                                    return { x: 260 - width, y: 125 - height };
+                                case 'wall_palmtree_G':
+                                    return { x: 220 - width, y: 125 - height };
+                                case 'wall_bench_H':
+                                    return { x: 260 - width, y: 175 };
+                                default:
+                                    throw new Error('Make the compiler happy');
+                            }
+                    }
+                }
+                /**
+                 * Return a good random position for elements on the floor
+                 * There are some blinds spots but I dont think it's very important ...
+                 */
+                getRandomFloorCoordinates(width, height, remove = true, zone, offset = 0) {
+                    let zoneCoordinates;
+                    if (!zone) {
+                        zone = this.random.getOneOfLocalSeed(this.availableZones);
+                    }
+                    if (!zone) {
+                        return undefined;
+                    }
+                    if (remove) {
+                        this.availableZones = this.removeFromArray(zone, this.availableZones);
+                    }
+                    if (zone === 'Z1') {
+                        zoneCoordinates = {
+                            topLeft: { x: offset, y: 115 },
+                            bottomRight: { x: 115 - width, y: 185 - height }
+                        };
+                    }
+                    else if (zone === 'Z2') {
+                        zoneCoordinates = {
+                            topLeft: { x: 115, y: offset },
+                            bottomRight: { x: 185 - width, y: 115 - height }
+                        };
+                    }
+                    else if (zone === 'Z3') {
+                        zoneCoordinates = {
+                            topLeft: { x: 185, y: 115 },
+                            bottomRight: { x: 300 - offset - width, y: 185 - height }
+                        };
+                    }
+                    else if (zone === 'Z4') {
+                        zoneCoordinates = {
+                            topLeft: { x: 115, y: 185 },
+                            bottomRight: { x: 185 - width, y: 300 - offset - height }
+                        };
+                    }
+                    else {
+                        zoneCoordinates = {
+                            topLeft: { x: 115, y: 115 },
+                            bottomRight: { x: 185 - width, y: 185 - height }
+                        };
+                    }
+                    return {
+                        x: this.random.getRandomIntegerLocalSeed(zoneCoordinates.topLeft.x, zoneCoordinates.bottomRight.x),
+                        y: this.random.getRandomIntegerLocalSeed(zoneCoordinates.topLeft.y, zoneCoordinates.bottomRight.y)
+                    };
+                }
+                /**
+                 * Get random coordinates on a random wall
+                 * This is for doors only. My method has gone smelly with all the differences ...
+                 * We should rewrite this code @TODO
+                 */
+                getRandomWallCoordinatesForDoors(width, height, exceptions, remove = true, wall) {
+                    if (!wall) { // we may be out of available walls (hopefully not for doors ...)
+                        wall = this.random.getOneOfLocalSeed(this.availableWalls, exceptions);
+                    }
+                    if (!wall) { // we may be out of available walls (hopefully not for doors ...)
+                        return undefined;
+                    }
+                    if (remove) {
+                        this.availableWalls = this.removeFromArray(wall, this.availableWalls);
+                    }
+                    switch (wall) {
+                        case 'A':
+                            return {
+                                direction: 'bottom-left',
+                                x: 40,
+                                y: 175
+                            };
+                        case 'B':
+                            return {
+                                direction: 'top-left',
+                                x: 40,
+                                y: 125 - height
+                            };
+                        case 'C':
+                            return {
+                                direction: 'left',
+                                x: 130 - width,
+                                y: 150 - width - 2
+                            };
+                        case 'D':
+                            return {
+                                direction: 'left',
+                                x: 130 - width,
+                                y: 90
+                            };
+                        case 'E':
+                            return {
+                                direction: 'right',
+                                x: 170,
+                                y: 90
+                            };
+                        case 'F':
+                            return {
+                                direction: 'top',
+                                x: 150 - (width / 2),
+                                y: 125 - height
+                            };
+                        case 'G':
+                            return {
+                                direction: 'top-right',
+                                x: 260 - width,
+                                y: 125 - height
+                            };
+                        case 'H':
+                            return {
+                                direction: 'bottom-right',
+                                x: 260 - width,
+                                y: 175
+                            };
+                        case 'I':
+                            return {
+                                direction: 'right',
+                                x: 170,
+                                y: 150 - height / 2
+                            };
+                        case 'J':
+                            return {
+                                direction: 'bottom',
+                                x: 170,
+                                y: 260 - height
+                            };
+                        case 'K':
+                            return {
+                                direction: 'bottom',
+                                x: 130 - width,
+                                y: 260 - height
+                            };
+                        case 'L':
+                            return {
+                                direction: 'bottom',
+                                x: 150 - width / 2,
+                                y: 175
+                            };
+                    }
+                }
+                /**
                  * Get the available walls to put elements (doors or furnitures) on it
                  */
-                availableWalls() {
+                buildAvailableWalls() {
                     const mapData = this.map.mapData;
                     const directions = mapData.directions;
                     const walls = new Array();
@@ -1279,7 +1582,10 @@ System.register("layers/svg-ruin-background", ["layers/abstract", "random"], fun
                     }
                     return walls;
                 }
-                availableZones() {
+                /**
+                 * Get the available zones to put objects on the floor
+                 */
+                buildAvailableZones() {
                     const mapData = this.map.mapData;
                     const directions = mapData.directions;
                     const zones = new Array();
@@ -1297,6 +1603,13 @@ System.register("layers/svg-ruin-background", ["layers/abstract", "random"], fun
                         zones.push('Z4');
                     }
                     return zones;
+                }
+                removeFromArray(element, _array) {
+                    const index = _array.indexOf(element);
+                    if (index !== -1) {
+                        _array.splice(index, 1);
+                    }
+                    return _array;
                 }
             };
             exports_11("HMapSVGRuinBackgroundLayer", HMapSVGRuinBackgroundLayer);
@@ -1347,16 +1660,16 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
                     this.g = document.createElementNS(this.ns, 'g');
                     const map = this.map;
                     const mapData = this.map.mapData;
-                    const imagesLoader = map.imagesLoader;
                     // scanner
-                    this.img(imagesLoader.get('scanner').src, 250, 250, 38, 27);
+                    this.imgFromObj('scanner', 250, 250);
                     // focus lens shadow (433x433)
-                    this.img(imagesLoader.get('shadowFocus').src, (map.width - 433) / 2, (map.height - 433) / 2, 433, 433);
+                    this.imgFromObj('shadowFocus', (map.width - 433) / 2, (map.height - 433) / 2);
+                    this.imgFromObj('shadowFocus', (map.width - 433) / 2, (map.height - 433) / 2);
                     // green rects
                     this.rect(6, 6, map.width - 12, map.height - 25, 'transparent', '#188400', 1);
                     this.rect(4, 4, map.width - 8, map.height - 21, 'transparent', '#1a4e02', 1);
                     // glass
-                    this.img(imagesLoader.get('glass').src, 0, 0, 300, 300); // image is 300x300
+                    this.imgFromObj('glass', 0, 0); // image is 300x300
                     const oxygenText = this.text(map.width - 10, 14, lang_1.HMapLang.get('oxygen') + ' :', 'hmap-text-green');
                     oxygenText.setAttributeNS(null, 'text-anchor', 'end');
                     oxygenText.setAttributeNS(null, 'style', 'fill:#188300;');
@@ -1388,8 +1701,6 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
                 updateOxygen() {
                     const map = this.map;
                     const mapData = this.map.mapData;
-                    const imagesLoader = map.imagesLoader;
-                    console.log(mapData.oxygen);
                     const percent = Math.floor(mapData.oxygen / 3000);
                     const textElement = document.getElementById('hmap-oxygen');
                     if (textElement) {
@@ -1402,7 +1713,7 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
                             if (you) {
                                 you.parentNode.removeChild(you);
                             }
-                            this.img(imagesLoader.get('you-noox').src, 142, 133, 16, 34);
+                            this.imgFromObj('you-noox', 142, 133);
                         }
                     }
                 }
@@ -1414,15 +1725,14 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
                     }
                     // build new ones
                     const map = this.map;
-                    const imagesLoader = map.imagesLoader;
                     for (let i = 0, j = map.registredArrows.length; i < j; i++) {
                         const arrow = map.registredArrows[i];
-                        const arrowImg = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 82, 27, arrow.a, 'hmap-arrow');
+                        const arrowImg = this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a, 'hmap-arrow');
                         arrowImg.style.pointerEvents = 'auto';
                         arrowImg.style.cursor = 'pointer';
-                        this.img(imagesLoader.get('moveArrowOutline').src, arrow.ax, arrow.ay, 83, 28, arrow.a, 'hmap-arrow');
+                        this.imgFromObj('moveArrowOutline', arrow.ax, arrow.ay, arrow.a, 'hmap-arrow');
                         arrowImg.onmouseenter = () => {
-                            this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 83, 28, arrow.a, 'hmap-arrow hmap-arrowFill');
+                            this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a, 'hmap-arrow hmap-arrowFill');
                         };
                         arrowImg.onmouseleave = () => {
                             document.querySelectorAll('.hmap-arrowFill').forEach((element) => {
@@ -1430,7 +1740,12 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
                             });
                         };
                         arrowImg.onclick = () => {
-                            this.map.move(arrow.t);
+                            if (this.map.mapData.room === true) {
+                                this.map.exitRoom(); // if we are in a room, a move will exit the room
+                            }
+                            else {
+                                this.map.move(arrow.t); // else, execute the move in the given direction
+                            }
                         };
                     }
                 }
@@ -1439,9 +1754,9 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
         }
     };
 });
-System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-background", "layers/svg-loading", "toast", "data/hmap-ruin-data", "arrow", "environment", "random", "layers/svg-ruin-foreground"], function (exports_13, context_13) {
+System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-background", "layers/svg-loading", "toast", "data/hmap-ruin-data", "arrow", "environment", "random", "layers/svg-ruin-foreground", "imagesLoader"], function (exports_13, context_13) {
     "use strict";
-    var abstract_5, lang_2, svg_ruin_background_1, svg_loading_1, toast_1, hmap_ruin_data_1, arrow_1, environment_1, random_4, svg_ruin_foreground_1, HMapRuin;
+    var abstract_5, lang_2, svg_ruin_background_1, svg_loading_1, toast_1, hmap_ruin_data_1, arrow_1, environment_1, random_4, svg_ruin_foreground_1, imagesLoader_3, HMapRuin;
     var __moduleName = context_13 && context_13.id;
     return {
         setters: [
@@ -1474,6 +1789,9 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
             },
             function (svg_ruin_foreground_1_1) {
                 svg_ruin_foreground_1 = svg_ruin_foreground_1_1;
+            },
+            function (imagesLoader_3_1) {
+                imagesLoader_3 = imagesLoader_3_1;
             }
         ],
         execute: function () {
@@ -1542,11 +1860,11 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                     // @TODO : guess the ruin type
                     this.type = this.mapData.ruinType;
                     if (init) {
-                        this.imagesLoader.loadRuinPics(this.type);
+                        imagesLoader_3.HMapImagesLoader.getInstance().loadRuinPics(this.type);
                     }
                     this.registerArrows();
                     // when preloading the pictures is finished, starts drawing
-                    this.imagesLoader
+                    imagesLoader_3.HMapImagesLoader.getInstance()
                         .preloadPictures(this.layers.get('loading'), init, () => {
                         const hmapMenu = document.querySelector('#hmap-menu');
                         if (hmapMenu !== null) {
@@ -1662,9 +1980,9 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                             _d: {
                                 _exit: exit,
                                 _room: random.getOneOfLocalSeed([{
-                                        _locked: random.getRandomIntegerLocalSeed(1, 4) === 2 ? false : true,
-                                        _doorKind: random.getRandomIntegerLocalSeed(1, 4)
-                                    }, null, null, null, null, null]),
+                                        _locked: random.getOneOfLocalSeed([true, false]),
+                                        _doorKind: random.getOneOfLocalSeed([1, 2, 3])
+                                    }]),
                                 _seed: seed,
                                 _k: random.getRandomIntegerLocalSeed(0, 3),
                                 _w: true,
@@ -1684,38 +2002,76 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                     }
                 }
                 /**
+                 * Function called when the user click on a door
+                 */
+                enterRoom() {
+                    const mapData = this.mapData;
+                    if (environment_1.Environment.getInstance().devMode === false) {
+                        // @TODO
+                    }
+                    else { // dev mode, fake the data
+                        // fake the data
+                        const fakeData = mapData.data._r;
+                        fakeData._r = true;
+                        this.partialDataReceived({ JSON: fakeData });
+                    }
+                }
+                /**
+                 * Function called when the user exit the room
+                 */
+                exitRoom() {
+                    const mapData = this.mapData;
+                    if (environment_1.Environment.getInstance().devMode === false) {
+                        // @TODO
+                    }
+                    else { // dev mode, fake the data
+                        // fake the data
+                        const fakeData = mapData.data._r;
+                        fakeData._r = false;
+                        this.partialDataReceived({ JSON: fakeData });
+                    }
+                }
+                /**
                  * Register the available directionnal arrows
                  */
                 registerArrows() {
                     this.registredArrows = new Array();
                     if (this.mapData) {
                         const mapData = this.mapData;
-                        if (mapData.oxygen > 0) { // if we can move
-                            let offsetY, offsetX;
-                            const direction = mapData.directions;
-                            if (direction[1] === true) {
-                                offsetY = 15;
-                                offsetX = -41 + 150;
-                                const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
-                                this.registredArrows.push(A);
-                            }
-                            if (direction[3] === true) {
-                                offsetY = 250;
-                                offsetX = -41 + 150;
-                                const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
-                                this.registredArrows.push(A);
-                            }
-                            if (direction[2] === true) {
-                                offsetX = 230;
-                                offsetY = -14 + 150;
-                                const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
-                                this.registredArrows.push(A);
-                            }
-                            if (direction[0] === true) {
-                                offsetX = -10;
-                                offsetY = -14 + 150;
-                                const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
-                                this.registredArrows.push(A);
+                        let offsetY, offsetX;
+                        if (mapData.room) {
+                            offsetY = 250;
+                            offsetX = -41 + 150;
+                            const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
+                            this.registredArrows.push(A);
+                        }
+                        else {
+                            if (mapData.oxygen > 0) { // if we can move
+                                const direction = mapData.directions;
+                                if (direction[1] === true) {
+                                    offsetY = 15;
+                                    offsetX = -41 + 150;
+                                    const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
+                                    this.registredArrows.push(A);
+                                }
+                                if (direction[3] === true) {
+                                    offsetY = 250;
+                                    offsetX = -41 + 150;
+                                    const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
+                                    this.registredArrows.push(A);
+                                }
+                                if (direction[2] === true) {
+                                    offsetX = 230;
+                                    offsetY = -14 + 150;
+                                    const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
+                                    this.registredArrows.push(A);
+                                }
+                                if (direction[0] === true) {
+                                    offsetX = -10;
+                                    offsetY = -14 + 150;
+                                    const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
+                                    this.registredArrows.push(A);
+                                }
                             }
                         }
                     }
@@ -1746,34 +2102,35 @@ System.register("imagesLoader", ["environment", "toast"], function (exports_14, 
                 constructor() {
                     this.images = new Map();
                     // images to preload
-                    this.images.set('loading', { src: environment_2.Environment.getInstance().url + '/assets/loading.png', obj: undefined });
-                    this.images.set('glass', { src: environment_2.Environment.getInstance().url + '/assets/glass.png', obj: undefined });
-                    this.images.set('humanGlow', { src: environment_2.Environment.getInstance().url + '/assets/human_glow.png', obj: undefined });
-                    this.images.set('map', { src: environment_2.Environment.getInstance().url + '/assets/map.png', obj: undefined });
-                    this.images.set('moveArrowFill', { src: environment_2.Environment.getInstance().url + '/assets/move_arrow_fill.png', obj: undefined });
-                    this.images.set('moveArrowLight', { src: environment_2.Environment.getInstance().url + '/assets/move_arrow_light.png', obj: undefined });
-                    this.images.set('moveArrowOutline', { src: environment_2.Environment.getInstance().url + '/assets/move_arrow_outline.png', obj: undefined });
-                    this.images.set('night', { src: environment_2.Environment.getInstance().url + '/assets/night.png', obj: undefined });
-                    this.images.set('shadowFocus', { src: environment_2.Environment.getInstance().url + '/assets/shadow_focus.png', obj: undefined });
-                    this.images.set('targetArrow', { src: environment_2.Environment.getInstance().url + '/assets/town_arrow.png', obj: undefined });
-                    this.images.set('zombieGlow', { src: environment_2.Environment.getInstance().url + '/assets/zombie_glow.png', obj: undefined });
-                    this.images.set('blood', { src: environment_2.Environment.getInstance().url + '/assets/blood.png', obj: undefined });
-                    this.images.set('single', { src: environment_2.Environment.getInstance().url + '/assets/single.png', obj: undefined });
-                    this.images.set('hatch', { src: environment_2.Environment.getInstance().url + '/assets/hatch.png', obj: undefined });
-                    this.images.set('town', { src: environment_2.Environment.getInstance().url + '/assets/town.png', obj: undefined });
-                    this.images.set('building', { src: environment_2.Environment.getInstance().url + '/assets/building.png', obj: undefined });
-                    this.images.set('hatch-dense', { src: environment_2.Environment.getInstance().url + '/assets/hatch_dense.png', obj: undefined });
-                    this.images.set('target', { src: environment_2.Environment.getInstance().url + '/assets/target.png', obj: undefined });
-                    this.images.set('position', { src: environment_2.Environment.getInstance().url + '/assets/position.png', obj: undefined });
-                    this.images.set('people', { src: environment_2.Environment.getInstance().url + '/assets/people.png', obj: undefined });
-                    this.images.set('uncheck', { src: environment_2.Environment.getInstance().url + '/assets/uncheck.png', obj: undefined });
-                    this.images.set('check', { src: environment_2.Environment.getInstance().url + '/assets/check.png', obj: undefined });
-                    this.images.set('destination', { src: environment_2.Environment.getInstance().url + '/assets/destination.png', obj: undefined });
+                    const url = environment_2.Environment.getInstance().url + '/assets/';
+                    this.images.set('loading', { src: url + 'loading.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('glass', { src: url + 'glass.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('humanGlow', { src: url + 'human_glow.png', obj: undefined, width: 18, height: 18 });
+                    this.images.set('map', { src: url + 'map.png', obj: undefined, width: 950, height: 950 });
+                    this.images.set('moveArrowFill', { src: url + 'move_arrow_fill.png', obj: undefined, width: 82, height: 27 });
+                    this.images.set('moveArrowLight', { src: url + 'move_arrow_light.png', obj: undefined, width: 82, height: 27 });
+                    this.images.set('moveArrowOutline', { src: url + 'move_arrow_outline.png', obj: undefined, width: 83, height: 28 });
+                    this.images.set('night', { src: url + 'night.png', obj: undefined, width: 950, height: 950 });
+                    this.images.set('shadowFocus', { src: url + 'shadow_focus.png', obj: undefined, width: 433, height: 433 });
+                    this.images.set('targetArrow', { src: url + 'town_arrow.png', obj: undefined, width: 9, height: 17 });
+                    this.images.set('zombieGlow', { src: url + 'zombie_glow.png', obj: undefined, width: 18, height: 18 });
+                    this.images.set('blood', { src: url + 'blood.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('single', { src: url + 'single.png', obj: undefined, width: 200, height: 200 });
+                    this.images.set('hatch', { src: url + 'hatch.png', obj: undefined, width: 26, height: 26 });
+                    this.images.set('town', { src: url + 'town.png', obj: undefined, width: 26, height: 26 });
+                    this.images.set('building', { src: url + 'building.png', obj: undefined, width: 25, height: 25 });
+                    this.images.set('hatch-dense', { src: url + 'hatch_dense.png', obj: undefined, width: 25, height: 25 });
+                    this.images.set('target', { src: url + 'target.png', obj: undefined, width: 25, height: 25 });
+                    this.images.set('position', { src: url + 'position.png', obj: undefined, width: 25, height: 25 });
+                    this.images.set('people', { src: url + 'people.png', obj: undefined, width: 5, height: 5 });
+                    this.images.set('uncheck', { src: url + 'uncheck.png', obj: undefined, width: 12, height: 13 });
+                    this.images.set('check', { src: url + 'check.png', obj: undefined, width: 12, height: 13 });
+                    this.images.set('destination', { src: url + 'destination.png', obj: undefined, width: 12, height: 12 });
                     for (let tag = 1; tag <= 11; tag++) {
-                        this.images.set('tag_' + tag, { src: environment_2.Environment.getInstance().url + '/assets/tags/' + tag + '.png', obj: undefined });
+                        this.images.set('tag_' + tag, { src: url + 'tags/' + tag + '.png', obj: undefined, width: 16, height: 16 });
                     }
                     // tag 12 is a gif
-                    this.images.set('tag_12', { src: environment_2.Environment.getInstance().url + '/assets/tags/12.gif', obj: undefined });
+                    this.images.set('tag_12', { src: url + 'tags/12.gif', obj: undefined, width: 16, height: 16 });
                 }
                 static getInstance() {
                     if (this._instance === undefined) {
@@ -1782,34 +2139,90 @@ System.register("imagesLoader", ["environment", "toast"], function (exports_14, 
                     return this._instance;
                 }
                 loadRuinPics(location) {
-                    this.images.set('0001', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0001.png', obj: undefined });
-                    this.images.set('0010', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0010.png', obj: undefined });
-                    this.images.set('0011', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0011.png', obj: undefined });
-                    this.images.set('0100', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0100.png', obj: undefined });
-                    this.images.set('0101', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0101.png', obj: undefined });
-                    this.images.set('0110', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0110.png', obj: undefined });
-                    this.images.set('0111', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/0111.png', obj: undefined });
-                    this.images.set('1000', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1000.png', obj: undefined });
-                    this.images.set('1001', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1001.png', obj: undefined });
-                    this.images.set('1010', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1010.png', obj: undefined });
-                    this.images.set('1011', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1011.png', obj: undefined });
-                    this.images.set('1100', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1100.png', obj: undefined });
-                    this.images.set('1101', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1101.png', obj: undefined });
-                    this.images.set('1110', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1110.png', obj: undefined });
-                    this.images.set('1111', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/1111.png', obj: undefined });
-                    this.images.set('dead', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/dead.png', obj: undefined });
-                    this.images.set('elem1', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/elem1.png', obj: undefined });
-                    this.images.set('elem2', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/elem2.png', obj: undefined });
-                    this.images.set('elem3', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/elem3.png', obj: undefined });
-                    this.images.set('elem4', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/elem4.png', obj: undefined });
-                    this.images.set('elem5', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/elem5.png', obj: undefined });
-                    this.images.set('light', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/light.png', obj: undefined });
-                    this.images.set('exit', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/exit.png', obj: undefined });
-                    this.images.set('room', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/room.png', obj: undefined });
-                    this.images.set('zombiegif', { src: environment_2.Environment.getInstance().url + '/assets/ruin/' + location + '/zombie.gif', obj: undefined });
-                    this.images.set('you', { src: environment_2.Environment.getInstance().url + '/assets/ruin/you.gif', obj: undefined });
-                    this.images.set('you-noox', { src: environment_2.Environment.getInstance().url + '/assets/ruin/you_noox.gif', obj: undefined });
-                    this.images.set('scanner', { src: environment_2.Environment.getInstance().url + '/assets/ruin/scanner.gif', obj: undefined });
+                    const url = environment_2.Environment.getInstance().url + '/assets/ruin/';
+                    this.images.set('0001', { src: url + location + '/0001.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('0010', { src: url + location + '/0010.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('0011', { src: url + location + '/0011.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('0100', { src: url + location + '/0100.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('0101', { src: url + location + '/0101.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('0110', { src: url + location + '/0110.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('0111', { src: url + location + '/0111.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1000', { src: url + location + '/1000.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1001', { src: url + location + '/1001.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1010', { src: url + location + '/1010.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1011', { src: url + location + '/1011.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1100', { src: url + location + '/1100.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1101', { src: url + location + '/1101.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1110', { src: url + location + '/1110.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('1111', { src: url + location + '/1111.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('dead', { src: url + location + '/dead.png', obj: undefined, width: 23, height: 36 });
+                    // this.images.set('light',                    { src: url + location + '/light.png',  obj: undefined, width: , height:  });
+                    this.images.set('exit', { src: url + location + '/exit.png', obj: undefined, width: 62, height: 57 });
+                    this.images.set('room', { src: url + location + '/room.png', obj: undefined, width: 300, height: 300 });
+                    this.images.set('zombiegif', { src: url + location + '/zombie.gif', obj: undefined, width: 25, height: 38 });
+                    this.images.set('door-top-closed', { src: url + location + '/dtc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-top-open', { src: url + location + '/dto.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-top-right-closed', { src: url + location + '/dtrc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-top-right-open', { src: url + location + '/dtro.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-top-left-closed', { src: url + location + '/dtlc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-top-left-open', { src: url + location + '/dtlo.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-bottom-closed', { src: url + location + '/dbc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-bottom-open', { src: url + location + '/dbo.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-bottom-right-closed', { src: url + location + '/dbrc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-bottom-right-open', { src: url + location + '/dbro.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-bottom-left-closed', { src: url + location + '/dblc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-bottom-left-open', { src: url + location + '/dblo.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-left-closed', { src: url + location + '/dlc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-left-open', { src: url + location + '/dlo.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-right-closed', { src: url + location + '/drc.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('door-right-open', { src: url + location + '/dro.png', obj: undefined, width: 30, height: 30 });
+                    this.images.set('you', { src: url + 'you.gif', obj: undefined, width: 16, height: 32 });
+                    this.images.set('you-noox', { src: url + 'you_noox.gif', obj: undefined, width: 16, height: 34 });
+                    this.images.set('scanner', { src: url + 'scanner.gif', obj: undefined, width: 38, height: 27 });
+                    if (location === 'motel') {
+                        this.images.set('wall_bench_A', { src: url + location + '/wall_bench_A.png', obj: undefined, width: 42, height: 22 });
+                        this.images.set('wall_bench_B', { src: url + location + '/wall_bench_B.png', obj: undefined, width: 42, height: 22 });
+                        this.images.set('wall_bench_G', { src: url + location + '/wall_bench_G.png', obj: undefined, width: 42, height: 22 });
+                        this.images.set('wall_bench_H', { src: url + location + '/wall_bench_H.png', obj: undefined, width: 42, height: 22 });
+                        this.images.set('wall_flowers_D', { src: url + location + '/wall_flowers_D.png', obj: undefined, width: 22, height: 39 });
+                        this.images.set('wall_flowers_E', { src: url + location + '/wall_flowers_E.png', obj: undefined, width: 22, height: 39 });
+                        this.images.set('wall_palmtree_B', { src: url + location + '/wall_palmtree_B.png', obj: undefined, width: 25, height: 35 });
+                        this.images.set('wall_palmtree_G', { src: url + location + '/wall_palmtree_G.png', obj: undefined, width: 25, height: 35 });
+                        this.images.set('zone_dead_bottom', { src: url + location + '/zone_dead_bottom.png', obj: undefined, width: 28, height: 53 });
+                        this.images.set('zone_dead_left', { src: url + location + '/zone_dead_left.png', obj: undefined, width: 53, height: 28 });
+                        this.images.set('zone_dead_right', { src: url + location + '/zone_dead_right.png', obj: undefined, width: 53, height: 28 });
+                        this.images.set('zone_dead_top', { src: url + location + '/zone_dead_top.png', obj: undefined, width: 28, height: 53 });
+                        this.images.set('zone_stain_bottom', { src: url + location + '/zone_stain_bottom.png', obj: undefined, width: 70, height: 95 });
+                        this.images.set('zone_stain_left', { src: url + location + '/zone_stain_left.png', obj: undefined, width: 95, height: 70 });
+                        this.images.set('zone_stain_right', { src: url + location + '/zone_stain_right.png', obj: undefined, width: 95, height: 70 });
+                        this.images.set('zone_stain_top', { src: url + location + '/zone_stain_top.png', obj: undefined, width: 70, height: 95 });
+                    }
+                    else if (location === 'hospital') {
+                        this.images.set('wall_bed_D', { src: url + location + '/wall_bed_D.png', obj: undefined, width: 20, height: 51 });
+                        this.images.set('wall_bed_E', { src: url + location + '/wall_bed_E.png', obj: undefined, width: 20, height: 51 });
+                        this.images.set('wall_dead_D', { src: url + location + '/wall_dead_D.png', obj: undefined, width: 30, height: 32 });
+                        this.images.set('wall_dead_E', { src: url + location + '/wall_dead_E.png', obj: undefined, width: 30, height: 32 });
+                        this.images.set('wall_grid_J', { src: url + location + '/wall_grid_J.png', obj: undefined, width: 12, height: 25 });
+                        this.images.set('wall_grid_K', { src: url + location + '/wall_grid_K.png', obj: undefined, width: 12, height: 25 });
+                        this.images.set('zone_dead_bottom', { src: url + location + '/zone_dead_bottom.png', obj: undefined, width: 28, height: 27 });
+                        this.images.set('zone_dead_left', { src: url + location + '/zone_dead_left.png', obj: undefined, width: 27, height: 28 });
+                        this.images.set('zone_dead_right', { src: url + location + '/zone_dead_right.png', obj: undefined, width: 27, height: 28 });
+                        this.images.set('zone_dead_top', { src: url + location + '/zone_dead_top.png', obj: undefined, width: 28, height: 27 });
+                    }
+                    else if (location === 'bunker') {
+                        this.images.set('wall_barrel_D', { src: url + location + '/wall_barrel_D.png', obj: undefined, width: 18, height: 27 });
+                        this.images.set('wall_barrel_E', { src: url + location + '/wall_barrel_E.png', obj: undefined, width: 18, height: 27 });
+                        this.images.set('wall_grid_D', { src: url + location + '/wall_grid_D.png', obj: undefined, width: 12, height: 54 });
+                        this.images.set('wall_grid_E', { src: url + location + '/wall_grid_E.png', obj: undefined, width: 12, height: 54 });
+                        this.images.set('wall_gutter_B', { src: url + location + '/wall_gutter_B.png', obj: undefined, width: 32, height: 21 });
+                        this.images.set('wall_gutter_G', { src: url + location + '/wall_gutter_G.png', obj: undefined, width: 32, height: 21 });
+                        this.images.set('wall_hatch_A', { src: url + location + '/wall_hatch_A.png', obj: undefined, width: 25, height: 14 });
+                        this.images.set('wall_hatch_B', { src: url + location + '/wall_hatch_B.png', obj: undefined, width: 25, height: 14 });
+                        this.images.set('wall_hatch_G', { src: url + location + '/wall_hatch_G.png', obj: undefined, width: 25, height: 14 });
+                        this.images.set('wall_hatch_H', { src: url + location + '/wall_hatch_H.png', obj: undefined, width: 25, height: 14 });
+                        this.images.set('wall_pipe_D', { src: url + location + '/wall_pipe_D.png', obj: undefined, width: 42, height: 59 });
+                        this.images.set('wall_pipe_E', { src: url + location + '/wall_pipe_E.png', obj: undefined, width: 42, height: 59 });
+                    }
                 }
                 isset(imageId) {
                     return (this.images.get(imageId) !== undefined);
@@ -1876,10 +2289,7 @@ System.register("imagesLoader", ["environment", "toast"], function (exports_14, 
                             else {
                                 url = environment_2.Environment.getInstance().url + '/assets/buildings/b_' + neighbour.building + '.png';
                             }
-                            this.set('b' + neighbour.building, {
-                                src: url,
-                                obj: undefined
-                            });
+                            this.set('b' + neighbour.building, { src: url, obj: undefined, height: 100, width: 100 });
                         }
                     });
                 }
@@ -2304,7 +2714,7 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                         square.onmouseup = this.onMouseUpSquare.bind(this);
                         if (visionArray[i] !== undefined && visionArray[i] !== null && visionArray[i] >= -1) {
                             if (mapData.details[i]._nvt === true) { // outside of tower range
-                                this.img(map.imagesLoader.get('hatch').src, x, y, this.squareSize, this.squareSize);
+                                this.imgFromObj('hatch', x, y, undefined, undefined, this.squareSize, this.squareSize);
                             }
                             else if (mapData.details[i]._nvt === false) { // inside of tower range
                                 // apparently nothing to do in this case, but I'm not sure so I let the if
@@ -2314,14 +2724,14 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                             }
                         }
                         else { // position never visited
-                            this.img(map.imagesLoader.get('hatch-dense').src, x, y, this.squareSize, this.squareSize);
+                            this.imgFromObj('hatch-dense', x, y, undefined, undefined, this.squareSize, this.squareSize);
                         }
                         if (mapData.details[i]._c > 0 || mapData.details[i]._c === -1) { // another building than town
                             if (mapData.details[i]._c === 1) { // town
-                                this.img(map.imagesLoader.get('town').src, x, y, this.squareSize, this.squareSize);
+                                this.imgFromObj('town', x, y, undefined, undefined, this.squareSize, this.squareSize);
                             }
                             else {
-                                this.img(map.imagesLoader.get('building').src, x, y, this.squareSize, this.squareSize);
+                                this.imgFromObj('building', x, y, undefined, undefined, this.squareSize, this.squareSize);
                             }
                         }
                         // place the users
@@ -2335,7 +2745,7 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                                     }
                                     const seed = (x * 10 + y) * (y * 10 + x) + usernameAsNumber;
                                     const random = new random_6.HMapRandom(seed);
-                                    const userImg = this.img(map.imagesLoader.get('people').src, x + random.getRandomIntegerLocalSeed(0.2 * this.squareSize, 0.8 * this.squareSize), y + random.getRandomIntegerLocalSeed(0.2 * this.squareSize, 0.8 * this.squareSize), 5, 5);
+                                    const userImg = this.imgFromObj('people', x + random.getRandomIntegerLocalSeed(0.2 * this.squareSize, 0.8 * this.squareSize), y + random.getRandomIntegerLocalSeed(0.2 * this.squareSize, 0.8 * this.squareSize));
                                     userImg.setAttributeNS(null, 'class', 'hmap-user');
                                 });
                             }
@@ -2345,7 +2755,7 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                             const tag = mapData.details[i]._t;
                             if (tag > 0 && tag < 13) {
                                 const tagSize = Math.min(this.squareSize / 1.5, 16);
-                                const tagImg = this.img(map.imagesLoader.get('tag_' + tag).src, x + this.squareSize / 2 - tagSize / 2, y + this.squareSize / 2 - tagSize / 2, tagSize, tagSize);
+                                const tagImg = this.imgFromObj('tag_' + tag, x + this.squareSize / 2 - tagSize / 2, y + this.squareSize / 2 - tagSize / 2, undefined, undefined, tagSize, tagSize);
                                 tagImg.setAttributeNS(null, 'class', 'hmap-tag');
                             }
                         }
@@ -2354,7 +2764,7 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                             !currentPos &&
                             position.x === map.target.x &&
                             position.y === map.target.y) { // not town && target && not current pos
-                            const target = this.img(map.imagesLoader.get('target').src, x, y, this.squareSize, this.squareSize);
+                            const target = this.imgFromObj('target', x, y, undefined, undefined, this.squareSize, this.squareSize);
                             target.setAttributeNS(null, 'class', 'hmap-target');
                         }
                     } // iterate over the grid
@@ -2409,7 +2819,7 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                         const x = this.padding + position.x * (this.squareSize + this.spaceBetweenSquares);
                         const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
                         map.setTarget(mapData.getCoordinates(index));
-                        const target = this.img(map.imagesLoader.get('target').src, x, y, this.squareSize, this.squareSize);
+                        const target = this.imgFromObj('target', x, y, undefined, undefined, this.squareSize, this.squareSize);
                         target.setAttributeNS(null, 'class', 'hmap-target');
                     }
                 }
@@ -2666,7 +3076,7 @@ System.register("layers/svg-glass-static", ["layers/abstract"], function (export
                 draw() {
                     const oldGroup = this.g; // delete the group after drawing the new one to avoid flickering
                     this.g = document.createElementNS(this.ns, 'g');
-                    this.img(this.map.imagesLoader.get('glass').src, 0, 0, 300, 300);
+                    this.imgFromObj('glass', 0, 0);
                     this.svg.appendChild(this.g);
                     if (oldGroup) {
                         this.svg.removeChild(oldGroup);
@@ -2677,9 +3087,9 @@ System.register("layers/svg-glass-static", ["layers/abstract"], function (export
         }
     };
 });
-System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "environment", "lang", "layers/svg-loading", "layers/svg-glass-static", "data/hmap-desert-data"], function (exports_18, context_18) {
+System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "environment", "lang", "layers/svg-loading", "layers/svg-glass-static", "data/hmap-desert-data", "imagesLoader"], function (exports_18, context_18) {
     "use strict";
-    var toast_3, abstract_9, svg_grid_1, environment_3, lang_4, svg_loading_2, svg_glass_static_1, hmap_desert_data_1, HMapGridMap;
+    var toast_3, abstract_9, svg_grid_1, environment_3, lang_4, svg_loading_2, svg_glass_static_1, hmap_desert_data_1, imagesLoader_4, HMapGridMap;
     var __moduleName = context_18 && context_18.id;
     return {
         setters: [
@@ -2706,6 +3116,9 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
             },
             function (hmap_desert_data_1_1) {
                 hmap_desert_data_1 = hmap_desert_data_1_1;
+            },
+            function (imagesLoader_4_1) {
+                imagesLoader_4 = imagesLoader_4_1;
             }
         ],
         execute: function () {
@@ -2839,7 +3252,7 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                  */
                 onDataReceived(init) {
                     // when preloading the pictures is finished, starts drawing
-                    this.imagesLoader
+                    imagesLoader_4.HMapImagesLoader.getInstance()
                         .preloadPictures(this.layers.get('loading'), init, () => {
                         const hmapMenu = document.querySelector('#hmap-menu');
                         if (hmapMenu !== null) {
@@ -3048,7 +3461,6 @@ System.register("layers/svg-desert-background", ["layers/abstract", "random"], f
                     this.g = document.createElementNS(this.ns, 'g');
                     const map = this.map;
                     const mapData = this.map.mapData;
-                    const imagesLoader = this.map.imagesLoader;
                     const seed = mapData.zoneId;
                     const random = new random_7.HMapRandom(seed);
                     const neighbours = mapData.neighbours;
@@ -3057,11 +3469,11 @@ System.register("layers/svg-desert-background", ["layers/abstract", "random"], f
                     const numberOfHumans = mapData.numberOfHumans;
                     const numberOfZombies = mapData.numberOfZombies;
                     // first thing first, the background
-                    this.img(imagesLoader.get('map').src, -100 * (position.x % 6) - 25, -100 * (position.y % 6) - 25, 950, 950);
+                    this.imgFromObj('map', -100 * (position.x % 6) - 25, -100 * (position.y % 6) - 25);
                     // buildings
                     neighbours.neighbours.forEach((neighbour) => {
                         if (neighbour.building !== 0 && neighbour.building !== null) {
-                            const building = this.img(imagesLoader.get('b' + neighbour.building).src, neighbour.offsetX, neighbour.offsetY, 100, 100);
+                            const building = this.imgFromObj('b' + neighbour.building, neighbour.offsetX, neighbour.offsetY);
                             building.setAttributeNS(null, 'hmap-bid', neighbour.building + '');
                             building.setAttributeNS(null, 'hmap-x', neighbour.offsetX + '');
                             building.setAttributeNS(null, 'hmap-y', neighbour.offsetY + '');
@@ -3072,18 +3484,18 @@ System.register("layers/svg-desert-background", ["layers/abstract", "random"], f
                     });
                     // night filter
                     if (mapData.hour < 7 || mapData.hour > 18) {
-                        this.img(imagesLoader.get('night').src, -25, -25, 950, 950);
+                        this.imgFromObj('night', -25, -25);
                     }
                     // humans
-                    this.img(imagesLoader.get('humanGlow').src, 141, 141, 18, 18); // you
+                    this.imgFromObj('humanGlow', 141, 141); // you
                     for (let k = 1; k <= numberOfHumans - 1; k++) { // others
                         const newPosH = random.randomCircle(center, Math.floor(random.random() * 30) + 5);
-                        this.img(imagesLoader.get('humanGlow').src, newPosH.x, newPosH.y, 18, 18);
+                        this.imgFromObj('humanGlow', newPosH.x, newPosH.y);
                     }
                     // zombies
                     for (let n = 1; n <= numberOfZombies; n++) {
                         const newPosZ = random.randomCircle(center, Math.floor(random.random() * 40) + 5);
-                        this.img(imagesLoader.get('zombieGlow').src, newPosZ.x, newPosZ.y, 18, 18);
+                        this.imgFromObj('zombieGlow', newPosZ.x, newPosZ.y);
                     }
                     // fog of war
                     for (let i = mapData.position.x - 2; i < mapData.position.x + 3; i++) {
@@ -3106,7 +3518,7 @@ System.register("layers/svg-desert-background", ["layers/abstract", "random"], f
                                 const offsetX = (i - mapData.position.x + 1) * 100;
                                 const offsetY = (j - mapData.position.y + 1) * 100;
                                 if (!(offsetX === 100 && offsetY === 100)) {
-                                    this.img(imagesLoader.get('single').src, offsetX - 50 + oX, offsetY - 50 + oY, 200, 200);
+                                    this.imgFromObj('single', offsetX - 50 + oX, offsetY - 50 + oY);
                                 }
                             }
                         }
@@ -3199,9 +3611,8 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
                     this.g = document.createElementNS(this.ns, 'g');
                     const map = this.map;
                     const mapData = this.map.mapData;
-                    const imagesLoader = this.map.imagesLoader;
                     // focus lens shadow (433x433)
-                    this.img(imagesLoader.get('shadowFocus').src, (map.width - 433) / 2, (map.height - 433) / 2, 433, 433);
+                    this.imgFromObj('shadowFocus', (map.width - 433) / 2, (map.height - 433) / 2);
                     // arrow pointing toward target
                     if (mapData.position.x !== map.target.x || mapData.position.y !== map.target.y) {
                         const targetAngle = Math.atan2(map.target.y - mapData.position.y, map.target.x - mapData.position.x);
@@ -3209,13 +3620,13 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
                     }
                     // Destination
                     if (mapData.position.x === map.target.x && mapData.position.y === map.target.y) {
-                        this.img(imagesLoader.get('destination').src, 150 - 6, 150 - 6, 12, 12);
+                        this.imgFromObj('destination', 150 - 6, 150 - 6);
                     }
                     // blood
                     if (!mapData.hasControl) {
-                        this.img(imagesLoader.get('blood').src, 0, 0, 300, 300);
+                        this.imgFromObj('blood', 0, 0);
                     }
-                    this.img(map.imagesLoader.get('glass').src, 0, 0, 300, 300); // image is 300x300
+                    this.imgFromObj('glass', 0, 0); // image is 300x300
                     // position text
                     const relativePos = mapData.getPositionRelativeToTown(mapData.position);
                     const positionText = lang_5.HMapLang.get('position') + ' : ' + (relativePos.x) + ' / ' + (relativePos.y);
@@ -3225,12 +3636,12 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
                     // arrows
                     for (let i = 0, j = map.registredArrows.length; i < j; i++) {
                         const arrow = map.registredArrows[i];
-                        const arrowImg = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 82, 27, arrow.a);
+                        const arrowImg = this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a);
                         arrowImg.style.pointerEvents = 'auto';
                         arrowImg.style.cursor = 'pointer';
-                        this.img(imagesLoader.get('moveArrowOutline').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
+                        this.imgFromObj('moveArrowOutline', arrow.ax, arrow.ay, arrow.a);
                         arrowImg.onmouseenter = () => {
-                            const arrowFill = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
+                            const arrowFill = this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a);
                             arrowFill.setAttributeNS(null, 'class', 'hmap-arrowFill');
                         };
                         arrowImg.onmouseleave = () => {
@@ -3272,16 +3683,16 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
                     let originY = this.map.height / 2 - 8;
                     originX += 120 * Math.cos(angle);
                     originY += 120 * Math.sin(angle);
-                    this.img(this.map.imagesLoader.get('targetArrow').src, originX, originY, 9, 17, angle * 180 / Math.PI);
+                    this.imgFromObj('targetArrow', originX, originY, angle * 180 / Math.PI);
                 }
             };
             exports_20("HMapSVGDesertForegroundLayer", HMapSVGDesertForegroundLayer);
         }
     };
 });
-System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/abstract", "layers/svg-desert-background", "layers/svg-loading", "layers/svg-desert-foreground", "data/hmap-desert-data"], function (exports_21, context_21) {
+System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/abstract", "layers/svg-desert-background", "layers/svg-loading", "layers/svg-desert-foreground", "data/hmap-desert-data", "imagesLoader"], function (exports_21, context_21) {
     "use strict";
-    var arrow_2, toast_4, environment_4, lang_6, abstract_12, svg_desert_background_1, svg_loading_3, svg_desert_foreground_1, hmap_desert_data_2, HMapDesertMap;
+    var arrow_2, toast_4, environment_4, lang_6, abstract_12, svg_desert_background_1, svg_loading_3, svg_desert_foreground_1, hmap_desert_data_2, imagesLoader_5, HMapDesertMap;
     var __moduleName = context_21 && context_21.id;
     return {
         setters: [
@@ -3311,6 +3722,9 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
             },
             function (hmap_desert_data_2_1) {
                 hmap_desert_data_2 = hmap_desert_data_2_1;
+            },
+            function (imagesLoader_5_1) {
+                imagesLoader_5 = imagesLoader_5_1;
             }
         ],
         execute: function () {
@@ -3411,9 +3825,9 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                 onDataReceived(init) {
                     this.registerArrows();
                     const mapData = this.mapData;
-                    this.imagesLoader.registerBuildingsToPreload(mapData.neighbours);
+                    imagesLoader_5.HMapImagesLoader.getInstance().registerBuildingsToPreload(mapData.neighbours);
                     // when preloading the pictures is finished, starts drawing
-                    this.imagesLoader
+                    imagesLoader_5.HMapImagesLoader.getInstance()
                         .preloadPictures(this.layers.get('loading'), init, () => {
                         const hmapMenu = document.querySelector('#hmap-menu');
                         if (hmapMenu !== null) {
@@ -3599,12 +4013,12 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
 });
 System.register("maps/abstract", ["imagesLoader"], function (exports_22, context_22) {
     "use strict";
-    var imagesLoader_1, HMapAbstractMap;
+    var imagesLoader_6, HMapAbstractMap;
     var __moduleName = context_22 && context_22.id;
     return {
         setters: [
-            function (imagesLoader_1_1) {
-                imagesLoader_1 = imagesLoader_1_1;
+            function (imagesLoader_6_1) {
+                imagesLoader_6 = imagesLoader_6_1;
             }
         ],
         execute: function () {
@@ -3615,7 +4029,6 @@ System.register("maps/abstract", ["imagesLoader"], function (exports_22, context
             HMapAbstractMap = class HMapAbstractMap {
                 constructor(hmap) {
                     this.layers = new Map();
-                    this.imagesLoader = imagesLoader_1.HMapImagesLoader.getInstance();
                     this.hmap = hmap;
                 }
                 get height() {
@@ -3632,7 +4045,7 @@ System.register("maps/abstract", ["imagesLoader"], function (exports_22, context
                     console.log('complete data');
                     this.mapData = this.generateMapData(mapDataPayload);
                     const loading = new Image();
-                    loading.src = this.imagesLoader.get('loading').src;
+                    loading.src = imagesLoader_6.HMapImagesLoader.getInstance().get('loading').src;
                     loading.onload = () => {
                         const loadingLayer = this.layers.get('loading');
                         if (loadingLayer) { // if there is a layer (can happen in debug mode)

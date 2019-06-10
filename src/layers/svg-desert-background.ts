@@ -112,7 +112,6 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer<HMapDesertDa
         const map = this.map;
         const mapData = this.map.mapData as HMapDesertData;
 
-        const imagesLoader = this.map.imagesLoader;
         const seed = mapData.zoneId;
         const random = new HMapRandom(seed);
         const neighbours = mapData.neighbours;
@@ -123,15 +122,12 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer<HMapDesertDa
         const numberOfZombies = mapData.numberOfZombies;
 
         // first thing first, the background
-        this.img(imagesLoader.get('map').src, -100 * (position.x % 6) - 25, -100 * (position.y % 6) - 25, 950, 950);
+        this.imgFromObj('map', -100 * (position.x % 6) - 25, -100 * (position.y % 6) - 25);
 
         // buildings
         neighbours.neighbours.forEach((neighbour: HMapNeighbour) => {
             if (neighbour.building !== 0 && neighbour.building !== null) {
-                const building = this.img(
-                    imagesLoader.get('b' + neighbour.building).src,
-                    neighbour.offsetX,
-                    neighbour.offsetY, 100, 100);
+                const building = this.imgFromObj('b' + neighbour.building, neighbour.offsetX, neighbour.offsetY);
                 building.setAttributeNS(null, 'hmap-bid', neighbour.building + '');
                 building.setAttributeNS(null, 'hmap-x', neighbour.offsetX + '');
                 building.setAttributeNS(null, 'hmap-y', neighbour.offsetY + '');
@@ -143,20 +139,20 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer<HMapDesertDa
 
         // night filter
         if (mapData.hour < 7 || mapData.hour > 18) {
-            this.img(imagesLoader.get('night').src, -25, -25, 950, 950);
+            this.imgFromObj('night', -25, -25);
         }
 
         // humans
-        this.img(imagesLoader.get('humanGlow').src, 141, 141, 18, 18); // you
+        this.imgFromObj('humanGlow', 141, 141); // you
         for (let k = 1; k <= numberOfHumans - 1; k++) { // others
             const newPosH = random.randomCircle(center, Math.floor(random.random() * 30) + 5);
-            this.img(imagesLoader.get('humanGlow').src, newPosH.x, newPosH.y, 18, 18);
+            this.imgFromObj('humanGlow', newPosH.x, newPosH.y);
         }
 
         // zombies
         for (let n = 1; n <= numberOfZombies; n++) {
             const newPosZ = random.randomCircle(center, Math.floor(random.random() * 40) + 5 );
-            this.img(imagesLoader.get('zombieGlow').src, newPosZ.x, newPosZ.y, 18, 18);
+            this.imgFromObj('zombieGlow', newPosZ.x, newPosZ.y);
         }
 
         // fog of war
@@ -177,7 +173,7 @@ export class HMapSVGDesertBackgroundLayer extends AbstractHMapLayer<HMapDesertDa
                     const offsetX = (i - mapData.position.x + 1) * 100;
                     const offsetY = (j - mapData.position.y + 1) * 100;
                     if (!(offsetX === 100 && offsetY === 100)) {
-                        this.img(imagesLoader.get('single').src, offsetX - 50 + oX, offsetY - 50 + oY, 200, 200);
+                        this.imgFromObj('single', offsetX - 50 + oX, offsetY - 50 + oY);
                     }
                 }
             }

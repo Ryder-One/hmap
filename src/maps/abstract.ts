@@ -1,5 +1,5 @@
 import { HMapImagesLoader } from '../imagesLoader';
-import { HMap, HMapPoint } from '../hmap';
+import { HMap } from '../hmap';
 import { HMapGridMap } from './grid';
 import { HMapLayerSVGType } from '../layers/abstract';
 import { HMapSVGGridLayer } from '../layers/svg-grid';
@@ -29,7 +29,6 @@ export abstract class HMapAbstractMap<DataJSON, LocalDataJSON> {
 
     protected animationLoopId?: number; // hold the request animation frame id
 
-    public imagesLoader = HMapImagesLoader.getInstance();
     public mapData?: HMapData<DataJSON, LocalDataJSON>; // @TODO clean the any
 
     get height(): number {
@@ -52,7 +51,7 @@ export abstract class HMapAbstractMap<DataJSON, LocalDataJSON> {
         console.log('complete data');
         this.mapData = this.generateMapData(mapDataPayload);
         const loading = new Image();
-        loading.src = this.imagesLoader.get('loading').src;
+        loading.src = HMapImagesLoader.getInstance().get('loading').src;
         loading.onload = () => {
             const loadingLayer = this.layers.get('loading');
             if (loadingLayer) { // if there is a layer (can happen in debug mode)

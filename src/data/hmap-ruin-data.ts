@@ -37,11 +37,27 @@ export interface HMapRuinLocalDataJSON {
         _w: boolean;                    // ???
         _z: number;                     // number of zombies
     };
-    _o: number;                         // Oxygen : 300000 = 100%
+    _o: number;                         // Oxygen : 300000 = 100%, 1% = 3sec
     _r: boolean;                        // Is it a room or not
     _x: number;                         // x coordinate
     _y: number;                         // y coordinate
 }
+
+export type HMapWallNumber = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L';
+export type HMapZoneNumber = 'Z1' | 'Z2' | 'Z3' | 'Z4' | 'Z5';
+
+type HMapWallObjects = {
+    [K in HMapRuinType] : {
+        [P in HMapWallNumber] : Array<string>;
+    };
+};
+
+type HMapZoneObjects = {
+    [K in HMapRuinType] : {
+        [P in HMapZoneNumber] : Array<string>;
+    };
+};
+
 
 /**
  * This class is the store of the map. It handles the data originally
@@ -49,159 +65,129 @@ export interface HMapRuinLocalDataJSON {
  */
 export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJSON> {
 
+    public walls: HMapWallObjects = {
+        'motel' : {
+            'A' : ['wall_bench_A'],
+            'B' : ['wall_bench_B', 'wall_palmtree_B'],
+            'C' : [],
+            'D' : ['wall_flowers_D'],
+            'E' : ['wall_flowers_E'],
+            'F' : [],
+            'G' : ['wall_bench_G', 'wall_palmtree_G'],
+            'H' : ['wall_bench_H'],
+            'I' : [],
+            'J' : [],
+            'K' : [],
+            'L' : []
+        },
+        'bunker' : {
+            'A' : ['wall_hatch_A'],
+            'B' : [/*'wall_gutter_B', */'wall_hatch_B'],
+            'C' : [],
+            'D' : ['wall_barrel_D', 'wall_grid_D', 'wall_pipe_D'],
+            'E' : ['wall_barrel_E', 'wall_grid_E', 'wall_pipe_E'],
+            'F' : [],
+            'G' : [/*'wall_gutter_G', */'wall_hatch_G'],
+            'H' : ['wall_hatch_H'],
+            'I' : [],
+            'J' : [],
+            'K' : [],
+            'L' : []
+        },
+        'hospital' : {
+            'A' : [],
+            'B' : [],
+            'C' : [],
+            'D' : ['wall_bed_D', 'wall_dead_D'],
+            'E' : ['wall_bed_E', 'wall_dead_E'],
+            'F' : [],
+            'G' : [],
+            'H' : [],
+            'I' : [],
+            'J' : ['wall_grid_J'],
+            'K' : ['wall_grid_K'],
+            'L' : []
+        }
+    };
+
+    public zones: HMapZoneObjects = {
+        'motel' : {
+            'Z1' : ['zone_dead_left', 'zone_stain_left'],
+            'Z2' : ['zone_dead_top', 'zone_stain_top'],
+            'Z3' : ['zone_dead_right', 'zone_stain_right'],
+            'Z4' : ['zone_dead_bottom', 'zone_stain_bottom'],
+            'Z5' : ['zone_dead_left', 'zone_dead_right']
+        },
+        'bunker':  {
+            'Z1' : [],
+            'Z2' : [],
+            'Z3' : [],
+            'Z4' : [],
+            'Z5' : []
+        },
+        'hospital' : {
+            'Z1' : ['zone_dead_left'],
+            'Z2' : ['zone_dead_top'],
+            'Z3' : ['zone_dead_right'],
+            'Z4' : ['zone_dead_bottom'],
+            'Z5' : ['zone_dead_left', 'zone_dead_right']
+        }
+    };
+
     public fakeRuinDirections = [
         [
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false]
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, true],
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+            [false, false, false, false], [false, false, false, false], [false, false, false, false]
         ],
         [
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, true],
-            [false, false, false, false],
-            [false, false, true, true],
-            [true, true, true, false],
-            [true, false, true, false],
-            [true, false, true, false],
-            [true, false, true, true],
-            [true, false, true, false],
-            [true, false, false, true],
-            [false, false, false, false],
-            [false, false, false, false]
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+            [false, false, false, true], [false, false, false, false], [false, false, true, true], [true, true, true, false],
+            [true, false, true, false], [true, false, true, false], [true, false, true, true], [true, false, true, false],
+            [true, false, false, true], [false, false, false, false], [false, false, false, false]
         ],
         [
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, true, true],
-            [true, true, true, false],
-            [true, false, true, false],
-            [true, true, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, true],
-            [false, false, false, false],
-            [false, true, true, true],
-            [true, false, false, false],
-            [false, false, false, false]
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, true, true],
+            [true, true, true, false], [true, false, true, false], [true, true, false, true], [false, false, false, false],
+            [false, false, false, false], [false, false, false, false], [false, true, false, true], [false, false, false, false],
+            [false, true, true, true], [true, false, false, false], [false, false, false, false]
         ],
         [
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, true, false],
-            [true, false, true, false],
-            [true, false, true, false],
-            [true, false, true, false],
-            [true, true, true, true],
-            [true, false, true, false],
-            [true, true, false, true],
-            [false, false, false, false],
-            [false, false, false, false]
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, true, false, true],
+            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, false],
+            [true, false, true, false], [true, false, true, false], [true, true, true, true], [true, false, true, false],
+            [true, true, false, true], [false, false, false, false], [false, false, false, false]
         ],
         [
-            [false, false, true, true],
-            [true, false, true, false],
-            [true, false, true, false],
-            [true, true, false, false],
-            [false, false, false, false],
-            [false, false, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, true],
-            [false, false, false, false],
-            [false, true, false, true],
-            [false, false, false, false],
-            [false, false, false, false]
+            [false, false, true, true], [true, false, true, false], [true, false, true, false], [true, true, false, false],
+            [false, false, false, false], [false, false, false, true], [false, false, false, false], [false, false, false, false],
+            [false, false, false, false], [false, false, false, false], [false, true, false, true], [false, false, false, false],
+            [false, true, false, true], [false, false, false, false], [false, false, false, false]
         ],
         [
-            [false, true, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, true, true],
-            [true, false, true, false],
-            [true, false, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, true, false],
-            [true, false, true, false],
-            [true, true, true, false],
-            [true, false, false, true],
-            [false, false, false, false]
+            [false, true, false, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+            [false, false, false, false], [false, true, true, true], [true, false, true, false], [true, false, false, true],
+            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, false],
+            [true, true, true, false], [true, false, false, true], [false, false, false, false]
         ],
         [
-            [false, true, true, false],
-            [true, false, true, false],
-            [true, false, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, true],
-            [false, false, false, false],
-            [false, true, true, false],
-            [true, false, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, true],
-            [false, false, false, false]
+            [false, true, true, false], [true, false, true, false], [true, false, false, true], [false, false, false, false],
+            [false, false, false, false], [false, true, false, true], [false, false, false, false], [false, true, true, false],
+            [true, false, false, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+            [false, false, false, false], [false, true, false, true], [false, false, false, false]
         ],
         [
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, true, false],
-            [true, false, true, true],
-            [true, false, true, false],
-            [true, true, false, true],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, true, false],
-            [true, false, true, true],
-            [true, false, true, false],
-            [true, false, false, true],
-            [false, false, false, false],
-            [false, true, false, false],
-            [false, false, false, false]
+            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, true],
+            [true, false, true, false], [true, true, false, true], [false, false, false, false], [false, false, false, false],
+            [false, true, true, false], [true, false, true, true], [true, false, true, false], [true, false, false, true],
+            [false, false, false, false], [false, true, false, false], [false, false, false, false]
         ],
         [
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, false],
-            [false, false, false, false],
-            [false, true, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, true, false, false],
-            [false, false, false, false],
-            [false, true, false, false],
-            [false, false, false, false],
-            [false, false, false, false],
-            [false, false, false, false]
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, true, false, false],
+            [false, false, false, false], [false, true, false, false], [false, false, false, false], [false, false, false, false],
+            [false, false, false, false], [false, true, false, false], [false, false, false, false], [false, true, false, false],
+            [false, false, false, false], [false, false, false, false], [false, false, false, false]
         ]
     ];
 
@@ -224,8 +210,9 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
     get exit(): boolean { return this.data._r._d._exit; }
     get seed(): number { return this.data._r._d._seed; }
     get zombies(): number { return this.data._r._d._z; }
-    get room(): HMapRuinRoomJSON | null { return this.data._r._d._room; }
-
+    get door(): HMapRuinRoomJSON | null { return this.data._r._d._room; }
+    get room(): boolean { return this.data._r._r; }
+    get kills(): number { return this.data._r._d._k; }
 
     /**
      * Decode the url encoded flashvar
@@ -276,7 +263,7 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
             this._fakeData = {
                 _d: true,
                 _h: 9,
-                _k: 1,
+                _k: HMapRandom.getOneOfNoSeed([0, 1, 2]),
                 _r: {
                     _dirs: [false, false, false, true],
                     _move: true,

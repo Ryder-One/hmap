@@ -8,6 +8,7 @@ import { HMapSVGLoadingLayer } from '../layers/svg-loading';
 import { HMapSVGGlassStaticLayer } from '../layers/svg-glass-static';
 import { HMapDesertLocalDataJSON, HMapDesertDataJSON, HMapDesertData } from '../data/hmap-desert-data';
 import { HMapDataPayload } from '../data/abstract';
+import { HMapImagesLoader } from '../imagesLoader';
 
 export type HMapGridMode = 'global' | 'personal';
 
@@ -161,7 +162,7 @@ export class HMapGridMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertL
     protected onDataReceived(init: boolean): void {
 
         // when preloading the pictures is finished, starts drawing
-        this.imagesLoader
+        HMapImagesLoader.getInstance()
             .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
             const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
             if (hmapMenu !== null) {

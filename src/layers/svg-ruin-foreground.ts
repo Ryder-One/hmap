@@ -1,7 +1,6 @@
 import { AbstractHMapLayer } from './abstract';
 import { HMapRuinDataJSON, HMapRuinLocalDataJSON, HMapRuinData } from '../data/hmap-ruin-data';
 import { HMapRuin } from '../maps/ruin';
-import { HMapPoint } from '../hmap';
 import { HMapLang } from '../lang';
 import { HMapRandom } from '../random';
 
@@ -33,25 +32,24 @@ export class HMapSVGRuinForegroundLayer extends AbstractHMapLayer<HMapRuinDataJS
 
     draw() {
         const oldGroup = this.g;
-
         this.g = document.createElementNS(this.ns, 'g');
 
         const map = this.map as HMapRuin;
         const mapData = this.map.mapData as HMapRuinData;
-        const imagesLoader = map.imagesLoader;
 
         // scanner
-        this.img(imagesLoader.get('scanner').src, 250, 250, 38, 27);
+        this.imgFromObj('scanner', 250, 250);
 
         // focus lens shadow (433x433)
-        this.img(imagesLoader.get('shadowFocus').src, (map.width - 433) / 2, (map.height - 433) / 2, 433, 433);
+        this.imgFromObj('shadowFocus', (map.width - 433) / 2, (map.height - 433) / 2);
+        this.imgFromObj('shadowFocus', (map.width - 433) / 2, (map.height - 433) / 2);
 
         // green rects
         this.rect(6, 6, map.width - 12, map.height - 25, 'transparent', '#188400', 1);
         this.rect(4, 4, map.width - 8, map.height - 21, 'transparent', '#1a4e02', 1);
 
         // glass
-        this.img(imagesLoader.get('glass').src, 0, 0, 300, 300); // image is 300x300
+        this.imgFromObj('glass', 0, 0); // image is 300x300
 
         const oxygenText = this.text(map.width - 10, 14, HMapLang.get('oxygen') + ' :', 'hmap-text-green');
         oxygenText.setAttributeNS(null, 'text-anchor', 'end');
@@ -91,8 +89,7 @@ export class HMapSVGRuinForegroundLayer extends AbstractHMapLayer<HMapRuinDataJS
     updateOxygen() {
         const map = this.map as HMapRuin;
         const mapData = this.map.mapData as HMapRuinData;
-        const imagesLoader = map.imagesLoader;
-        console.log(mapData.oxygen);
+
         const percent = Math.floor(mapData.oxygen / 3000);
 
         const textElement = document.getElementById('hmap-oxygen');
@@ -106,7 +103,7 @@ export class HMapSVGRuinForegroundLayer extends AbstractHMapLayer<HMapRuinDataJS
                 if (you) {
                     you.parentNode!.removeChild( you );
                 }
-                this.img(imagesLoader.get('you-noox').src, 142, 133, 16, 34);
+                this.imgFromObj('you-noox', 142, 133);
             }
         }
     }
@@ -120,16 +117,15 @@ export class HMapSVGRuinForegroundLayer extends AbstractHMapLayer<HMapRuinDataJS
 
         // build new ones
         const map = this.map as HMapRuin;
-        const imagesLoader = map.imagesLoader;
 
         for (let i = 0, j = map.registredArrows.length; i < j; i++) {
             const arrow = map.registredArrows[i];
-            const arrowImg = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 82, 27, arrow.a, 'hmap-arrow');
+            const arrowImg = this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a, 'hmap-arrow');
             arrowImg.style.pointerEvents = 'auto';
             arrowImg.style.cursor = 'pointer';
-            this.img(imagesLoader.get('moveArrowOutline').src, arrow.ax, arrow.ay, 83, 28, arrow.a, 'hmap-arrow');
+            this.imgFromObj('moveArrowOutline', arrow.ax, arrow.ay, arrow.a, 'hmap-arrow');
             arrowImg.onmouseenter = () => {
-                this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 83, 28, arrow.a, 'hmap-arrow hmap-arrowFill');
+                this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a, 'hmap-arrow hmap-arrowFill');
             };
 
             arrowImg.onmouseleave = () => {
@@ -139,7 +135,11 @@ export class HMapSVGRuinForegroundLayer extends AbstractHMapLayer<HMapRuinDataJS
             };
 
             arrowImg.onclick = () => {
-                (this.map as HMapRuin).move(arrow.t);
+                if ((this.map.mapData as HMapRuinData).room === true) {
+                    (this.map as HMapRuin).exitRoom(); // if we are in a room, a move will exit the room
+                } else {
+                    (this.map as HMapRuin).move(arrow.t); // else, execute the move in the given direction
+                }
             };
         }
     }

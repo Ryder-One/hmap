@@ -32,10 +32,9 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDa
 
         const map = this.map as HMapDesertMap;
         const mapData = this.map.mapData as HMapDesertData;
-        const imagesLoader = this.map.imagesLoader;
 
         // focus lens shadow (433x433)
-        this.img(imagesLoader.get('shadowFocus').src, (map.width - 433) / 2, (map.height - 433) / 2, 433, 433);
+        this.imgFromObj('shadowFocus', (map.width - 433) / 2, (map.height - 433) / 2);
 
         // arrow pointing toward target
         if (mapData.position.x !== map.target.x || mapData.position.y !== map.target.y) {
@@ -45,15 +44,15 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDa
 
         // Destination
         if (mapData.position.x === map.target.x && mapData.position.y === map.target.y) {
-            this.img(imagesLoader.get('destination').src, 150 - 6, 150 - 6, 12,  12);
+            this.imgFromObj('destination', 150 - 6, 150 - 6);
         }
 
         // blood
         if (!mapData.hasControl) {
-            this.img(imagesLoader.get('blood').src, 0, 0, 300, 300);
+            this.imgFromObj('blood', 0, 0);
         }
 
-        this.img(map.imagesLoader.get('glass').src, 0, 0, 300, 300); // image is 300x300
+        this.imgFromObj('glass', 0, 0); // image is 300x300
 
         // position text
         const relativePos = mapData.getPositionRelativeToTown(mapData.position);
@@ -65,12 +64,12 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDa
         // arrows
         for (let i = 0, j = map.registredArrows.length; i < j; i++) {
             const arrow = map.registredArrows[i];
-            const arrowImg = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 82, 27, arrow.a);
+            const arrowImg = this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a);
             arrowImg.style.pointerEvents = 'auto';
             arrowImg.style.cursor = 'pointer';
-            this.img(imagesLoader.get('moveArrowOutline').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
+            this.imgFromObj('moveArrowOutline', arrow.ax, arrow.ay, arrow.a);
             arrowImg.onmouseenter = () => {
-                const arrowFill = this.img(imagesLoader.get('moveArrowLight').src, arrow.ax, arrow.ay, 83, 28, arrow.a);
+                const arrowFill = this.imgFromObj('moveArrowLight', arrow.ax, arrow.ay, arrow.a);
                 arrowFill.setAttributeNS(null, 'class', 'hmap-arrowFill');
             };
 
@@ -117,7 +116,7 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDa
         originX += 120 * Math.cos(angle);
         originY += 120 * Math.sin(angle);
 
-        this.img(this.map.imagesLoader.get('targetArrow').src, originX, originY, 9, 17, angle * 180 / Math.PI);
+        this.imgFromObj('targetArrow', originX, originY, angle * 180 / Math.PI);
     }
 
 }
