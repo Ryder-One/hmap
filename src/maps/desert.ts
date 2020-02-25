@@ -12,18 +12,14 @@ import { HMapPoint } from '../hmap';
 import { HMapDataPayload } from '../data/abstract';
 import { HMapImagesLoader } from '../imagesLoader';
 
-declare var haxe: any;
-declare var js: any;
+declare let haxe: any;
+declare let js: any;
 
 
 export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
     public registredArrows = new Array<HMapArrow>();
     private moving = false; // dirty boolean to avoid double move
-
-    protected generateMapData(payload?: HMapDataPayload) {
-        return new HMapDesertData(payload);
-    }
 
     get target(): HMapPoint {
         if (this.hmap.target) {
@@ -113,43 +109,9 @@ export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDeser
         this.layers.set('loading', LoadingLayer);
     }
 
-    private onMouseMove(e: MouseEvent) {
-        const layerBackground = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
-        layerBackground.onMouseMove(e);
-    }
-
-    private onMouseLeave(e: MouseEvent) {
-        const layerBackground = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
-        layerBackground.onMouseLeave(e);
-    }
-
-    /**
-     * When new data arrive, rebuild the arrows
-     */
-    protected onDataReceived(init: boolean): void {
-        this.registerArrows();
-
-        const mapData = this.mapData as HMapDesertData;
-
-        HMapImagesLoader.getInstance().registerBuildingsToPreload(mapData.neighbours);
-
-        // when preloading the pictures is finished, starts drawing
-        HMapImagesLoader.getInstance()
-            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
-            const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
-            if (hmapMenu !== null) {
-                hmapMenu.style.display = 'flex';
-            }
-            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>;
-            loadingLayer.hide();
-            this.layers.get('desert-background')!.draw();
-            this.layers.get('desert-foreground')!.draw();
-        });
-    }
-
     /**
      * Function called when the user click on a directionnal arrow
-     * The function is big due to the debug mode
+     * The function is big because of to the debug mode
      */
     move(direction: HMapArrowDirection) {
 
@@ -260,6 +222,44 @@ export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDeser
                 this.moving = false; // allow another move
             });
         }
+    }
+
+    protected generateMapData(payload?: HMapDataPayload) {
+        return new HMapDesertData(payload);
+    }
+
+    /**
+     * When new data arrive, rebuild the arrows
+     */
+    protected onDataReceived(init: boolean): void {
+        this.registerArrows();
+
+        const mapData = this.mapData as HMapDesertData;
+
+        HMapImagesLoader.getInstance().registerBuildingsToPreload(mapData.neighbours);
+
+        // when preloading the pictures is finished, starts drawing
+        HMapImagesLoader.getInstance()
+            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
+                const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
+                if (hmapMenu !== null) {
+                    hmapMenu.style.display = 'flex';
+                }
+                const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>;
+                loadingLayer.hide();
+                this.layers.get('desert-background')!.draw();
+                this.layers.get('desert-foreground')!.draw();
+            });
+    }
+
+    private onMouseMove(e: MouseEvent) {
+        const layerBackground = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
+        layerBackground.onMouseMove(e);
+    }
+
+    private onMouseLeave(e: MouseEvent) {
+        const layerBackground = this.layers.get('desert-background') as HMapSVGDesertBackgroundLayer;
+        layerBackground.onMouseLeave(e);
     }
 
     /**

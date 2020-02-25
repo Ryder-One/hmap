@@ -4,9 +4,9 @@ import { HMapPoint, HMapSize } from '../hmap';
 import { HMapData, HMapDataPayload } from './abstract';
 
 // declared in host page
-declare var haxe: any;
-declare var StringTools: any;
-declare var MapCommon: any;
+declare const haxe: any;
+declare const StringTools: any;
+declare const MapCommon: any;
 
 export interface HMapPositionDetail {
     _c: number;                 // building id
@@ -14,7 +14,6 @@ export interface HMapPositionDetail {
     _t: number;                 // tag
     _z: number;                 // zombies
     _nvt: any;                  // if true, I think it has been visited but it's out of tower range. If false I'm not sure
-                                // I don't totally understand this one
 }
 
 export interface HMapUserJSON {
@@ -90,6 +89,14 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     get view(): Array<number|null> { return this.data._view; }
     get townName(): string { return this.data._city; }
 
+    constructor(mapDataPayload?: HMapDataPayload) {
+        super(mapDataPayload);
+        this.buildNeighbours();
+        this.town = this.findTown();
+        this.cacheBuildingsNames();
+        this.cacheUsersOutside();
+    }
+
     /**
      * Decode the url encoded flashvar
      */
@@ -115,36 +122,6 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
             console.error('HMapDesertData::decode - caught an exception during decoding', err, urlEncoded);
             throw err;
         }
-    }
-
-    constructor(mapDataPayload?: HMapDataPayload) {
-        super(mapDataPayload);
-        this.buildNeighbours();
-        this.town = this.findTown();
-        this.cacheBuildingsNames();
-        this.cacheUsersOutside();
-    }
-
-
-    /**
-     * JSON patching separated to enable dev mode
-     */
-    protected patchDataJSON(data: HMapDesertLocalDataJSON) {
-        this.data._r = data;
-
-        // update the details and the view
-        const indexNewPosition = this.getIndex({ x: this.data._x, y: this.data._y });
-        this.data._details[indexNewPosition]._c = this.data._r._c;
-        this.data._details[indexNewPosition]._t = this.data._r._t;
-        this.data._details[indexNewPosition]._z = this.data._r._z;
-        if (this.data._details[indexNewPosition]._nvt === null) {
-            this.data._details[indexNewPosition]._nvt = false;
-        }
-        this.data._view[indexNewPosition] = this.data._r._c;
-        this.data._global[indexNewPosition] = this.data._r._c;
-
-        // dont forget to rebuild the neighbours (its usually done in the constructor)
-        this.buildNeighbours();
     }
 
     getPositionRelativeToTown(position: HMapPoint): HMapPoint {
@@ -243,41 +220,6 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     }
 
     /**
-     * Find the town and return it
-     */
-    private findTown(): HMapPoint {
-        for (let index = 0, length = this.data._details.length; index < length; index++) {
-            if (this.data._details[index]._c === 1) {
-                return this.getCoordinates(index);
-            }
-        }
-        return { x: 0, y: 0 }; // this case is not possible but it makes typescript happy
-    }
-
-    private cacheBuildingsNames(): void {
-        this.data._b.forEach((B) => {
-            this.buildings.set(B._id, B._n);
-        });
-    }
-
-    /**
-     * Index the users in a good container (this.users)
-     */
-    private cacheUsersOutside(): void {
-        if (this.data._users !== null && this.data._users.length > 0) {
-            this.data._users.forEach(user => {
-                const userIndex = this.getIndex({x: user._x, y: user._y});
-                let userOnThisPosition = this.users.get(userIndex);
-                if (userOnThisPosition === undefined || userOnThisPosition === null) {
-                    userOnThisPosition = new Array();
-                }
-                userOnThisPosition.push(user);
-                this.users.set(userIndex, userOnThisPosition);
-            });
-        }
-    }
-
-    /**
      * create a fake JSON to debug the map
      */
     fakeData(force = false): HMapDesertDataJSON {
@@ -328,7 +270,7 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
             const buildings = new Array();
             for (let y = 0; y < mapSize; y++) {
                 for (let x = 0; x < mapSize; x++) {
-                        let view = false;
+                    let view = false;
                     if (x < town.x + 5 && x > town.x - 5 && y < town.y + 5 && y > town.y - 5) {
                         view = true;
                     }
@@ -384,6 +326,62 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
             }
 
             return this._fakeData;
+        }
+    }
+
+    /**
+     * JSON patching separated to enable dev mode
+     */
+    protected patchDataJSON(data: HMapDesertLocalDataJSON) {
+        this.data._r = data;
+
+        // update the details and the view
+        const indexNewPosition = this.getIndex({ x: this.data._x, y: this.data._y });
+        this.data._details[indexNewPosition]._c = this.data._r._c;
+        this.data._details[indexNewPosition]._t = this.data._r._t;
+        this.data._details[indexNewPosition]._z = this.data._r._z;
+        if (this.data._details[indexNewPosition]._nvt === null) {
+            this.data._details[indexNewPosition]._nvt = false;
+        }
+        this.data._view[indexNewPosition] = this.data._r._c;
+        this.data._global[indexNewPosition] = this.data._r._c;
+
+        // dont forget to rebuild the neighbours (its usually done in the constructor)
+        this.buildNeighbours();
+    }
+
+    /**
+     * Find the town and return it
+     */
+    private findTown(): HMapPoint {
+        for (let index = 0, length = this.data._details.length; index < length; index++) {
+            if (this.data._details[index]._c === 1) {
+                return this.getCoordinates(index);
+            }
+        }
+        return { x: 0, y: 0 }; // this case is not possible but it makes typescript happy
+    }
+
+    private cacheBuildingsNames(): void {
+        this.data._b.forEach((B) => {
+            this.buildings.set(B._id, B._n);
+        });
+    }
+
+    /**
+     * Index the users in a good container (this.users)
+     */
+    private cacheUsersOutside(): void {
+        if (this.data._users !== null && this.data._users.length > 0) {
+            this.data._users.forEach(user => {
+                const userIndex = this.getIndex({x: user._x, y: user._y});
+                let userOnThisPosition = this.users.get(userIndex);
+                if (userOnThisPosition === undefined || userOnThisPosition === null) {
+                    userOnThisPosition = new Array();
+                }
+                userOnThisPosition.push(user);
+                this.users.set(userIndex, userOnThisPosition);
+            });
         }
     }
 }

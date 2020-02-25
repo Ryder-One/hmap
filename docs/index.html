@@ -213,6 +213,7 @@
 			
 		</div>
 	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.1.0/fontfaceobserver.js" integrity="sha256-Rw3DwuBUUSpOu3lKO6kWLB1gsrCcn3fCSawP/xhLLr8=" crossorigin="anonymous"></script>
 	
 	<script type="text/javascript">
 		var HMAP_DEVMODE = true;
@@ -231,8 +232,17 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.5/jquery.i18n.messagestore.min.js" integrity="sha256-mnmAZ20bByyKZAXa5gp9Dmf4cM09GYS+zfTIxf2vVcI=" crossorigin="anonymous"></script>
 	<script src="i18n.js"></script>
 	<script src="http://www.hordes.fr/js/horde2.js?v=45"></script>
-	<script src="hmap.user.es6.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/system.min.js" integrity="sha256-EXPoZ0hFaPyedGmYJYNsQJZBXH7be91OP4bcWfkWlJw=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/named-exports.min.js" integrity="sha256-QWoPIS8TaCW+WRX/XQj4iwOmfKLWgJ+zbZn4vsAx5xw=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/named-register.js" integrity="sha256-7hzP5uCAMfIXDwJKAcAGT5epvxp/O2q9Mtq6p+Doca8=" crossorigin="anonymous"></script>
 	<script type="text/javascript">
+		
+
+
+		System.import('/hmap.user.system.js').then(function() {
+			System.import("index");
+		});
+
 		var reload = document.querySelector('#reload');
 		var textbox = document.querySelector('#json-data');
 		var ruinCheckbox = document.querySelector('#ruin-mode');
@@ -260,7 +270,6 @@
 						return;
 					}
 				}
-				console.log('Data', data);
 
 				// build the map
 				if (data !== null && data !== undefined) {

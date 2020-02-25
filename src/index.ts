@@ -4,17 +4,12 @@ import { Environment } from './environment';
 import { HMapDesertData } from './data/hmap-desert-data';
 import { HMapRuinData } from './data/hmap-ruin-data';
 
-declare var FontFaceObserver: any;
+const FontFaceObserver = require('fontfaceobserver-es');
 
-if (typeof require !== 'undefined') {
-    console.log(typeof require);
-    require('fontfaceobserver');
-}
-
-declare var HMAP_DEVMODE: boolean;
-declare var HMAP: any;
-declare var HMAPDESERTDATA: any;
-declare var HMAPRUINDATA: any;
+declare const HMAP_DEVMODE: boolean;
+declare let HMAP: any;
+declare let HMAPDESERTDATA: any;
+declare let HMAPRUINDATA: any;
 
 /**
  * It's bootstrap time !!
@@ -97,13 +92,12 @@ declare var HMAPRUINDATA: any;
                     HMAPRUINDATA = HMapRuinData;
                 } else {
                     // wait for js.JsMap to be ready
-                    let counterCheckJsMap = 0;
+                    let counterCheckJsMap = 0; // count the number of tries
                     const checkLocationKnown = setInterval(function() {
                         if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
                             clearInterval(checkLocationKnown);
                             map.location = map.getCurrentLocation();
-                            map.fetchMapData();
-                            // intercept every ajax request haxe is doing to know if we should start the map or not
+                            map.fetchMapData(); // intercept every ajax request haxe is doing to know if we should start the map or not
                             setTimeout(() => map.setupInterceptor());
                         } else if (++counterCheckJsMap > 10) { // timeout 2s
                             clearInterval(checkLocationKnown);

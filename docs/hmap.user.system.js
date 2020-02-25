@@ -160,8 +160,8 @@ System.register("toast", [], function (exports_4, context_4) {
                     }, 5000);
                 }
             };
-            Toast.count = 0;
             exports_4("Toast", Toast);
+            Toast.count = 0;
         }
     };
 });
@@ -821,6 +821,9 @@ System.register("random", [], function (exports_9, context_9) {
         setters: [],
         execute: function () {
             HMapRandom = class HMapRandom {
+                constructor(seed = 0) {
+                    this.seed = seed;
+                }
                 /**
                  * Get a random integer between min and max
                  * @warning Not using the seed.
@@ -834,9 +837,6 @@ System.register("random", [], function (exports_9, context_9) {
                  */
                 static getOneOfNoSeed(elements) {
                     return elements[Math.floor(Math.random() * elements.length)];
-                }
-                constructor(seed = 0) {
-                    this.seed = seed;
                 }
                 /**
                 * Very simple random generator based on a fixed seed
@@ -977,6 +977,9 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
                             'Z5': ['zone_dead_left', 'zone_dead_right']
                         }
                     };
+                    /**
+                     * Create a fake ruin for debug purpose
+                     */
                     this.fakeRuinDirections = [
                         [
                             [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
@@ -1699,14 +1702,12 @@ System.register("layers/svg-ruin-foreground", ["layers/abstract", "lang", "rando
                     }
                 }
                 updateOxygen() {
-                    const map = this.map;
-                    const mapData = this.map.mapData;
-                    const percent = Math.floor(mapData.oxygen / 3000);
                     const textElement = document.getElementById('hmap-oxygen');
+                    const map = this.map;
                     if (textElement) {
-                        textElement.textContent = '' + percent;
+                        textElement.textContent = '' + map.oxygen;
                     }
-                    if (percent < 15) {
+                    if (map.oxygen < 15) {
                         if (!this.lowOxygen) {
                             this.lowOxygen = true;
                             const you = document.querySelector('#hmap-ruin-you');
@@ -1799,6 +1800,7 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                 constructor() {
                     super(...arguments);
                     this.registredArrows = new Array();
+                    this.oxygen = 100;
                     this.moving = false;
                 }
                 generateMapData(payload) {
@@ -1811,12 +1813,12 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                     const swf = document.querySelector(this.hmap.cssSelector);
                     if (swf !== null) {
                         swf.setAttribute('style', 'display:flex;flex-direction:column;height:auto');
-                        if (this.hmap.displayFlashMap === false) {
-                            const originalMap = document.querySelector('#swfCont');
-                            if (originalMap) {
-                                originalMap.style.display = 'none';
-                            }
+                        // if (this.hmap.displayFlashMap === false) {
+                        const originalMap = document.querySelector('#swfCont');
+                        if (originalMap) {
+                            originalMap.style.display = 'none';
                         }
+                        // }
                         if (document.querySelector('#hmap') === null) {
                             const hmap = document.createElement('div');
                             hmap.setAttribute('id', 'hmap');
@@ -1876,10 +1878,10 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                         const FGLayer = this.layers.get('ruin-foreground');
                         if (init) {
                             FGLayer.draw();
+                            this.watchOxygen();
                         }
                         else {
                             FGLayer.updateArrows();
-                            FGLayer.updateOxygen();
                         }
                     });
                 }
@@ -1896,9 +1898,27 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                     document.body.removeChild(el);
                     toast_1.Toast.show(lang_2.HMapLang.get('toastdebug'));
                 }
+                watchOxygen() {
+                    if (this.oxygenTimer) {
+                        window.clearInterval(this.oxygenTimer);
+                    }
+                    const mapData = this.mapData;
+                    this.oxygen = Math.floor(mapData.oxygen / 3000);
+                    const FGLayer = this.layers.get('ruin-foreground');
+                    FGLayer.updateOxygen();
+                    this.oxygenTimer = window.setInterval(() => {
+                        if (this.oxygen <= 0) {
+                            window.clearInterval(this.oxygenTimer);
+                            this.oxygenTimer = undefined;
+                            return;
+                        }
+                        this.oxygen -= 1;
+                        FGLayer.updateOxygen();
+                    }, 3000);
+                }
                 /**
                  * Function called when the user click on a directionnal arrow
-                 * The function is big due to the debug mode
+                 * The function is big because of to the debug mode
                  */
                 move(direction) {
                     const mapData = this.mapData;
@@ -1926,45 +1946,34 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                     }
                     const ruinLayer = this.layers.get('ruin-background');
                     if (environment_1.Environment.getInstance().devMode === false) {
-                        /*
-                        const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsMap.sh;
-            
-                        let hx: any;
-            
+                        const url = 'move/x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
+                        let hx;
                         // @ts-ignore
-                        const page: any = window.wrappedJSObject;
+                        const page = window.wrappedJSObject;
                         if (page !== undefined && page.haxe) { // greasemonkey ...
                             hx = page.haxe;
-                        } else if (haxe) { // tampermonkey
+                        }
+                        else if (haxe) { // tampermonkey
                             hx = haxe;
                         }
-            
                         const r = new hx.Http('/' + url);
                         js.XmlHttp.onStart(r);
                         js.XmlHttp.urlForBack = url;
                         r.setHeader('X-Handler', 'js.XmlHttp');
-                        r.onData = (data: string) => {
-                            this.hmap.originalOnData!(data); // we are sure the function has been set
-            
-                            ruinLayer.easeMovement({ x: 100 * x, y: 100 * y }, () => {
-                                // move the position
-                                mapData.movePosition(x, y);
-            
-                                if (data.indexOf('js.JsMap.init') !== -1) {
-                                    const startVar = data.indexOf('js.JsMap.init') + 16;
+                        r.onData = (data) => {
+                            this.hmap.originalOnData(data); // we are sure the function has been set
+                            ruinLayer.easeMovement({ x: 300 * x, y: 300 * y }, () => {
+                                if (data.indexOf('js.JsExplo.init') !== -1) {
+                                    const startVar = data.indexOf('js.JsExplo.init') + 16;
                                     const stopVar = data.indexOf('\',', startVar);
                                     const tempMapData = data.substring(startVar, stopVar);
-            
                                     this.partialDataReceived({ raw: tempMapData });
                                 }
-            
                                 this.moving = false; // allow another move
                             });
                         };
-            
                         r.onError = js.XmlHttp.onError;
                         r.request(false);
-                        */
                     }
                     else { // dev mode, fake the data
                         let exit = false;
@@ -1988,7 +1997,7 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                                 _w: true,
                                 _z: random.getOneOfLocalSeed([random.getRandomIntegerLocalSeed(1, 3), 0, 0, 0, 0]),
                             },
-                            _o: mapData.oxygen - 3000,
+                            _o: this.oxygen * 3000,
                             _r: false,
                             _x: mapData.position.x + x,
                             _y: mapData.position.y + y
@@ -2005,11 +2014,35 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                  * Function called when the user click on a door
                  */
                 enterRoom() {
-                    const mapData = this.mapData;
                     if (environment_1.Environment.getInstance().devMode === false) {
-                        // @TODO
+                        const url = 'enterRoom?' + js.JsExplo.sh;
+                        let hx;
+                        // @ts-ignore
+                        const page = window.wrappedJSObject;
+                        if (page !== undefined && page.haxe) { // greasemonkey ...
+                            hx = page.haxe;
+                        }
+                        else if (haxe) { // tampermonkey
+                            hx = haxe;
+                        }
+                        const r = new hx.Http('/' + url);
+                        js.XmlHttp.onStart(r);
+                        js.XmlHttp.urlForBack = url;
+                        r.setHeader('X-Handler', 'js.XmlHttp');
+                        r.onData = (data) => {
+                            this.hmap.originalOnData(data); // we are sure the function has been set
+                            if (data.indexOf('js.JsExplo.init') !== -1) {
+                                const startVar = data.indexOf('js.JsExplo.init') + 16;
+                                const stopVar = data.indexOf('\',', startVar);
+                                const tempMapData = data.substring(startVar, stopVar);
+                                this.partialDataReceived({ raw: tempMapData });
+                            }
+                        };
+                        r.onError = js.XmlHttp.onError;
+                        r.request(false);
                     }
                     else { // dev mode, fake the data
+                        const mapData = this.mapData;
                         // fake the data
                         const fakeData = mapData.data._r;
                         fakeData._r = true;
@@ -2020,11 +2053,35 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                  * Function called when the user exit the room
                  */
                 exitRoom() {
-                    const mapData = this.mapData;
                     if (environment_1.Environment.getInstance().devMode === false) {
-                        // @TODO
+                        const url = 'leaveRoom?' + js.JsExplo.sh;
+                        let hx;
+                        // @ts-ignore
+                        const page = window.wrappedJSObject;
+                        if (page !== undefined && page.haxe) { // greasemonkey ...
+                            hx = page.haxe;
+                        }
+                        else if (haxe) { // tampermonkey
+                            hx = haxe;
+                        }
+                        const r = new hx.Http('/' + url);
+                        js.XmlHttp.onStart(r);
+                        js.XmlHttp.urlForBack = url;
+                        r.setHeader('X-Handler', 'js.XmlHttp');
+                        r.onData = (data) => {
+                            this.hmap.originalOnData(data); // we are sure the function has been set
+                            if (data.indexOf('js.JsExplo.init') !== -1) {
+                                const startVar = data.indexOf('js.JsExplo.init') + 16;
+                                const stopVar = data.indexOf('\',', startVar);
+                                const tempMapData = data.substring(startVar, stopVar);
+                                this.partialDataReceived({ raw: tempMapData });
+                            }
+                        };
+                        r.onError = js.XmlHttp.onError;
+                        r.request(false);
                     }
                     else { // dev mode, fake the data
+                        const mapData = this.mapData;
                         // fake the data
                         const fakeData = mapData.data._r;
                         fakeData._r = false;
@@ -3841,7 +3898,7 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                 }
                 /**
                  * Function called when the user click on a directionnal arrow
-                 * The function is big due to the debug mode
+                 * The function is big because of to the debug mode
                  */
                 move(direction) {
                     const mapData = this.mapData;
@@ -4042,7 +4099,6 @@ System.register("maps/abstract", ["imagesLoader"], function (exports_22, context
                  * This is the intialization function
                  */
                 completeDataReceived(mapDataPayload) {
-                    console.log('complete data');
                     this.mapData = this.generateMapData(mapDataPayload);
                     const loading = new Image();
                     loading.src = imagesLoader_6.HMapImagesLoader.getInstance().get('loading').src;
@@ -4099,9 +4155,7 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                  * Get the map data and launch the drawing of the map
                  * This method is not straightfoward. It handles debug mode,
                  * and the fact the data can be outdated in the HTML (initialized)
-                 * but uptodate in the store
-                 * @param forceData when passed, it will use this dataset instead of
-                 * fetching the HTML
+                 * but up to date in the store
                  */
                 fetchMapData() {
                     if (this.map === undefined) {
@@ -4143,7 +4197,7 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                  */
                 setupInterceptor() {
                     let _js;
-                    // @ts-ignore this thing is not known by the TS compiler
+                    // @ts-ignore : this thing is not known by the TS compiler
                     const page = window.wrappedJSObject;
                     if (page !== undefined && page.js) { // greasemonkey
                         _js = page.js;
@@ -4171,7 +4225,7 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                         return;
                     }
                     // now we are in an interesting place for us, check if there is data for our map
-                    if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
+                    if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
                         // if we changed location or we dont have jsmap.init in the message, reload the whole map
                         if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1) {
                             this.location = currentLocation;
@@ -4179,14 +4233,20 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                             this.fetchMapData(); // it will autobuild the map
                         }
                         else { // we are still on the same location
-                            if (data.indexOf('js.JsMap.init') !== -1) {
-                                const startVar = data.indexOf('js.JsMap.init') + 16;
+                            if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1) {
+                                let startVar = 0;
+                                if (data.indexOf('js.JsMap.init') !== -1) {
+                                    startVar = data.indexOf('js.JsMap.init') + 16;
+                                }
+                                else {
+                                    startVar = data.indexOf('js.JsExplo.init') + 16;
+                                }
                                 const stopVar = data.indexOf('\',', startVar);
                                 const tempMapData = data.substring(startVar, stopVar);
-                                this.map.partialDataReceived({ raw: tempMapData }); // else just patch the data
+                                this.map.partialDataReceived({ raw: tempMapData }); // just patch the data
                             }
                             else {
-                                console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet');
+                                console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet', data);
                             }
                         }
                     }
@@ -4375,13 +4435,12 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
                             }
                             else {
                                 // wait for js.JsMap to be ready
-                                let counterCheckJsMap = 0;
+                                let counterCheckJsMap = 0; // count the number of tries
                                 const checkLocationKnown = setInterval(function () {
                                     if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
                                         clearInterval(checkLocationKnown);
                                         map.location = map.getCurrentLocation();
-                                        map.fetchMapData();
-                                        // intercept every ajax request haxe is doing to know if we should start the map or not
+                                        map.fetchMapData(); // intercept every ajax request haxe is doing to know if we should start the map or not
                                         setTimeout(() => map.setupInterceptor());
                                     }
                                     else if (++counterCheckJsMap > 10) { // timeout 2s

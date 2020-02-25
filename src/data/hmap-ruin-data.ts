@@ -4,9 +4,9 @@ import { HMapRuinType } from '../maps/ruin';
 import { HMapRandom } from '../random';
 
 // declared in host page
-declare var haxe: any;
-declare var StringTools: any;
-declare var ExploCommon: any;
+declare let haxe: any;
+declare let StringTools: any;
+declare let ExploCommon: any;
 
 /**
  * JSON map paramaters; feel free to complete
@@ -47,14 +47,14 @@ export type HMapWallNumber = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I'
 export type HMapZoneNumber = 'Z1' | 'Z2' | 'Z3' | 'Z4' | 'Z5';
 
 type HMapWallObjects = {
-    [K in HMapRuinType] : {
-        [P in HMapWallNumber] : Array<string>;
+    [K in HMapRuinType]: {
+        [P in HMapWallNumber]: Array<string>;
     };
 };
 
 type HMapZoneObjects = {
-    [K in HMapRuinType] : {
-        [P in HMapZoneNumber] : Array<string>;
+    [K in HMapRuinType]: {
+        [P in HMapZoneNumber]: Array<string>;
     };
 };
 
@@ -82,12 +82,12 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
         },
         'bunker' : {
             'A' : ['wall_hatch_A'],
-            'B' : [/*'wall_gutter_B', */'wall_hatch_B'],
+            'B' : [/* 'wall_gutter_B', */'wall_hatch_B'],
             'C' : [],
             'D' : ['wall_barrel_D', 'wall_grid_D', 'wall_pipe_D'],
             'E' : ['wall_barrel_E', 'wall_grid_E', 'wall_pipe_E'],
             'F' : [],
-            'G' : [/*'wall_gutter_G', */'wall_hatch_G'],
+            'G' : [/* 'wall_gutter_G', */'wall_hatch_G'],
             'H' : ['wall_hatch_H'],
             'I' : [],
             'J' : [],
@@ -134,6 +134,9 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
         }
     };
 
+    /**
+     * Create a fake ruin for debug purpose
+     */
     public fakeRuinDirections = [
         [
             [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
@@ -214,6 +217,10 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
     get room(): boolean { return this.data._r._r; }
     get kills(): number { return this.data._r._d._k; }
 
+    constructor(mapDataPayload?: HMapDataPayload) {
+        super(mapDataPayload);
+    }
+
     /**
      * Decode the url encoded flashvar
      */
@@ -239,18 +246,6 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
             console.error('HMapRuinData::decode - caught an exception during decoding', err, urlEncoded);
             throw err;
         }
-    }
-
-    constructor(mapDataPayload?: HMapDataPayload) {
-        super(mapDataPayload);
-    }
-
-
-    /**
-     * JSON patching separated to enable dev mode
-     */
-    protected patchDataJSON(data: HMapRuinLocalDataJSON) {
-        this.data._r = data;
     }
 
     /**
@@ -295,5 +290,10 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
         return this.fakeRuinDirections[pos.y][pos.x];
     }
 
-
+    /**
+     * JSON patching separated to enable dev mode
+     */
+    protected patchDataJSON(data: HMapRuinLocalDataJSON) {
+        this.data._r = data;
+    }
 }

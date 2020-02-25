@@ -38,21 +38,6 @@ export abstract class HMapData<DataJSON, LocalDataJSON> {
     }
 
     /**
-     * JSON patching separated to enable dev mode
-     */
-    protected abstract patchDataJSON(data: LocalDataJSON): void;
-
-    /**
-     * create a fake JSON to debug the map
-     */
-    abstract fakeData(force: boolean): DataJSON;
-
-    /**
-     * Decode the url encoded flashvar
-     */
-    abstract decode(urlEncoded: string): Object;
-
-    /**
      * @param char Type script does not have a type for
      */
     protected translate(char: any): any | null {
@@ -91,4 +76,19 @@ export abstract class HMapData<DataJSON, LocalDataJSON> {
         }
         return returnStr;
     }
+
+    /**
+     * create a fake JSON to debug the map
+     */
+    abstract fakeData(force: boolean): DataJSON;
+
+    /**
+     * Decode the url encoded flashvar
+     */
+    abstract decode(urlEncoded: string): Object;
+
+    /**
+     * JSON patching separated to enable dev mode
+     */
+    protected abstract patchDataJSON(data: LocalDataJSON): void;
 }

@@ -86,17 +86,13 @@ export class HMapSVGRuinForegroundLayer extends AbstractHMapLayer<HMapRuinDataJS
         }
     }
 
-    updateOxygen() {
-        const map = this.map as HMapRuin;
-        const mapData = this.map.mapData as HMapRuinData;
-
-        const percent = Math.floor(mapData.oxygen / 3000);
-
+    public updateOxygen() {
         const textElement = document.getElementById('hmap-oxygen');
+        const map = this.map as HMapRuin;
         if (textElement) {
-            textElement.textContent = '' + percent;
+            textElement.textContent = '' + map.oxygen;
         }
-        if (percent < 15) {
+        if (map.oxygen < 15) {
             if (!this.lowOxygen) {
                 this.lowOxygen = true;
                 const you = document.querySelector( '#hmap-ruin-you' );

@@ -1,9 +1,7 @@
 import { HMapTypeMapStr, HMapTypeSVGMap } from './maps/abstract';
-import { Environment } from './environment';
 import { HMapGridMap } from './maps/grid';
 import { HMapDesertMap } from './maps/desert';
 import { HMapRuin } from './maps/ruin';
-import { HMapRuinDataJSON } from './data/hmap-ruin-data';
 
 export interface HMapPoint {
     x: number;
@@ -17,11 +15,9 @@ export interface HMapSize {
 
 export type HMapLocation = 'doors' | 'desert' | 'ruin' | 'unknown';
 
-declare var js: any; // haxe stuff
+declare const js: any; // haxe stuff
 
 export class HMap {
-
-    private map?: HMapTypeSVGMap;
 
     public width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
     public height = 300; // for debug only, the value is 300 and there is a lot of hard coded values
@@ -35,6 +31,8 @@ export class HMap {
 
     public cssSelector = '.swf'; // selector of the map container, default is production value
 
+    private map?: HMapTypeSVGMap;
+
     constructor(cssSelector?: string) {
         if (cssSelector !== undefined) {
             this.cssSelector = cssSelector;
@@ -45,9 +43,7 @@ export class HMap {
      * Get the map data and launch the drawing of the map
      * This method is not straightfoward. It handles debug mode,
      * and the fact the data can be outdated in the HTML (initialized)
-     * but uptodate in the store
-     * @param forceData when passed, it will use this dataset instead of
-     * fetching the HTML
+     * but up to date in the store
      */
     fetchMapData() {
         if (this.map === undefined) {
@@ -93,7 +89,7 @@ export class HMap {
     setupInterceptor() {
 
         let _js;
-        // @ts-ignore this thing is not known by the TS compiler
+        // @ts-ignore : this thing is not known by the TS compiler
         const page: any = window.wrappedJSObject;
 
         if (page !== undefined && page.js) { // greasemonkey
@@ -125,20 +121,25 @@ export class HMap {
         }
 
         // now we are in an interesting place for us, check if there is data for our map
-        if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
+        if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
             // if we changed location or we dont have jsmap.init in the message, reload the whole map
             if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1) {
                 this.location = currentLocation;
                 this.clearMap();
                 this.fetchMapData(); // it will autobuild the map
             } else { // we are still on the same location
-                if (data.indexOf('js.JsMap.init') !== -1) {
-                    const startVar = data.indexOf('js.JsMap.init') + 16;
+                if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1) {
+                    let startVar = 0;
+                    if (data.indexOf('js.JsMap.init') !== -1) {
+                        startVar = data.indexOf('js.JsMap.init') + 16;
+                    } else {
+                        startVar = data.indexOf('js.JsExplo.init') + 16;
+                    }
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
-                    this.map!.partialDataReceived({ raw: tempMapData }); // else just patch the data
+                    this.map!.partialDataReceived({ raw: tempMapData }); // just patch the data
                 } else {
-                    console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet');
+                    console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet', data);
                 }
             }
         }

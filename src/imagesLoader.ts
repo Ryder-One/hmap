@@ -20,13 +20,6 @@ export class HMapImagesLoader {
 
     private images = new Map<string, HMapImage>();
 
-    static getInstance(): HMapImagesLoader {
-        if (this._instance === undefined) {
-            this._instance = new HMapImagesLoader();
-        }
-        return this._instance;
-    }
-
     constructor() {
 
         // images to preload
@@ -60,6 +53,13 @@ export class HMapImagesLoader {
         }
         // tag 12 is a gif
         this.images.set('tag_12',           { src: url + 'tags/12.gif',            obj: undefined, width: 16,  height: 16});
+    }
+
+    static getInstance(): HMapImagesLoader {
+        if (this._instance === undefined) {
+            this._instance = new HMapImagesLoader();
+        }
+        return this._instance;
     }
 
     public loadRuinPics(location: HMapRuinType) {
@@ -175,7 +175,7 @@ export class HMapImagesLoader {
       * @param init boolean to tell if we are in initialisation phaseor not (display bar or not)
       * @param onFinished callback to be called when it's done
       */
-     public preloadPictures (loadingLayer: HMapSVGLoadingLayer<Object, Object>, init: boolean, onFinished: CallableFunction) {
+    public preloadPictures (loadingLayer: HMapSVGLoadingLayer<Object, Object>, init: boolean, onFinished: CallableFunction) {
         let loaded = 0;
 
         this.images.forEach((value: HMapImage) => {

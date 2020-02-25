@@ -168,6 +168,21 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         }
     }
 
+    /**
+     * Reset the zoom & pan level
+     */
+    resetView() {
+        const width = this.map.width;
+        const height = this.map.height;
+        this.viewBox = {x : 0, y : 0, w : width, h : height};
+        this.isPanning = false;
+        this.startPoint = {x: 0 , y: 0};
+        this.endPoint = {x: 0, y: 0};
+        this.scale = 1;
+        this.svg.setAttributeNS(null, 'viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
+
+    }
+
     private onMouseEnterSquare(e: MouseEvent) {
         if (this.isPanning) {
             return;
@@ -227,21 +242,6 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
     }
 
     /**
-     * Reset the zoom & pan level
-     */
-    resetView() {
-        const width = this.map.width;
-        const height = this.map.height;
-        this.viewBox = {x : 0, y : 0, w : width, h : height};
-        this.isPanning = false;
-        this.startPoint = {x: 0 , y: 0};
-        this.endPoint = {x: 0, y: 0};
-        this.scale = 1;
-        this.svg.setAttributeNS(null, 'viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
-
-    }
-
-    /**
      * Enable the zoom and pan behavior
      */
     private attachPanZoomEvents() {
@@ -285,7 +285,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                 const dy = (this.startPoint.y - this.endPoint.y) / this.scale;
                 const movedViewBox = { x: this.viewBox.x + dx, y: this.viewBox.y + dy, w: this.viewBox.w, h: this.viewBox.h };
                 this.svg.setAttributeNS(null, 'viewBox', `${movedViewBox.x} ${movedViewBox.y} ${movedViewBox.w} ${movedViewBox.h}`);
-           }
+            }
         };
 
         svgContainer.onmouseup = (e: MouseEvent) => {

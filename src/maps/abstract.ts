@@ -21,15 +21,16 @@ export type HMapTypeSVGMap = HMapGridMap | HMapDesertMap | HMapRuin;
  * They are split into layers, and each layer is a SVG with its own behavior
  */
 export abstract class HMapAbstractMap<DataJSON, LocalDataJSON> {
+
+    public mapData?: HMapData<DataJSON, LocalDataJSON>; // @TODO clean the any
+
     protected hmap: HMap;
 
     protected layers = new Map<HMapLayerSVGType, HMapSVGGridLayer | HMapSVGLoadingLayer<DataJSON, LocalDataJSON>
-        | HMapSVGDesertForegroundLayer | HMapSVGDesertBackgroundLayer | HMapSVGGlassStaticLayer | HMapSVGRuinBackgroundLayer |
-        HMapSVGRuinForegroundLayer>();
+    | HMapSVGDesertForegroundLayer | HMapSVGDesertBackgroundLayer | HMapSVGGlassStaticLayer | HMapSVGRuinBackgroundLayer |
+    HMapSVGRuinForegroundLayer>();
 
     protected animationLoopId?: number; // hold the request animation frame id
-
-    public mapData?: HMapData<DataJSON, LocalDataJSON>; // @TODO clean the any
 
     get height(): number {
         return this.hmap.height;
@@ -48,7 +49,6 @@ export abstract class HMapAbstractMap<DataJSON, LocalDataJSON> {
      * This is the intialization function
      */
     completeDataReceived(mapDataPayload: HMapDataPayload) {
-        console.log('complete data');
         this.mapData = this.generateMapData(mapDataPayload);
         const loading = new Image();
         loading.src = HMapImagesLoader.getInstance().get('loading').src;

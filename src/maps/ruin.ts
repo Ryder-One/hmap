@@ -11,19 +11,18 @@ import { HMapRandom } from '../random';
 import { HMapSVGRuinForegroundLayer } from '../layers/svg-ruin-foreground';
 import { HMapImagesLoader } from '../imagesLoader';
 
-declare var haxe: any;
-declare var js: any;
+declare let haxe: any;
+declare let js: any;
+
 export type HMapRuinType = 'motel' | 'bunker' | 'hospital';
 
 export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDataJSON> {
 
     public type?: HMapRuinType;
     public registredArrows = new Array<HMapArrow>();
+    public oxygen = 100;
     private moving = false;
-
-    protected generateMapData(payload?: HMapDataPayload) {
-        return new HMapRuinData(payload);
-    }
+    private oxygenTimer?: number;
 
     /**
      * Build the layers (SVG) for this map
@@ -35,12 +34,12 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
         if (swf !== null) {
             swf.setAttribute('style', 'display:flex;flex-direction:column;height:auto');
 
-            if (this.hmap.displayFlashMap === false) {
-                const originalMap = document.querySelector('#swfCont') as HTMLElement;
-                if (originalMap) {
-                    originalMap.style.display = 'none';
-                }
+            // if (this.hmap.displayFlashMap === false) {
+            const originalMap = document.querySelector('#swfCont') as HTMLElement;
+            if (originalMap) {
+                originalMap.style.display = 'none';
             }
+            // }
 
             if (document.querySelector('#hmap') === null) {
                 const hmap = document.createElement('div');
@@ -83,62 +82,12 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
 
             const LoadingLayer = new HMapSVGLoadingLayer(this);
             this.layers.set('loading', LoadingLayer);
-
         }
-    }
-
-    /**
-     * Action to execute when new data arrive
-     */
-    protected onDataReceived(init: boolean): void {
-
-        // @TODO : guess the ruin type
-        this.type = (this.mapData as HMapRuinData).ruinType;
-
-        if (init) {
-            HMapImagesLoader.getInstance().loadRuinPics(this.type);
-        }
-
-        this.registerArrows();
-
-        // when preloading the pictures is finished, starts drawing
-        HMapImagesLoader.getInstance()
-            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapRuinDataJSON, HMapRuinLocalDataJSON>, init, () => {
-            const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
-            if (hmapMenu !== null) {
-                hmapMenu.style.display = 'flex';
-            }
-            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapRuinDataJSON, HMapRuinLocalDataJSON>;
-            loadingLayer.hide();
-            this.layers.get('ruin-background')!.draw();
-            const FGLayer = this.layers.get('ruin-foreground') as HMapSVGRuinForegroundLayer;
-            if (init) {
-                FGLayer.draw();
-            } else {
-                FGLayer.updateArrows();
-                FGLayer.updateOxygen();
-            }
-        });
-    }
-
-    /**
-     * Copy the mapData to clipboard
-     */
-    private onDebugButtonClick() {
-        const el = document.createElement('textarea');
-        el.value = this.mapData!.prettyData;
-        console.log(this.mapData!.data);
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-
-        Toast.show(HMapLang.get('toastdebug'));
     }
 
     /**
      * Function called when the user click on a directionnal arrow
-     * The function is big due to the debug mode
+     * The function is big because of to the debug mode
      */
     move(direction: HMapArrowDirection) {
 
@@ -164,8 +113,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
         const ruinLayer = this.layers.get('ruin-background') as HMapSVGRuinBackgroundLayer;
 
         if (Environment.getInstance().devMode === false) {
-            /*
-            const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsMap.sh;
+            const url = 'move/x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
 
             let hx: any;
 
@@ -184,12 +132,9 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
             r.onData = (data: string) => {
                 this.hmap.originalOnData!(data); // we are sure the function has been set
 
-                ruinLayer.easeMovement({ x: 100 * x, y: 100 * y }, () => {
-                    // move the position
-                    mapData.movePosition(x, y);
-
-                    if (data.indexOf('js.JsMap.init') !== -1) {
-                        const startVar = data.indexOf('js.JsMap.init') + 16;
+                ruinLayer.easeMovement({ x: 300 * x, y: 300 * y }, () => {
+                    if (data.indexOf('js.JsExplo.init') !== -1) {
+                        const startVar = data.indexOf('js.JsExplo.init') + 16;
                         const stopVar = data.indexOf('\',', startVar);
                         const tempMapData = data.substring(startVar, stopVar);
 
@@ -202,7 +147,6 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
 
             r.onError = js.XmlHttp.onError;
             r.request(false);
-            */
 
         } else { // dev mode, fake the data
 
@@ -220,15 +164,15 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 _d: {
                     _exit: exit,
                     _room: random.getOneOfLocalSeed<HMapRuinRoomJSON | null>([ {
-                            _locked: random.getOneOfLocalSeed<boolean>([true, false]),
-                            _doorKind: random.getOneOfLocalSeed<number>([1, 2, 3])
-                        }]),
+                        _locked: random.getOneOfLocalSeed<boolean>([true, false]),
+                        _doorKind: random.getOneOfLocalSeed<number>([1, 2, 3])
+                    }]),
                     _seed: seed,
                     _k: random.getRandomIntegerLocalSeed(0, 3),
                     _w: true,
                     _z: random.getOneOfLocalSeed<number>([random.getRandomIntegerLocalSeed(1, 3), 0, 0, 0, 0]),
                 },
-                _o: mapData.oxygen - 3000,
+                _o: this.oxygen * 3000,
                 _r: false,
                 _x:  mapData.position.x + x,
                 _y:  mapData.position.y + y
@@ -249,12 +193,41 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
      */
     enterRoom() {
 
-        const mapData = this.mapData as HMapRuinData;
-
         if (Environment.getInstance().devMode === false) {
-            // @TODO
-        } else { // dev mode, fake the data
 
+            const url = 'enterRoom?' + js.JsExplo.sh;
+
+            let hx: any;
+
+            // @ts-ignore
+            const page: any = window.wrappedJSObject;
+            if (page !== undefined && page.haxe) { // greasemonkey ...
+                hx = page.haxe;
+            } else if (haxe) { // tampermonkey
+                hx = haxe;
+            }
+
+            const r = new hx.Http('/' + url);
+            js.XmlHttp.onStart(r);
+            js.XmlHttp.urlForBack = url;
+            r.setHeader('X-Handler', 'js.XmlHttp');
+            r.onData = (data: string) => {
+                this.hmap.originalOnData!(data); // we are sure the function has been set
+
+                if (data.indexOf('js.JsExplo.init') !== -1) {
+                    const startVar = data.indexOf('js.JsExplo.init') + 16;
+                    const stopVar = data.indexOf('\',', startVar);
+                    const tempMapData = data.substring(startVar, stopVar);
+
+                    this.partialDataReceived({ raw: tempMapData });
+                }
+            };
+
+            r.onError = js.XmlHttp.onError;
+            r.request(false);
+
+        } else { // dev mode, fake the data
+            const mapData = this.mapData as HMapRuinData;
             // fake the data
             const fakeData: HMapRuinLocalDataJSON = mapData.data._r;
             fakeData._r = true;
@@ -268,18 +241,117 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
      */
     exitRoom() {
 
-        const mapData = this.mapData as HMapRuinData;
-
         if (Environment.getInstance().devMode === false) {
-            // @TODO
-        } else { // dev mode, fake the data
+            const url = 'leaveRoom?' + js.JsExplo.sh;
 
+            let hx: any;
+
+            // @ts-ignore
+            const page: any = window.wrappedJSObject;
+            if (page !== undefined && page.haxe) { // greasemonkey ...
+                hx = page.haxe;
+            } else if (haxe) { // tampermonkey
+                hx = haxe;
+            }
+
+            const r = new hx.Http('/' + url);
+            js.XmlHttp.onStart(r);
+            js.XmlHttp.urlForBack = url;
+            r.setHeader('X-Handler', 'js.XmlHttp');
+            r.onData = (data: string) => {
+                this.hmap.originalOnData!(data); // we are sure the function has been set
+
+                if (data.indexOf('js.JsExplo.init') !== -1) {
+                    const startVar = data.indexOf('js.JsExplo.init') + 16;
+                    const stopVar = data.indexOf('\',', startVar);
+                    const tempMapData = data.substring(startVar, stopVar);
+
+                    this.partialDataReceived({ raw: tempMapData });
+                }
+            };
+
+            r.onError = js.XmlHttp.onError;
+            r.request(false);
+        } else { // dev mode, fake the data
+            const mapData = this.mapData as HMapRuinData;
             // fake the data
             const fakeData: HMapRuinLocalDataJSON = mapData.data._r;
             fakeData._r = false;
 
             this.partialDataReceived({ JSON: fakeData });
         }
+    }
+
+    protected generateMapData(payload?: HMapDataPayload) {
+        return new HMapRuinData(payload);
+    }
+
+    /**
+     * Action to execute when new data arrive
+     */
+    protected onDataReceived(init: boolean): void {
+
+        // @TODO : guess the ruin type
+        this.type = (this.mapData as HMapRuinData).ruinType;
+
+        if (init) {
+            HMapImagesLoader.getInstance().loadRuinPics(this.type);
+        }
+
+        this.registerArrows();
+
+        // when preloading the pictures is finished, starts drawing
+        HMapImagesLoader.getInstance()
+            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapRuinDataJSON, HMapRuinLocalDataJSON>, init, () => {
+                const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
+                if (hmapMenu !== null) {
+                    hmapMenu.style.display = 'flex';
+                }
+                const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapRuinDataJSON, HMapRuinLocalDataJSON>;
+                loadingLayer.hide();
+                this.layers.get('ruin-background')!.draw();
+                const FGLayer = this.layers.get('ruin-foreground') as HMapSVGRuinForegroundLayer;
+                if (init) {
+                    FGLayer.draw();
+                    this.watchOxygen();
+                } else {
+                    FGLayer.updateArrows();
+                }
+            });
+    }
+
+    /**
+     * Copy the mapData to clipboard
+     */
+    private onDebugButtonClick() {
+        const el = document.createElement('textarea');
+        el.value = this.mapData!.prettyData;
+        console.log(this.mapData!.data);
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+
+        Toast.show(HMapLang.get('toastdebug'));
+    }
+
+    private watchOxygen() {
+        if (this.oxygenTimer) {
+            window.clearInterval(this.oxygenTimer);
+        }
+        const mapData = this.mapData as HMapRuinData;
+        this.oxygen = Math.floor(mapData.oxygen / 3000);
+        const FGLayer = this.layers.get('ruin-foreground') as HMapSVGRuinForegroundLayer;
+        FGLayer.updateOxygen();
+        this.oxygenTimer = window.setInterval(() => {
+            if (this.oxygen <= 0) {
+                window.clearInterval(this.oxygenTimer);
+                this.oxygenTimer = undefined;
+                return;
+            }
+            this.oxygen -= 1;
+            FGLayer.updateOxygen();
+        }, 3000);
     }
 
     /**

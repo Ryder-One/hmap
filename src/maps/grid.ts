@@ -19,10 +19,6 @@ export class HMapGridMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertL
     public mode: HMapGridMode = 'personal';
     public displayTags = false;
 
-    protected generateMapData(payload?: HMapDataPayload) {
-        return new HMapDesertData(payload);
-    }
-
     get target(): HMapPoint {
         if (this.hmap.target) {
             return this.hmap.target;
@@ -156,24 +152,7 @@ export class HMapGridMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertL
         }
     }
 
-    /**
-     * Action to execute when new data arrive
-     */
-    protected onDataReceived(init: boolean): void {
 
-        // when preloading the pictures is finished, starts drawing
-        HMapImagesLoader.getInstance()
-            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
-            const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
-            if (hmapMenu !== null) {
-                hmapMenu.style.display = 'flex';
-            }
-            const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>;
-            loadingLayer.hide();
-            this.layers.get('grid')!.draw();
-            this.layers.get('glass-static')!.draw();
-        });
-    }
 
     /**
      * Set the target of the grid
@@ -183,6 +162,29 @@ export class HMapGridMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDesertL
         if (this.hmap.location === 'desert' || this.hmap.location === 'doors') {
             this.hmap.target = index;
         }
+    }
+
+    protected generateMapData(payload?: HMapDataPayload) {
+        return new HMapDesertData(payload);
+    }
+
+    /**
+     * Action to execute when new data arrive
+     */
+    protected onDataReceived(init: boolean): void {
+
+        // when preloading the pictures is finished, starts drawing
+        HMapImagesLoader.getInstance()
+            .preloadPictures(this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>, init, () => {
+                const hmapMenu = document.querySelector('#hmap-menu') as HTMLElement;
+                if (hmapMenu !== null) {
+                    hmapMenu.style.display = 'flex';
+                }
+                const loadingLayer = this.layers.get('loading') as HMapSVGLoadingLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON>;
+                loadingLayer.hide();
+                this.layers.get('grid')!.draw();
+                this.layers.get('glass-static')!.draw();
+            });
     }
 
     /**

@@ -3,6 +3,10 @@ import { HMapPoint } from './hmap';
 export class HMapRandom {
     public seed: number;
 
+    constructor(seed = 0) {
+        this.seed = seed;
+    }
+
     /**
      * Get a random integer between min and max
      * @warning Not using the seed.
@@ -20,11 +24,6 @@ export class HMapRandom {
         return elements[Math.floor(Math.random() * elements.length)];
     }
 
-
-    constructor(seed = 0) {
-        this.seed = seed;
-    }
-
     /**
     * Very simple random generator based on a fixed seed
     * @see https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
@@ -34,8 +33,8 @@ export class HMapRandom {
         const x = Math.sin(this.seed++) * 10000;
         return x - Math.floor(x);
         */
-       this.seed = (this.seed * 9301 + 49297) % 233280;
-       return this.seed / 233280;
+        this.seed = (this.seed * 9301 + 49297) % 233280;
+        return this.seed / 233280;
     }
 
     /**

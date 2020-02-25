@@ -388,6 +388,16 @@ export class HMapLang {
     private language: HMapLanguage;
     private traductions: Map<HMapLanguage, HMapTraduction > = new Map();
 
+    constructor() {
+        this.language = this.detectLanguage();
+
+        this.traductions.set('fr', french);
+        this.traductions.set('en', english);
+        this.traductions.set('de', german);
+        this.traductions.set('es', spanish);
+
+    }
+
     static getInstance(): HMapLang {
         if (HMapLang.instance === undefined) {
             HMapLang.instance = new HMapLang();
@@ -400,14 +410,16 @@ export class HMapLang {
         return instance._get(key);
     }
 
-    constructor() {
-        this.language = this.detectLanguage();
+    public _get(key: (keyof HMapTraduction)): string {
+        if (this.traductions.get(this.language) !== undefined) {
+            const trads = this.traductions.get(this.language)!;
+            return trads[key];
+        }
+        return this.traductions.get('en')![key]; // default, we have the english traduction
+    }
 
-        this.traductions.set('fr', french);
-        this.traductions.set('en', english);
-        this.traductions.set('de', german);
-        this.traductions.set('es', spanish);
-
+    public getRuinNames(ruinType: HMapRuinType): Array<string> {
+        return ruinNames[this.language][ruinType];
     }
 
     private detectLanguage(): HMapLanguage {
@@ -423,18 +435,5 @@ export class HMapLang {
         } else {
             return 'fr';
         }
-    }
-
-
-    public _get(key: (keyof HMapTraduction)): string {
-        if (this.traductions.get(this.language) !== undefined) {
-            const trads = this.traductions.get(this.language)!;
-            return trads[key];
-        }
-        return this.traductions.get('en')![key]; // default, we have the english traduction
-    }
-
-    public getRuinNames(ruinType: HMapRuinType): Array<string> {
-        return ruinNames[this.language][ruinType];
     }
 }

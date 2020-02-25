@@ -2,7 +2,7 @@ import { HMapAbstractMap } from '../maps/abstract';
 import { HMapImagesLoader } from '../imagesLoader';
 
 export type HMapLayerSVGType = 'loading' | 'grid' | 'glass-static' | 'desert-background' | 'desert-foreground'
-    | 'ruin-background' | 'ruin-foreground';
+| 'ruin-background' | 'ruin-foreground';
 
 export abstract class AbstractHMapLayer<DataJSON, LocalDataJSON> {
 
@@ -53,29 +53,6 @@ export abstract class AbstractHMapLayer<DataJSON, LocalDataJSON> {
     }
 
     /**
-     * Embbed an image in the SVG; append it to the main group and return it
-     */
-    private img (url: string, x: number, y: number, width: number, height: number, angle?: number, cssClass?: string): SVGImageElement {
-        const img = document.createElementNS(this.ns, 'image');
-        img.setAttributeNS(null, 'height', height + '');
-        img.setAttributeNS(null, 'width', width + '');
-        img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
-        img.setAttributeNS(null, 'x', (x | 0) + '');
-        img.setAttributeNS(null, 'y', (y | 0) + '');
-        img.setAttributeNS(null, 'shape-rendering', 'crispEdges');
-        if (cssClass) {
-            img.setAttributeNS(null, 'class', cssClass);
-        }
-        img.style.pointerEvents = 'none';
-        this.g.appendChild(img);
-
-        if (angle && width && height) {
-            img.setAttributeNS(null, 'transform', 'rotate(' + angle + ' ' + (x + width / 2) + ' ' + (y + height / 2) + ')');
-        }
-        return img;
-    }
-
-    /**
      * Use the image preloader to create an image into the SVG
      * @Warning the order of the parameters is not the same, by purpose
      */
@@ -118,6 +95,29 @@ export abstract class AbstractHMapLayer<DataJSON, LocalDataJSON> {
         const txt = this.textDetached(x, y, text, cssclass);
         this.g.appendChild(txt);
         return txt;
+    }
+
+    /**
+     * Embbed an image in the SVG; append it to the main group and return it
+     */
+    private img (url: string, x: number, y: number, width: number, height: number, angle?: number, cssClass?: string): SVGImageElement {
+        const img = document.createElementNS(this.ns, 'image');
+        img.setAttributeNS(null, 'height', height + '');
+        img.setAttributeNS(null, 'width', width + '');
+        img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
+        img.setAttributeNS(null, 'x', (x | 0) + '');
+        img.setAttributeNS(null, 'y', (y | 0) + '');
+        img.setAttributeNS(null, 'shape-rendering', 'crispEdges');
+        if (cssClass) {
+            img.setAttributeNS(null, 'class', cssClass);
+        }
+        img.style.pointerEvents = 'none';
+        this.g.appendChild(img);
+
+        if (angle && width && height) {
+            img.setAttributeNS(null, 'transform', 'rotate(' + angle + ' ' + (x + width / 2) + ' ' + (y + height / 2) + ')');
+        }
+        return img;
     }
 
     public abstract draw(): void;

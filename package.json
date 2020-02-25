@@ -3,29 +3,35 @@
     "version": "3.0.0",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
-        "lint": "tslint --project tslint.json ./src/*.ts",
-        "browserify": "browserify dist/ -o dist/hmap.user.es6.js",
+        "lint": "npx eslint . --ext .ts",
+        "browserify": "npx browserify dist/ -o dist/hmap.user.es6.js",
         "babel": "npx babel dist/hmap.user.es6.js > dist/hmap.user.es5.js",
-        "uglify": "uglifyjs dist/hmap.user.es5.js > dist/hmap.user.js",
+        "uglify": "npx uglifyjs dist/hmap.user.es5.js > dist/hmap.user.js",
         "copy-headers": "echo \"$(cat header-userscript)\n$(cat dist/hmap.user.js)\" > dist/hmap.user.js",
         "version": "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
         "copy-es6": "cp dist/hmap.user.es6.js docs/hmap.user.es6.js",
-        "build": "npm run lint && tsc && npm run browserify && npm run babel && npm run uglify && npm run copy-headers && npm run version && npm run copy-es6",
-        "browsersync" : "browser-sync start -f \"docs\" -s \"docs\" --index \"index-local.html\" --no-open",
-        "watch-ts" : "tsc --target es6 --module system --outFile docs/hmap.user.system.js -w",
-        "serve": "npm run watch-ts & npm run browsersync",
-        "serve2": "nodemon -e ts,html --watch src --exec 'npm run build-dev && npm run browsersync'"
+        "build": "npm run lint && npx tsc && npm run browserify && npm run babel && npm run uglify && npm run copy-headers && npm run version && npm run copy-es6",
+        "browsersync": "npx browser-sync start -f \"docs\" -s \"docs\" --index \"index-local.html\" --no-open",
+        "watch-ts": "npx tsc --target es6 --module system --outFile docs/hmap.user.system.js -w",
+        "serve": "npm run watch-ts & npm run browsersync"
     },
     "author": "RyderOne",
     "dependencies": {
-        "fontfaceobserver": "^2.1.0"
+        "fontfaceobserver-es": "^3.3.1"
     },
     "devDependencies": {
-        "@babel/cli": "^7.4.3",
-        "@babel/core": "^7.4.3",
-        "@babel/polyfill": "^7.4.3",
-        "@babel/preset-env": "^7.4.3",
-        "@types/node": "^11.13.8"
+        "@babel/cli": "^7.8.4",
+        "@babel/core": "^7.8.4",
+        "@babel/polyfill": "^7.8.3",
+        "@babel/preset-env": "^7.8.4",
+        "@types/node": "^13.7.5",
+        "@typescript-eslint/eslint-plugin": "^2.21.0",
+        "@typescript-eslint/parser": "^2.21.0",
+        "browser-sync": "^2.26.7",
+        "browserify": "^16.5.0",
+        "eslint": "^6.8.0",
+        "typescript": "^3.8.2",
+        "uglify-js": "^3.8.0"
     },
     "browserslist": "> 0.25%, not dead",
     "babel": {
