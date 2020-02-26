@@ -220,6 +220,7 @@
 		var HMAP = null;
 		var HMAPDESERTDATA = null;
 		var HMAPRUINDATA = null;
+		var LOCAL_FONTFACEOBSERVER = FontFaceObserver;
 		var T = document.querySelector('#json-data');
 		if ( T !== null) {
 			T.onclick = function() { T.value = ''; };
@@ -231,13 +232,10 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.5/jquery.i18n.js" integrity="sha256-jVzWNEkuMshRoEipwyY2dsurvqBbVXnDkyYQyIYwvuE=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.i18n/1.0.5/jquery.i18n.messagestore.min.js" integrity="sha256-mnmAZ20bByyKZAXa5gp9Dmf4cM09GYS+zfTIxf2vVcI=" crossorigin="anonymous"></script>
 	<script src="i18n.js"></script>
-	<script src="http://www.hordes.fr/js/horde2.js?v=45"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/system.min.js" integrity="sha256-EXPoZ0hFaPyedGmYJYNsQJZBXH7be91OP4bcWfkWlJw=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/named-exports.min.js" integrity="sha256-QWoPIS8TaCW+WRX/XQj4iwOmfKLWgJ+zbZn4vsAx5xw=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/named-register.js" integrity="sha256-7hzP5uCAMfIXDwJKAcAGT5epvxp/O2q9Mtq6p+Doca8=" crossorigin="anonymous"></script>
 	<script type="text/javascript">
-		
-
 
 		System.import('/hmap.user.system.js').then(function() {
 			System.import("index");

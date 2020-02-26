@@ -4071,7 +4071,10 @@ const toast_1 = require("./toast");
 const environment_1 = require("./environment");
 const hmap_desert_data_1 = require("./data/hmap-desert-data");
 const hmap_ruin_data_1 = require("./data/hmap-ruin-data");
-const FontFaceObserver = require('fontfaceobserver-es');
+let FontFaceObserver;
+if (typeof require != undefined) {
+    FontFaceObserver = require('fontfaceobserver-es');
+}
 /**
  * It's bootstrap time !!
  */
