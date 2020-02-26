@@ -47,7 +47,7 @@ System.register("environment", [], function (exports_2, context_2) {
                         return '.';
                     }
                     else {
-                        return 'https://ryder-one.github.io/hmap';
+                        return 'http://ryderone.dynu.net/';
                     }
                 }
                 static getInstance() {
@@ -215,27 +215,6 @@ System.register("layers/abstract", ["imagesLoader"], function (exports_5, contex
                     return path;
                 }
                 /**
-                 * Embbed an image in the SVG; append it to the main group and return it
-                 */
-                img(url, x, y, width, height, angle, cssClass) {
-                    const img = document.createElementNS(this.ns, 'image');
-                    img.setAttributeNS(null, 'height', height + '');
-                    img.setAttributeNS(null, 'width', width + '');
-                    img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
-                    img.setAttributeNS(null, 'x', (x | 0) + '');
-                    img.setAttributeNS(null, 'y', (y | 0) + '');
-                    img.setAttributeNS(null, 'shape-rendering', 'crispEdges');
-                    if (cssClass) {
-                        img.setAttributeNS(null, 'class', cssClass);
-                    }
-                    img.style.pointerEvents = 'none';
-                    this.g.appendChild(img);
-                    if (angle && width && height) {
-                        img.setAttributeNS(null, 'transform', 'rotate(' + angle + ' ' + (x + width / 2) + ' ' + (y + height / 2) + ')');
-                    }
-                    return img;
-                }
-                /**
                  * Use the image preloader to create an image into the SVG
                  * @Warning the order of the parameters is not the same, by purpose
                  */
@@ -274,6 +253,27 @@ System.register("layers/abstract", ["imagesLoader"], function (exports_5, contex
                     const txt = this.textDetached(x, y, text, cssclass);
                     this.g.appendChild(txt);
                     return txt;
+                }
+                /**
+                 * Embbed an image in the SVG; append it to the main group and return it
+                 */
+                img(url, x, y, width, height, angle, cssClass) {
+                    const img = document.createElementNS(this.ns, 'image');
+                    img.setAttributeNS(null, 'height', height + '');
+                    img.setAttributeNS(null, 'width', width + '');
+                    img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
+                    img.setAttributeNS(null, 'x', (x | 0) + '');
+                    img.setAttributeNS(null, 'y', (y | 0) + '');
+                    img.setAttributeNS(null, 'shape-rendering', 'crispEdges');
+                    if (cssClass) {
+                        img.setAttributeNS(null, 'class', cssClass);
+                    }
+                    img.style.pointerEvents = 'none';
+                    this.g.appendChild(img);
+                    if (angle && width && height) {
+                        img.setAttributeNS(null, 'transform', 'rotate(' + angle + ' ' + (x + width / 2) + ' ' + (y + height / 2) + ')');
+                    }
+                    return img;
                 }
             };
             exports_5("AbstractHMapLayer", AbstractHMapLayer);
@@ -701,6 +701,16 @@ System.register("lang", [], function (exports_7, context_7) {
                     const instance = HMapLang.getInstance();
                     return instance._get(key);
                 }
+                _get(key) {
+                    if (this.traductions.get(this.language) !== undefined) {
+                        const trads = this.traductions.get(this.language);
+                        return trads[key];
+                    }
+                    return this.traductions.get('en')[key]; // default, we have the english traduction
+                }
+                getRuinNames(ruinType) {
+                    return ruinNames[this.language][ruinType];
+                }
                 detectLanguage() {
                     const url = window.location;
                     if ('hordes.fr' in url) {
@@ -718,16 +728,6 @@ System.register("lang", [], function (exports_7, context_7) {
                     else {
                         return 'fr';
                     }
-                }
-                _get(key) {
-                    if (this.traductions.get(this.language) !== undefined) {
-                        const trads = this.traductions.get(this.language);
-                        return trads[key];
-                    }
-                    return this.traductions.get('en')[key]; // default, we have the english traduction
-                }
-                getRuinNames(ruinType) {
-                    return ruinNames[this.language][ruinType];
                 }
             };
             exports_7("HMapLang", HMapLang);
@@ -927,12 +927,12 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
                         },
                         'bunker': {
                             'A': ['wall_hatch_A'],
-                            'B': [/*'wall_gutter_B', */ 'wall_hatch_B'],
+                            'B': [/* 'wall_gutter_B', */ 'wall_hatch_B'],
                             'C': [],
                             'D': ['wall_barrel_D', 'wall_grid_D', 'wall_pipe_D'],
                             'E': ['wall_barrel_E', 'wall_grid_E', 'wall_pipe_E'],
                             'F': [],
-                            'G': [/*'wall_gutter_G', */ 'wall_hatch_G'],
+                            'G': [/* 'wall_gutter_G', */ 'wall_hatch_G'],
                             'H': ['wall_hatch_H'],
                             'I': [],
                             'J': [],
@@ -1088,12 +1088,6 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
                     }
                 }
                 /**
-                 * JSON patching separated to enable dev mode
-                 */
-                patchDataJSON(data) {
-                    this.data._r = data;
-                }
-                /**
                  * create a fake JSON to debug the map
                  */
                 fakeData(force = false) {
@@ -1133,6 +1127,12 @@ System.register("data/hmap-ruin-data", ["data/abstract", "random"], function (ex
                  */
                 getFakeDirs(pos) {
                     return this.fakeRuinDirections[pos.y][pos.x];
+                }
+                /**
+                 * JSON patching separated to enable dev mode
+                 */
+                patchDataJSON(data) {
+                    this.data._r = data;
                 }
             };
             exports_10("HMapRuinData", HMapRuinData);
@@ -1803,9 +1803,6 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                     this.oxygen = 100;
                     this.moving = false;
                 }
-                generateMapData(payload) {
-                    return new hmap_ruin_data_1.HMapRuinData(payload);
-                }
                 /**
                  * Build the layers (SVG) for this map
                  */
@@ -1854,67 +1851,6 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                         const LoadingLayer = new svg_loading_1.HMapSVGLoadingLayer(this);
                         this.layers.set('loading', LoadingLayer);
                     }
-                }
-                /**
-                 * Action to execute when new data arrive
-                 */
-                onDataReceived(init) {
-                    // @TODO : guess the ruin type
-                    this.type = this.mapData.ruinType;
-                    if (init) {
-                        imagesLoader_3.HMapImagesLoader.getInstance().loadRuinPics(this.type);
-                    }
-                    this.registerArrows();
-                    // when preloading the pictures is finished, starts drawing
-                    imagesLoader_3.HMapImagesLoader.getInstance()
-                        .preloadPictures(this.layers.get('loading'), init, () => {
-                        const hmapMenu = document.querySelector('#hmap-menu');
-                        if (hmapMenu !== null) {
-                            hmapMenu.style.display = 'flex';
-                        }
-                        const loadingLayer = this.layers.get('loading');
-                        loadingLayer.hide();
-                        this.layers.get('ruin-background').draw();
-                        const FGLayer = this.layers.get('ruin-foreground');
-                        if (init) {
-                            FGLayer.draw();
-                            this.watchOxygen();
-                        }
-                        else {
-                            FGLayer.updateArrows();
-                        }
-                    });
-                }
-                /**
-                 * Copy the mapData to clipboard
-                 */
-                onDebugButtonClick() {
-                    const el = document.createElement('textarea');
-                    el.value = this.mapData.prettyData;
-                    console.log(this.mapData.data);
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    toast_1.Toast.show(lang_2.HMapLang.get('toastdebug'));
-                }
-                watchOxygen() {
-                    if (this.oxygenTimer) {
-                        window.clearInterval(this.oxygenTimer);
-                    }
-                    const mapData = this.mapData;
-                    this.oxygen = Math.floor(mapData.oxygen / 3000);
-                    const FGLayer = this.layers.get('ruin-foreground');
-                    FGLayer.updateOxygen();
-                    this.oxygenTimer = window.setInterval(() => {
-                        if (this.oxygen <= 0) {
-                            window.clearInterval(this.oxygenTimer);
-                            this.oxygenTimer = undefined;
-                            return;
-                        }
-                        this.oxygen -= 1;
-                        FGLayer.updateOxygen();
-                    }, 3000);
                 }
                 /**
                  * Function called when the user click on a directionnal arrow
@@ -2087,6 +2023,70 @@ System.register("maps/ruin", ["maps/abstract", "lang", "layers/svg-ruin-backgrou
                         fakeData._r = false;
                         this.partialDataReceived({ JSON: fakeData });
                     }
+                }
+                generateMapData(payload) {
+                    return new hmap_ruin_data_1.HMapRuinData(payload);
+                }
+                /**
+                 * Action to execute when new data arrive
+                 */
+                onDataReceived(init) {
+                    // @TODO : guess the ruin type
+                    this.type = this.mapData.ruinType;
+                    if (init) {
+                        imagesLoader_3.HMapImagesLoader.getInstance().loadRuinPics(this.type);
+                    }
+                    this.registerArrows();
+                    // when preloading the pictures is finished, starts drawing
+                    imagesLoader_3.HMapImagesLoader.getInstance()
+                        .preloadPictures(this.layers.get('loading'), init, () => {
+                        const hmapMenu = document.querySelector('#hmap-menu');
+                        if (hmapMenu !== null) {
+                            hmapMenu.style.display = 'flex';
+                        }
+                        const loadingLayer = this.layers.get('loading');
+                        loadingLayer.hide();
+                        this.layers.get('ruin-background').draw();
+                        const FGLayer = this.layers.get('ruin-foreground');
+                        if (init) {
+                            FGLayer.draw();
+                            this.watchOxygen();
+                        }
+                        else {
+                            FGLayer.updateArrows();
+                        }
+                    });
+                }
+                /**
+                 * Copy the mapData to clipboard
+                 */
+                onDebugButtonClick() {
+                    const el = document.createElement('textarea');
+                    el.value = this.mapData.prettyData;
+                    console.log(this.mapData.data);
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    toast_1.Toast.show(lang_2.HMapLang.get('toastdebug'));
+                }
+                watchOxygen() {
+                    if (this.oxygenTimer) {
+                        window.clearInterval(this.oxygenTimer);
+                    }
+                    const mapData = this.mapData;
+                    this.oxygen = Math.floor(mapData.oxygen / 3000);
+                    const FGLayer = this.layers.get('ruin-foreground');
+                    FGLayer.updateOxygen();
+                    this.oxygenTimer = window.setInterval(() => {
+                        if (this.oxygen <= 0) {
+                            window.clearInterval(this.oxygenTimer);
+                            this.oxygenTimer = undefined;
+                            return;
+                        }
+                        this.oxygen -= 1;
+                        FGLayer.updateOxygen();
+                    }, 3000);
                 }
                 /**
                  * Register the available directionnal arrows
@@ -2427,24 +2427,6 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                         throw err;
                     }
                 }
-                /**
-                 * JSON patching separated to enable dev mode
-                 */
-                patchDataJSON(data) {
-                    this.data._r = data;
-                    // update the details and the view
-                    const indexNewPosition = this.getIndex({ x: this.data._x, y: this.data._y });
-                    this.data._details[indexNewPosition]._c = this.data._r._c;
-                    this.data._details[indexNewPosition]._t = this.data._r._t;
-                    this.data._details[indexNewPosition]._z = this.data._r._z;
-                    if (this.data._details[indexNewPosition]._nvt === null) {
-                        this.data._details[indexNewPosition]._nvt = false;
-                    }
-                    this.data._view[indexNewPosition] = this.data._r._c;
-                    this.data._global[indexNewPosition] = this.data._r._c;
-                    // dont forget to rebuild the neighbours (its usually done in the constructor)
-                    this.buildNeighbours();
-                }
                 getPositionRelativeToTown(position) {
                     return { x: position.x - this.town.x, y: this.town.y - position.y };
                 }
@@ -2534,38 +2516,6 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                             }
                             this.neighbours.addNeighbour(N);
                         }
-                    }
-                }
-                /**
-                 * Find the town and return it
-                 */
-                findTown() {
-                    for (let index = 0, length = this.data._details.length; index < length; index++) {
-                        if (this.data._details[index]._c === 1) {
-                            return this.getCoordinates(index);
-                        }
-                    }
-                    return { x: 0, y: 0 }; // this case is not possible but it makes typescript happy
-                }
-                cacheBuildingsNames() {
-                    this.data._b.forEach((B) => {
-                        this.buildings.set(B._id, B._n);
-                    });
-                }
-                /**
-                 * Index the users in a good container (this.users)
-                 */
-                cacheUsersOutside() {
-                    if (this.data._users !== null && this.data._users.length > 0) {
-                        this.data._users.forEach(user => {
-                            const userIndex = this.getIndex({ x: user._x, y: user._y });
-                            let userOnThisPosition = this.users.get(userIndex);
-                            if (userOnThisPosition === undefined || userOnThisPosition === null) {
-                                userOnThisPosition = new Array();
-                            }
-                            userOnThisPosition.push(user);
-                            this.users.set(userIndex, userOnThisPosition);
-                        });
                     }
                 }
                 /**
@@ -2672,6 +2622,56 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                             this._fakeData._r._neig.push(0);
                         }
                         return this._fakeData;
+                    }
+                }
+                /**
+                 * JSON patching separated to enable dev mode
+                 */
+                patchDataJSON(data) {
+                    this.data._r = data;
+                    // update the details and the view
+                    const indexNewPosition = this.getIndex({ x: this.data._x, y: this.data._y });
+                    this.data._details[indexNewPosition]._c = this.data._r._c;
+                    this.data._details[indexNewPosition]._t = this.data._r._t;
+                    this.data._details[indexNewPosition]._z = this.data._r._z;
+                    if (this.data._details[indexNewPosition]._nvt === null) {
+                        this.data._details[indexNewPosition]._nvt = false;
+                    }
+                    this.data._view[indexNewPosition] = this.data._r._c;
+                    this.data._global[indexNewPosition] = this.data._r._c;
+                    // dont forget to rebuild the neighbours (its usually done in the constructor)
+                    this.buildNeighbours();
+                }
+                /**
+                 * Find the town and return it
+                 */
+                findTown() {
+                    for (let index = 0, length = this.data._details.length; index < length; index++) {
+                        if (this.data._details[index]._c === 1) {
+                            return this.getCoordinates(index);
+                        }
+                    }
+                    return { x: 0, y: 0 }; // this case is not possible but it makes typescript happy
+                }
+                cacheBuildingsNames() {
+                    this.data._b.forEach((B) => {
+                        this.buildings.set(B._id, B._n);
+                    });
+                }
+                /**
+                 * Index the users in a good container (this.users)
+                 */
+                cacheUsersOutside() {
+                    if (this.data._users !== null && this.data._users.length > 0) {
+                        this.data._users.forEach(user => {
+                            const userIndex = this.getIndex({ x: user._x, y: user._y });
+                            let userOnThisPosition = this.users.get(userIndex);
+                            if (userOnThisPosition === undefined || userOnThisPosition === null) {
+                                userOnThisPosition = new Array();
+                            }
+                            userOnThisPosition.push(user);
+                            this.users.set(userIndex, userOnThisPosition);
+                        });
                     }
                 }
             };
@@ -2830,6 +2830,19 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                         window.setTimeout(() => this.svg.removeChild(oldGroup), 100);
                     }
                 }
+                /**
+                 * Reset the zoom & pan level
+                 */
+                resetView() {
+                    const width = this.map.width;
+                    const height = this.map.height;
+                    this.viewBox = { x: 0, y: 0, w: width, h: height };
+                    this.isPanning = false;
+                    this.startPoint = { x: 0, y: 0 };
+                    this.endPoint = { x: 0, y: 0 };
+                    this.scale = 1;
+                    this.svg.setAttributeNS(null, 'viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
+                }
                 onMouseEnterSquare(e) {
                     if (this.isPanning) {
                         return;
@@ -2879,19 +2892,6 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                         const target = this.imgFromObj('target', x, y, undefined, undefined, this.squareSize, this.squareSize);
                         target.setAttributeNS(null, 'class', 'hmap-target');
                     }
-                }
-                /**
-                 * Reset the zoom & pan level
-                 */
-                resetView() {
-                    const width = this.map.width;
-                    const height = this.map.height;
-                    this.viewBox = { x: 0, y: 0, w: width, h: height };
-                    this.isPanning = false;
-                    this.startPoint = { x: 0, y: 0 };
-                    this.endPoint = { x: 0, y: 0 };
-                    this.scale = 1;
-                    this.svg.setAttributeNS(null, 'viewBox', `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`);
                 }
                 /**
                  * Enable the zoom and pan behavior
@@ -3186,9 +3186,6 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                     this.mode = 'personal';
                     this.displayTags = false;
                 }
-                generateMapData(payload) {
-                    return new hmap_desert_data_1.HMapDesertData(payload);
-                }
                 get target() {
                     if (this.hmap.target) {
                         return this.hmap.target;
@@ -3305,6 +3302,18 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                     }
                 }
                 /**
+                 * Set the target of the grid
+                 */
+                setTarget(index) {
+                    // set the target for the pointing arrow
+                    if (this.hmap.location === 'desert' || this.hmap.location === 'doors') {
+                        this.hmap.target = index;
+                    }
+                }
+                generateMapData(payload) {
+                    return new hmap_desert_data_1.HMapDesertData(payload);
+                }
+                /**
                  * Action to execute when new data arrive
                  */
                 onDataReceived(init) {
@@ -3320,15 +3329,6 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                         this.layers.get('grid').draw();
                         this.layers.get('glass-static').draw();
                     });
-                }
-                /**
-                 * Set the target of the grid
-                 */
-                setTarget(index) {
-                    // set the target for the pointing arrow
-                    if (this.hmap.location === 'desert' || this.hmap.location === 'doors') {
-                        this.hmap.target = index;
-                    }
                 }
                 /**
                  * Close the grid and show the desert
@@ -3791,9 +3791,6 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                     this.registredArrows = new Array();
                     this.moving = false; // dirty boolean to avoid double move
                 }
-                generateMapData(payload) {
-                    return new hmap_desert_data_2.HMapDesertData(payload);
-                }
                 get target() {
                     if (this.hmap.target) {
                         return this.hmap.target;
@@ -3867,34 +3864,6 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                     this.layers.set('desert-foreground', foregroundLayer);
                     const LoadingLayer = new svg_loading_3.HMapSVGLoadingLayer(this);
                     this.layers.set('loading', LoadingLayer);
-                }
-                onMouseMove(e) {
-                    const layerBackground = this.layers.get('desert-background');
-                    layerBackground.onMouseMove(e);
-                }
-                onMouseLeave(e) {
-                    const layerBackground = this.layers.get('desert-background');
-                    layerBackground.onMouseLeave(e);
-                }
-                /**
-                 * When new data arrive, rebuild the arrows
-                 */
-                onDataReceived(init) {
-                    this.registerArrows();
-                    const mapData = this.mapData;
-                    imagesLoader_5.HMapImagesLoader.getInstance().registerBuildingsToPreload(mapData.neighbours);
-                    // when preloading the pictures is finished, starts drawing
-                    imagesLoader_5.HMapImagesLoader.getInstance()
-                        .preloadPictures(this.layers.get('loading'), init, () => {
-                        const hmapMenu = document.querySelector('#hmap-menu');
-                        if (hmapMenu !== null) {
-                            hmapMenu.style.display = 'flex';
-                        }
-                        const loadingLayer = this.layers.get('loading');
-                        loadingLayer.hide();
-                        this.layers.get('desert-background').draw();
-                        this.layers.get('desert-foreground').draw();
-                    });
                 }
                 /**
                  * Function called when the user click on a directionnal arrow
@@ -4003,6 +3972,37 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                             this.moving = false; // allow another move
                         });
                     }
+                }
+                generateMapData(payload) {
+                    return new hmap_desert_data_2.HMapDesertData(payload);
+                }
+                /**
+                 * When new data arrive, rebuild the arrows
+                 */
+                onDataReceived(init) {
+                    this.registerArrows();
+                    const mapData = this.mapData;
+                    imagesLoader_5.HMapImagesLoader.getInstance().registerBuildingsToPreload(mapData.neighbours);
+                    // when preloading the pictures is finished, starts drawing
+                    imagesLoader_5.HMapImagesLoader.getInstance()
+                        .preloadPictures(this.layers.get('loading'), init, () => {
+                        const hmapMenu = document.querySelector('#hmap-menu');
+                        if (hmapMenu !== null) {
+                            hmapMenu.style.display = 'flex';
+                        }
+                        const loadingLayer = this.layers.get('loading');
+                        loadingLayer.hide();
+                        this.layers.get('desert-background').draw();
+                        this.layers.get('desert-foreground').draw();
+                    });
+                }
+                onMouseMove(e) {
+                    const layerBackground = this.layers.get('desert-background');
+                    layerBackground.onMouseMove(e);
+                }
+                onMouseLeave(e) {
+                    const layerBackground = this.layers.get('desert-background');
+                    layerBackground.onMouseLeave(e);
                 }
                 /**
                  * The click on the map button will switch the map from desert to grid
@@ -4333,7 +4333,7 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
 });
 System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data", "data/hmap-ruin-data"], function (exports_24, context_24) {
     "use strict";
-    var hmap_1, toast_5, environment_5, hmap_desert_data_3, hmap_ruin_data_2;
+    var hmap_1, toast_5, environment_5, hmap_desert_data_3, hmap_ruin_data_2, FontFaceObserver;
     var __moduleName = context_24 && context_24.id;
     return {
         setters: [
@@ -4354,10 +4354,7 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
             }
         ],
         execute: function () {
-            if (typeof require !== 'undefined') {
-                console.log(typeof require);
-                require('fontfaceobserver');
-            }
+            FontFaceObserver = require('fontfaceobserver-es');
             /**
              * It's bootstrap time !!
              */

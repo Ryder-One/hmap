@@ -660,7 +660,7 @@ class Environment {
             return '.';
         }
         else {
-            return 'https://ryder-one.github.io/hmap';
+            return 'http://ryderone.dynu.net/';
         }
     }
     static getInstance() {

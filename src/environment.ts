@@ -13,7 +13,7 @@ export class Environment {
         if (this.devMode === true) {
             return '.';
         } else {
-            return 'https://ryder-one.github.io/hmap';
+            return 'http://ryderone.dynu.net/';
         }
     }
 
