@@ -4071,9 +4071,16 @@ const toast_1 = require("./toast");
 const environment_1 = require("./environment");
 const hmap_desert_data_1 = require("./data/hmap-desert-data");
 const hmap_ruin_data_1 = require("./data/hmap-ruin-data");
+// deal with the "require" nighmare
 let FontFaceObserver;
-if (typeof require != undefined) {
+if (typeof require != 'undefined') {
     FontFaceObserver = require('fontfaceobserver-es');
+}
+else if (typeof LOCAL_FONTFACEOBSERVER != 'undefined') {
+    FontFaceObserver = LOCAL_FONTFACEOBSERVER;
+}
+else {
+    console.error('HMap::bootstrap', 'Cannot load fontface observer');
 }
 /**
  * It's bootstrap time !!
