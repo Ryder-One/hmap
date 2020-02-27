@@ -4354,7 +4354,15 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
             }
         ],
         execute: function () {
-            FontFaceObserver = require('fontfaceobserver-es');
+            if (typeof require != 'undefined') {
+                FontFaceObserver = require('fontfaceobserver-es');
+            }
+            else if (typeof LOCAL_FONTFACEOBSERVER != 'undefined') {
+                FontFaceObserver = LOCAL_FONTFACEOBSERVER;
+            }
+            else {
+                console.error('HMap::bootstrap', 'Cannot load fontface observer');
+            }
             /**
              * It's bootstrap time !!
              */

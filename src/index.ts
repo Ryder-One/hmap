@@ -4,12 +4,22 @@ import { Environment } from './environment';
 import { HMapDesertData } from './data/hmap-desert-data';
 import { HMapRuinData } from './data/hmap-ruin-data';
 
-const FontFaceObserver = require('fontfaceobserver-es');
-
 declare const HMAP_DEVMODE: boolean;
 declare let HMAP: any;
 declare let HMAPDESERTDATA: any;
 declare let HMAPRUINDATA: any;
+declare let LOCAL_FONTFACEOBSERVER: any;
+
+// deal with the "require" nighmare
+let FontFaceObserver: any;
+if (typeof require != 'undefined') {
+    FontFaceObserver = require('fontfaceobserver-es');
+} else if (typeof LOCAL_FONTFACEOBSERVER != 'undefined') {
+    FontFaceObserver = LOCAL_FONTFACEOBSERVER;
+} else {
+    console.error('HMap::bootstrap', 'Cannot load fontface observer');
+}
+
 
 /**
  * It's bootstrap time !!
