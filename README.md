@@ -60,6 +60,14 @@ Below are issues I don't want to fix or I can't fix :
 
 If you want to fix these issues, feel free to PR
 
+## Tech FAQ
+
+**Why typescript ?**
+Mainly because I like it. I had much more struggle with ES6 than with Typescript for this project. If you want a really good answer, check out this one : <https://stackoverflow.com/questions/12694530/what-is-typescript-and-why-would-i-use-it-in-place-of-javascript/35048303#35048303>
+
+**Why so many SVG redraw instead of updating the elements ?**
+This is a big mistake :( It comes from the fact I went for a canvas in the first place, then I switched my mind and went for SVG. It was too much work to  think with updates instead of redrawing everything. Now we have theses beautiful glitches when we move the map :( This is also the explanation for the "Layers" concept, which is not very useful with SVG.
+
 ## Contributing
 
 If you are a developer and you want to help me, here is something to start.

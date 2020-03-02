@@ -99,6 +99,34 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDa
                 this.text(30, 150, '' + mapData.scoutArray[3], 'hmap-text-green');
             }
         }
+
+        // scavenger class
+        if (mapData.scavengerArray && mapData.scavengerArray.length === 4) {
+            if (mapData.scavengerArray[0] === true) {
+                this.imgFromObj('shovel', 142, 24);
+            } else if (mapData.scavengerArray[0] === false) {
+                this.imgFromObj('depleted', 142, 24);
+            }
+
+            if (mapData.scavengerArray[1] === true) {
+                this.imgFromObj('shovel', 263, 142);
+            } else if (mapData.scavengerArray[1] === false) {
+                this.imgFromObj('depleted', 263, 142);
+            }
+
+            if (mapData.scavengerArray[2] === true) {
+                this.imgFromObj('shovel', 142, 256);
+            } else if (mapData.scavengerArray[2] === false) {
+                this.imgFromObj('depleted', 142, 256);
+            }
+
+            if (mapData.scavengerArray[3] === true) {
+                this.imgFromObj('shovel', 26, 142);
+            } else if (mapData.scavengerArray[3] === false) {
+                this.imgFromObj('depleted', 26, 142);
+            }
+        }
+
         this.svg.appendChild(this.g);
         if (oldGroup) {
             window.setTimeout(() => this.svg.removeChild(oldGroup), 10);

@@ -47,6 +47,8 @@ export class HMapImagesLoader {
         this.images.set('uncheck',          { src: url + 'uncheck.png',            obj: undefined, width: 12,  height: 13});
         this.images.set('check',            { src: url + 'check.png',              obj: undefined, width: 12,  height: 13});
         this.images.set('destination',      { src: url + 'destination.png',        obj: undefined, width: 12,  height: 12});
+        this.images.set('depleted',         { src: url + 'depleted.png',           obj: undefined, width: 15,  height: 16});
+        this.images.set('shovel',           { src: url + 'shovel.png',             obj: undefined, width: 15,  height: 16});
 
         for (let tag = 1; tag <= 11; tag++) {
             this.images.set('tag_' + tag,   { src: url + 'tags/' + tag + '.png',   obj: undefined, width: 16,  height: 16});

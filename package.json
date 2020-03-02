@@ -1,6 +1,6 @@
 {
     "name": "hmap",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
         "lint": "npx eslint . --ext .ts",
@@ -11,7 +11,7 @@
         "version": "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/__VERSION__/${PACKAGE_VERSION}/g\" dist/hmap.user.js",
         "copy-es6": "cp dist/hmap.user.es6.js docs/hmap.user.es6.js",
         "build": "npm run lint && npx tsc && npm run browserify && npm run babel && npm run uglify && npm run copy-headers && npm run version && npm run copy-es6",
-        "browsersync": "npx browser-sync start -f \"docs\" -s \"docs\" --index \"index-local.html\" --no-open",
+        "browsersync": "npx browser-sync start -f \"docs\" -s \"docs\" --index \"index.html\" --no-open",
         "watch-ts": "npx tsc --target es6 --module system --outFile docs/hmap.user.system.js -w",
         "serve": "npm run watch-ts & npm run browsersync"
     },

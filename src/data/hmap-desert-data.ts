@@ -84,13 +84,14 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     get hour(): number { return this.data._hour; }
     get hasControl(): boolean { return !this.data._r._state; }
     get scoutArray(): Array<number> { return this.data._r._neig; }
+    get scavengerArray(): Array<boolean|null> { return this.data._r._neigDrops; }
     get details(): Array<HMapPositionDetail> { return this.data._details; }
     get global(): Array<number|null> { return this.data._global; }
     get view(): Array<number|null> { return this.data._view; }
     get townName(): string { return this.data._city; }
 
-    constructor(mapDataPayload?: HMapDataPayload) {
-        super(mapDataPayload);
+    constructor(mapDataPayload?: HMapDataPayload, scavengerMode = false, scoutMode = false) {
+        super(mapDataPayload, scavengerMode, scoutMode);
         this.buildNeighbours();
         this.town = this.findTown();
         this.cacheBuildingsNames();
@@ -222,7 +223,7 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     /**
      * create a fake JSON to debug the map
      */
-    fakeData(force = false): HMapDesertDataJSON {
+    fakeData(force = false, scavengerMode: boolean, scoutMode: boolean): HMapDesertDataJSON {
         if (this._fakeData !== undefined && force === false) {
             return this._fakeData;
         } else {
@@ -303,26 +304,35 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
             this._fakeData._global = this._fakeData._view;
             this._fakeData._b = buildings;
 
-            this._fakeData._r._neig = new Array();
-            if (townIndex - mapSize > 0) {
-                this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
-            } else {
-                this._fakeData._r._neig.push(0);
+            if (scoutMode === true) {
+                this._fakeData._r._neig = new Array();
+                if (townIndex - mapSize > 0) {
+                    this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
+                } else {
+                    this._fakeData._r._neig.push(0);
+                }
+                if (townIndex + 1 < (mapSize * mapSize) ) {
+                    this._fakeData._r._neig.push(this._fakeData._details[townIndex + 1]._z);
+                } else {
+                    this._fakeData._r._neig.push(0);
+                }
+                if (townIndex + mapSize < (mapSize * mapSize) ) {
+                    this._fakeData._r._neig.push(this._fakeData._details[townIndex + mapSize]._z);
+                } else {
+                    this._fakeData._r._neig.push(0);
+                }
+                if (townIndex - 1 > 0 ) {
+                    this._fakeData._r._neig.push(this._fakeData._details[townIndex - 1]._z);
+                } else {
+                    this._fakeData._r._neig.push(0);
+                }
             }
-            if (townIndex + 1 < (mapSize * mapSize) ) {
-                this._fakeData._r._neig.push(this._fakeData._details[townIndex + 1]._z);
-            } else {
-                this._fakeData._r._neig.push(0);
-            }
-            if (townIndex + mapSize < (mapSize * mapSize) ) {
-                this._fakeData._r._neig.push(this._fakeData._details[townIndex + mapSize]._z);
-            } else {
-                this._fakeData._r._neig.push(0);
-            }
-            if (townIndex - 1 > 0 ) {
-                this._fakeData._r._neig.push(this._fakeData._details[townIndex - 1]._z);
-            } else {
-                this._fakeData._r._neig.push(0);
+
+            if (scavengerMode === true) {
+                this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
+                this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
+                this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
+                this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
             }
 
             return this._fakeData;

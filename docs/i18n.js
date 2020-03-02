@@ -4,6 +4,8 @@ $( document ).ready(function() {
             'subtitle': 'Une carte HTML5 fonctionnelle pour Hordes.fr',
             'signature': 'Par RyderOne',
             'download': 'Télécharger sur Github',
+            'scavenger-mode': 'Mode fouineur',
+            'scout-mode': 'Mode éclaireur',
             'ruin-mode': 'Mode ruine',
             'reload': 'Recharger la carte',
             'json-placeholder': 'Collez le code de debug et rechargez la carte. Si vous laissez vide, cela va générer des données aléatoires.',
@@ -18,6 +20,8 @@ $( document ).ready(function() {
             'subtitle': 'A working HTML5 map for die2nite',
             'signature': 'By RyderOne',
             'download': 'Download on Github',
+            'scavenger-mode': 'Scavenger mode',
+            'scout-mode': 'Scout mode',
             'ruin-mode': 'Ruin mode',
             'reload' : 'Reload the map',
             'json-placeholder' : 'Paste the debug code here and press reload. It will generate random data if this stay empty.',
@@ -61,6 +65,8 @@ function translate()  {
     $('#subtitle').html($.i18n('subtitle'));
     $('#signature').html($.i18n('signature'));
     $('#download').html($.i18n('download'));
+    $('#scavenger-mode').next('label').html($.i18n('scavenger-mode'));
+    $('#scout-mode').next('label').html($.i18n('scout-mode'));
     $('#ruin-mode').next('label').html($.i18n('ruin-mode'));
     $('#reload').html($.i18n('reload'));
     $('#json-data').attr('placeholder', $.i18n('json-placeholder'));

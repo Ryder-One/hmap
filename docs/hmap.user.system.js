@@ -746,7 +746,7 @@ System.register("data/abstract", [], function (exports_8, context_8) {
              * passed to flash, and expose it in a JSON format with lots of accessors
              */
             HMapData = class HMapData {
-                constructor(mapDataPayload) {
+                constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
                     if (mapDataPayload && mapDataPayload.raw) {
                         this.data = this.decode(mapDataPayload.raw);
                     }
@@ -754,7 +754,7 @@ System.register("data/abstract", [], function (exports_8, context_8) {
                         this.data = mapDataPayload.JSON;
                     }
                     else {
-                        this.data = this.fakeData(true);
+                        this.data = this.fakeData(true, scavengerMode, scoutMode);
                     }
                 }
                 get prettyData() { return JSON.stringify(this.data, undefined, 4); }
@@ -2183,6 +2183,8 @@ System.register("imagesLoader", ["environment", "toast"], function (exports_14, 
                     this.images.set('uncheck', { src: url + 'uncheck.png', obj: undefined, width: 12, height: 13 });
                     this.images.set('check', { src: url + 'check.png', obj: undefined, width: 12, height: 13 });
                     this.images.set('destination', { src: url + 'destination.png', obj: undefined, width: 12, height: 12 });
+                    this.images.set('depleted', { src: url + 'depleted.png', obj: undefined, width: 15, height: 16 });
+                    this.images.set('shovel', { src: url + 'shovel.png', obj: undefined, width: 15, height: 16 });
                     for (let tag = 1; tag <= 11; tag++) {
                         this.images.set('tag_' + tag, { src: url + 'tags/' + tag + '.png', obj: undefined, width: 16, height: 16 });
                     }
@@ -2377,8 +2379,8 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
              * passed to flash, and expose it in a JSON format with lots of accessors
              */
             HMapDesertData = class HMapDesertData extends abstract_6.HMapData {
-                constructor(mapDataPayload) {
-                    super(mapDataPayload);
+                constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
+                    super(mapDataPayload, scavengerMode, scoutMode);
                     this.neighbours = new neighbours_1.HMapNeighbours();
                     this.buildings = new Map();
                     this.users = new Map();
@@ -2397,6 +2399,7 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                 get hour() { return this.data._hour; }
                 get hasControl() { return !this.data._r._state; }
                 get scoutArray() { return this.data._r._neig; }
+                get scavengerArray() { return this.data._r._neigDrops; }
                 get details() { return this.data._details; }
                 get global() { return this.data._global; }
                 get view() { return this.data._view; }
@@ -2521,7 +2524,7 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                 /**
                  * create a fake JSON to debug the map
                  */
-                fakeData(force = false) {
+                fakeData(force = false, scavengerMode, scoutMode) {
                     if (this._fakeData !== undefined && force === false) {
                         return this._fakeData;
                     }
@@ -2596,30 +2599,38 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                         }
                         this._fakeData._global = this._fakeData._view;
                         this._fakeData._b = buildings;
-                        this._fakeData._r._neig = new Array();
-                        if (townIndex - mapSize > 0) {
-                            this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
+                        if (scoutMode === true) {
+                            this._fakeData._r._neig = new Array();
+                            if (townIndex - mapSize > 0) {
+                                this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
+                            }
+                            else {
+                                this._fakeData._r._neig.push(0);
+                            }
+                            if (townIndex + 1 < (mapSize * mapSize)) {
+                                this._fakeData._r._neig.push(this._fakeData._details[townIndex + 1]._z);
+                            }
+                            else {
+                                this._fakeData._r._neig.push(0);
+                            }
+                            if (townIndex + mapSize < (mapSize * mapSize)) {
+                                this._fakeData._r._neig.push(this._fakeData._details[townIndex + mapSize]._z);
+                            }
+                            else {
+                                this._fakeData._r._neig.push(0);
+                            }
+                            if (townIndex - 1 > 0) {
+                                this._fakeData._r._neig.push(this._fakeData._details[townIndex - 1]._z);
+                            }
+                            else {
+                                this._fakeData._r._neig.push(0);
+                            }
                         }
-                        else {
-                            this._fakeData._r._neig.push(0);
-                        }
-                        if (townIndex + 1 < (mapSize * mapSize)) {
-                            this._fakeData._r._neig.push(this._fakeData._details[townIndex + 1]._z);
-                        }
-                        else {
-                            this._fakeData._r._neig.push(0);
-                        }
-                        if (townIndex + mapSize < (mapSize * mapSize)) {
-                            this._fakeData._r._neig.push(this._fakeData._details[townIndex + mapSize]._z);
-                        }
-                        else {
-                            this._fakeData._r._neig.push(0);
-                        }
-                        if (townIndex - 1 > 0) {
-                            this._fakeData._r._neig.push(this._fakeData._details[townIndex - 1]._z);
-                        }
-                        else {
-                            this._fakeData._r._neig.push(0);
+                        if (scavengerMode === true) {
+                            this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
+                            this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
+                            this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
+                            this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
                         }
                         return this._fakeData;
                     }
@@ -3723,6 +3734,33 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
                         }
                         if (mapData.neighbours.neighbours.get('middle_left').outbounds === false) {
                             this.text(30, 150, '' + mapData.scoutArray[3], 'hmap-text-green');
+                        }
+                    }
+                    // scavenger class
+                    if (mapData.scavengerArray && mapData.scavengerArray.length === 4) {
+                        if (mapData.scavengerArray[0] === true) {
+                            this.imgFromObj('shovel', 142, 24);
+                        }
+                        else if (mapData.scavengerArray[0] === false) {
+                            this.imgFromObj('depleted', 142, 24);
+                        }
+                        if (mapData.scavengerArray[1] === true) {
+                            this.imgFromObj('shovel', 263, 142);
+                        }
+                        else if (mapData.scavengerArray[1] === false) {
+                            this.imgFromObj('depleted', 263, 142);
+                        }
+                        if (mapData.scavengerArray[2] === true) {
+                            this.imgFromObj('shovel', 142, 256);
+                        }
+                        else if (mapData.scavengerArray[2] === false) {
+                            this.imgFromObj('depleted', 142, 256);
+                        }
+                        if (mapData.scavengerArray[3] === true) {
+                            this.imgFromObj('shovel', 26, 142);
+                        }
+                        else if (mapData.scavengerArray[3] === false) {
+                            this.imgFromObj('depleted', 26, 142);
                         }
                     }
                     this.svg.appendChild(this.g);
