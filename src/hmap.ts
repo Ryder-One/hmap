@@ -133,7 +133,7 @@ export class HMap {
                     if (data.indexOf('js.JsMap.init') !== -1) {
                         startVar = data.indexOf('js.JsMap.init') + 16;
                     } else {
-                        startVar = data.indexOf('js.JsExplo.init') + 16;
+                        startVar = data.indexOf('js.JsExplo.init') + 18;
                     }
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
