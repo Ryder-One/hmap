@@ -140,7 +140,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                 // Points for the path to move the soul
                 // We add 4 points that are current position, left position, top position and top-left position
                 // Like on the flash version
-                let points = [
+                const points = [
                     {
                         x: x + (this.squareSize),
                         y: y + (this.squareSize)
@@ -159,52 +159,44 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                     }
                 ];
                 for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    let xpoint = HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize);
-                    let ypoint = y - this.squareSize;
                     points.push({
-                        x: xpoint,
-                        y: ypoint
+                        x: HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize),
+                        y: y - this.squareSize
                     });
                 }
                 for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    let xpoint = HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize);
-                    let ypoint = y + this.squareSize;
                     points.push({
-                        x: xpoint,
-                        y: ypoint
+                        x: HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize),
+                        y: y + this.squareSize
                     });
                 }
                 for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    let xpoint = x + this.squareSize;
-                    let ypoint = HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize);
                     points.push({
-                        x: xpoint,
-                        y: ypoint
+                        x: x + this.squareSize,
+                        y: HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize)
                     });
                 }
                 for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    let xpoint = x - this.squareSize;
-                    let ypoint = HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize);
                     points.push({
-                        x: xpoint,
-                        y: ypoint
+                        x: x - this.squareSize,
+                        y: HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize)
                     });
                 }
-                let pathString = "M ";
-                let origLength = points.length;
+                let pathString = 'M ';
+                const origLength = points.length;
                 for(let ipoint = 0 ; ipoint < origLength ; ipoint++){
-                    let point = points.splice(HMapRandom.getRandomIntegerNoSeed(0, points.length), 1)[0];
-                    pathString += point.x + " " + point.y;
+                    const point = points.splice(HMapRandom.getRandomIntegerNoSeed(0, points.length), 1)[0];
+                    pathString += point.x + ' ' + point.y;
                     if(ipoint < origLength - 1) {
-                        pathString += " L ";
+                        pathString += ' L ';
                     }
                 }
-                
-                pathString += " Z";
+
+                pathString += ' Z';
                 soulsData.push({
                     path: pathString,
                     soul: {
-                        x: x, 
+                        x: x,
                         y: y
                     }
                 });
@@ -243,11 +235,18 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         for(let i = 0 ; i < soulsData.length ; i++){
             const pathString = soulsData[i].path;
             const path = this.path(pathString);
-            path.setAttributeNS(null, "style", "fill: none;stroke:#fff");
-            path.setAttributeNS(null, "class", "hmap-soul-path");
-            const soulDisplay = this.imgFromObj('tag_12', soulsData[i].soul.x, soulsData[i].soul.y, undefined, undefined, this.squareSize, this.squareSize);
-            //const soulDisplay = this.rect(soulsData[i].soul.x, soulsData[i].soul.y, 1, 1, "#0f0");
-            soulDisplay.setAttributeNS(null, 'class', 'hmap-soul');
+            path.setAttributeNS(null, 'style', 'fill: none;stroke:#fff');
+            path.setAttributeNS(null, 'class', 'hmap-soul-path');
+            const imgsoul = this.imgFromObj(
+                'tag_12',
+                soulsData[i].soul.x,
+                soulsData[i].soul.y,
+                undefined,
+                undefined,
+                this.squareSize,
+                this.squareSize
+            );
+            imgsoul.setAttributeNS(null, 'class', 'hmap-soul');
         }
 
         this.svg.appendChild(this.g);
@@ -256,9 +255,9 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         }
 
         // Creating JS client-side to move the souls' images
-        let script = document.createElement('script');
+        const script = document.createElement('script');
         script.setAttributeNS(null, 'type', 'application/javascript');
-        script.setAttributeNS(null, "id", "moveSoulScript");
+        script.setAttributeNS(null, 'id', 'moveSoulScript');
         script.textContent = 'var counter = 0;' +
         'var direction = true;' + // Sens of the movment
         'var svgContainer = document.getElementById("hmap");' + // Reference to the enclosing div
@@ -267,15 +266,15 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         'function moveSoul() {' +
             // Check to see where the souls are journeys to determine
             // if they arrived at the end
-            'if (parseInt(counter,10) === 1) {' + 
-                //we've hit the end! + 
-                'direction = false;' + 
+            'if (parseInt(counter,10) === 1) {' +
+                // we've hit the end! +
+                'direction = false;' +
             '} else if (parseInt(counter,10) < 0) {' +
-                'direction = true;' + 
+                'direction = true;' +
             '}' +
             // Moving toward the path
             'if(direction) {' +
-                'counter += 0.0005;' + 
+                'counter += 0.0005;' +
             '} else {' +
                 'counter -= 0.0005;' +
             '}' +
@@ -284,7 +283,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
             at these coordinates, incrementing along the lengths of the paths */
             'for(var i = 0 ; i < souls.length ; i++){' +
                 // We get the new X and Y for the transformation property
-                'var path = souls[i].previousSibling;' + 
+                'var path = souls[i].previousSibling;' +
                 'var pathLength = path.getTotalLength();' +
                 // The transformation is relative to the original point
                 'var newX = path.getPointAtLength(counter * pathLength).x;' +
@@ -295,25 +294,29 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                 'var oldTransf = souls[i].getAttribute("transform");' +
                 'var oldX = parseInt(souls[i].getAttribute("x"));' +
                 'var oldY = parseInt(souls[i].getAttribute("y"));' +
-                'if (oldTransf != null) {' + 
+                'if (oldTransf != null) {' +
                     'var regex = /translate\\(([0-9-.]+),([0-9-.]+)\\)/;' +
                     'if (oldTransf.match(regex) != null && oldTransf.match(regex).length > 1) { ' +
                         'oldX += parseFloat(oldTransf.match(regex)[1]);' +
                         'oldY += parseFloat(oldTransf.match(regex)[2]);' +
                     '}' +
                 '}' +
-                'var h = Math.sqrt(Math.pow(newX - oldX, 2) + Math.pow(newY - oldY, 2));' + 
-                'var c = Math.abs(newX - oldX);' + 
+                'var h = Math.sqrt(Math.pow(newX - oldX, 2) + Math.pow(newY - oldY, 2));' +
+                'var c = Math.abs(newX - oldX);' +
                 'var a = Math.acos(c / h) * 180 / Math.PI;' +
-                'souls[i].setAttribute("transform","translate("+ transfX  + "," + transfY + ") rotate(" + a + " " + (parseInt(souls[i].getAttribute("x")) + ' + (this.squareSize / 2) + ') + " " + (parseInt(souls[i].getAttribute("y")) + ' + (this.squareSize / 2) + ') + ")");' +
+                'var soulx = parseInt(souls[i].getAttribute("x");' +
+                'var souly = parseInt(souls[i].getAttribute("y");' +
+                'souls[i].setAttribute("transform", "' +
+                'translate("+ transfX  + "," + transfY + ") ' +
+                'rotate(" + a + " " + (soulx) + ' + (this.squareSize / 2) + ') + " " + (souly) + ' + (this.squareSize / 2) + ') + ")");' +
             '}' +
             'requestAnimationFrame(moveSoul);' +
         '}' +
         'if (souls.length > 0) {' +
             'requestAnimationFrame(moveSoul);' +
         '}';
-        document.getElementsByTagName("body")[0].appendChild(script);
-        document.getElementsByTagName("body")[0].removeChild(script);
+        document.getElementsByTagName('body')[0].appendChild(script);
+        document.getElementsByTagName('body')[0].removeChild(script);
     }
 
     /**
