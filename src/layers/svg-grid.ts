@@ -136,11 +136,11 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
             }
 
             // There is a soul on the position
-            if(mapData.details[i]._s) { 
+            if(mapData.details[i]._s) {
                 // Points for the path to move the soul
                 // We add 4 points that are current position, left position, top position and top-left position
                 // Like on the flash version
-                var points = [
+                let points = [
                     {
                         x: x + (this.squareSize),
                         y: y + (this.squareSize)
@@ -158,42 +158,42 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                         y: y - this.squareSize
                     }
                 ];
-                for(var ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    var xpoint = HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize);
-                    var ypoint = y - this.squareSize;
+                for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
+                    let xpoint = HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize);
+                    let ypoint = y - this.squareSize;
                     points.push({
                         x: xpoint,
                         y: ypoint
                     });
                 }
-                for(var ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    var xpoint = HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize);
-                    var ypoint = y + this.squareSize;
+                for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
+                    let xpoint = HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize);
+                    let ypoint = y + this.squareSize;
                     points.push({
                         x: xpoint,
                         y: ypoint
                     });
                 }
-                for(var ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    var xpoint = x + this.squareSize;
-                    var ypoint = HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize);
+                for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
+                    let xpoint = x + this.squareSize;
+                    let ypoint = HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize);
                     points.push({
                         x: xpoint,
                         y: ypoint
                     });
                 }
-                for(var ipoint = 0 ; ipoint < 2 ; ipoint++){
-                    var xpoint = x - this.squareSize;
-                    var ypoint = HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize);
+                for(let ipoint = 0 ; ipoint < 2 ; ipoint++){
+                    let xpoint = x - this.squareSize;
+                    let ypoint = HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize);
                     points.push({
                         x: xpoint,
                         y: ypoint
                     });
                 }
-                var pathString = "M ";
-                var origLength = points.length;
-                for(var ipoint = 0 ; ipoint < origLength ; ipoint++){
-                    var point = points.splice(HMapRandom.getRandomIntegerNoSeed(0, points.length), 1)[0];
+                let pathString = "M ";
+                let origLength = points.length;
+                for(let ipoint = 0 ; ipoint < origLength ; ipoint++){
+                    let point = points.splice(HMapRandom.getRandomIntegerNoSeed(0, points.length), 1)[0];
                     pathString += point.x + " " + point.y;
                     if(ipoint < origLength - 1) {
                         pathString += " L ";
@@ -240,7 +240,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
 
         // Iterate through all the souls we must display
         // We do it at the end so the images are above everything in the grid
-        for(var i = 0 ; i < soulsData.length ; i++){
+        for(let i = 0 ; i < soulsData.length ; i++){
             const pathString = soulsData[i].path;
             const path = this.path(pathString);
             path.setAttributeNS(null, "style", "fill: none;stroke:#fff");
@@ -256,7 +256,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         }
 
         // Creating JS client-side to move the souls' images
-        var script = document.createElement('script');
+        let script = document.createElement('script');
         script.setAttributeNS(null, 'type', 'application/javascript');
         script.setAttributeNS(null, "id", "moveSoulScript");
         script.textContent = 'var counter = 0;' +
