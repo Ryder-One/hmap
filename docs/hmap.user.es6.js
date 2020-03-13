@@ -714,7 +714,13 @@ class HMap {
                 clearInterval(checkExist);
                 let tempMapData;
                 if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                    tempMapData = document.querySelector('#FlashMap').getAttribute('flashvars').substring(13);
+                    const node = document.querySelector('#FlashMap');
+                    if (node.nodeName.toUpperCase() === 'OBJECT') {
+                        tempMapData = document.querySelector('#FlashMap param[name="flashvars"]').getAttribute('value').substring(13);
+                    }
+                    else {
+                        tempMapData = node.getAttribute('flashvars').substring(13);
+                    }
                 }
                 else { // if this is only the JS code supposed to bootstrap flash
                     if (document.querySelector('#gameLayout') !== null) {
