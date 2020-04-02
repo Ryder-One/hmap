@@ -186,6 +186,7 @@
 			</div>
 			
 			<div class="hbox center" id="button-bar">
+				<input type="checkbox" id="shaman-mode"><label for="shaman-mode"></label>
 				<input type="checkbox" id="scout-mode"><label for="scout-mode"></label>
 				<input type="checkbox" id="scavenger-mode"><label for="scavenger-mode"></label>
 				<input type="checkbox" id="ruin-mode"><label for="ruin-mode"></label>
@@ -250,11 +251,14 @@
 		var scoutCheckbox = document.querySelector('#scout-mode');
 		var scavengerCheckbox = document.querySelector('#scavenger-mode');
 		var ruinCheckbox = document.querySelector('#ruin-mode');
-		if ( reload !== null && textbox !== null && ruinCheckbox !== null && scoutCheckbox !== null && scavengerCheckbox !== null) {
+		var shamanCheckbox = document.querySelector('#shaman-mode');
+		if ( reload !== null && textbox !== null && ruinCheckbox !== null && scoutCheckbox !== null && scavengerCheckbox !== null && shamanCheckbox !== null) {
 			reload.onclick = function() { 
 				const scoutMode = scoutCheckbox.checked;
 				const scavengerMode = scavengerCheckbox.checked;
 				const ruinMode = ruinCheckbox.checked;
+				const shamanMode = shamanCheckbox.checked;
+				
 				// try to parse the data
 				let data;
 				try {
@@ -262,12 +266,11 @@
 				} catch (err) {
 					// cannot parse : it's not JSON, it's raw data
 					try  {
-						
 						if (ruinMode === true) {
 							const dataObj = new HMAPRUINDATA({raw: textbox.value});
 							data = dataObj.data;
 						} else {
-							const dataObj = new HMAPDESERTDATA({raw: textbox.value}, scavengerMode, scoutMode);
+							const dataObj = new HMAPDESERTDATA({raw: textbox.value}, scavengerMode, scoutMode, shamanMode);
 							data = dataObj.data;
 						}
 					} catch (err) {

@@ -235,7 +235,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         for(let i = 0 ; i < soulsData.length ; i++){
             const pathString = soulsData[i].path;
             const path = this.path(pathString);
-            path.setAttributeNS(null, 'style', 'fill: none;stroke:#fff');
+            path.setAttributeNS(null, 'style', 'fill: none');
             path.setAttributeNS(null, 'class', 'hmap-soul-path');
             const imgsoul = this.imgFromObj(
                 'tag_12',
@@ -304,19 +304,20 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
                 'var h = Math.sqrt(Math.pow(newX - oldX, 2) + Math.pow(newY - oldY, 2));' +
                 'var c = Math.abs(newX - oldX);' +
                 'var a = Math.acos(c / h) * 180 / Math.PI;' +
-                'var soulx = parseInt(souls[i].getAttribute("x");' +
-                'var souly = parseInt(souls[i].getAttribute("y");' +
+                'var soulx = parseInt(souls[i].getAttribute("x"));' +
+                'var souly = parseInt(souls[i].getAttribute("y"));' +
                 'souls[i].setAttribute("transform", "' +
                 'translate("+ transfX  + "," + transfY + ") ' +
-                'rotate(" + a + " " + (soulx) + ' + (this.squareSize / 2) + ') + " " + (souly) + ' + (this.squareSize / 2) + ') + ")");' +
+                'rotate(" + a + " " + (soulx + ' + (this.squareSize / 2) + ') + " " + (souly + ' + (this.squareSize / 2) + ') + ")");' +
             '}' +
             'requestAnimationFrame(moveSoul);' +
         '}' +
         'if (souls.length > 0) {' +
             'requestAnimationFrame(moveSoul);' +
         '}';
+        console.log(script.textContent);
         document.getElementsByTagName('body')[0].appendChild(script);
-        document.getElementsByTagName('body')[0].removeChild(script);
+        // document.getElementsByTagName('body')[0].removeChild(script);
     }
 
     /**

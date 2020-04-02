@@ -4,6 +4,7 @@ $( document ).ready(function() {
             'subtitle': 'Une carte HTML5 fonctionnelle pour Hordes.fr',
             'signature': 'Par RyderOne',
             'download': 'Télécharger sur Github',
+            'shaman-mode': 'Mode chaman',
             'scavenger-mode': 'Mode fouineur',
             'scout-mode': 'Mode éclaireur',
             'ruin-mode': 'Mode ruine',
@@ -20,6 +21,7 @@ $( document ).ready(function() {
             'subtitle': 'A working HTML5 map for die2nite',
             'signature': 'By RyderOne',
             'download': 'Download on Github',
+            'shaman-mode': 'Shaman mode',
             'scavenger-mode': 'Scavenger mode',
             'scout-mode': 'Scout mode',
             'ruin-mode': 'Ruin mode',
@@ -65,6 +67,7 @@ function translate()  {
     $('#subtitle').html($.i18n('subtitle'));
     $('#signature').html($.i18n('signature'));
     $('#download').html($.i18n('download'));
+    $('#shaman-mode').next('label').html($.i18n('shaman-mode'));
     $('#scavenger-mode').next('label').html($.i18n('scavenger-mode'));
     $('#scout-mode').next('label').html($.i18n('scout-mode'));
     $('#ruin-mode').next('label').html($.i18n('ruin-mode'));

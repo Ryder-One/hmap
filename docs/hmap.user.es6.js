@@ -27,7 +27,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * passed to flash, and expose it in a JSON format with lots of accessors
  */
 class HMapData {
-    constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
+    constructor(mapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
         if (mapDataPayload && mapDataPayload.raw) {
             this.data = this.decode(mapDataPayload.raw);
         }
@@ -35,7 +35,7 @@ class HMapData {
             this.data = mapDataPayload.JSON;
         }
         else {
-            this.data = this.fakeData(true, scavengerMode, scoutMode);
+            this.data = this.fakeData(true, scavengerMode, scoutMode, shamanMode);
         }
     }
     get prettyData() { return JSON.stringify(this.data, undefined, 4); }
@@ -248,7 +248,7 @@ class HMapDesertData extends abstract_1.HMapData {
     /**
      * create a fake JSON to debug the map
      */
-    fakeData(force = false, scavengerMode, scoutMode) {
+    fakeData(force = false, scavengerMode, scoutMode, shamanMode) {
         if (this._fakeData !== undefined && force === false) {
             return this._fakeData;
         }
@@ -304,7 +304,7 @@ class HMapDesertData extends abstract_1.HMapData {
                     buildings.push({ _id: bid, _n: 'Building ' + bid });
                     this._fakeData._details.push({
                         _c: bid,
-                        _s: false,
+                        _s: shamanMode === true ? random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 1 : false,
                         _t: random_1.HMapRandom.getRandomIntegerNoSeed(0, 12),
                         _z: random_1.HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? random_1.HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
                         _nvt: view
@@ -2155,7 +2155,7 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
         for (let i = 0; i < soulsData.length; i++) {
             const pathString = soulsData[i].path;
             const path = this.path(pathString);
-            path.setAttributeNS(null, 'style', 'fill: none;stroke:#fff');
+            path.setAttributeNS(null, 'style', 'fill: none');
             path.setAttributeNS(null, 'class', 'hmap-soul-path');
             const imgsoul = this.imgFromObj('tag_12', soulsData[i].soul.x, soulsData[i].soul.y, undefined, undefined, this.squareSize, this.squareSize);
             imgsoul.setAttributeNS(null, 'class', 'hmap-soul');
@@ -2214,19 +2214,20 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
             'var h = Math.sqrt(Math.pow(newX - oldX, 2) + Math.pow(newY - oldY, 2));' +
             'var c = Math.abs(newX - oldX);' +
             'var a = Math.acos(c / h) * 180 / Math.PI;' +
-            'var soulx = parseInt(souls[i].getAttribute("x");' +
-            'var souly = parseInt(souls[i].getAttribute("y");' +
+            'var soulx = parseInt(souls[i].getAttribute("x"));' +
+            'var souly = parseInt(souls[i].getAttribute("y"));' +
             'souls[i].setAttribute("transform", "' +
             'translate("+ transfX  + "," + transfY + ") ' +
-            'rotate(" + a + " " + (soulx) + ' + (this.squareSize / 2) + ') + " " + (souly) + ' + (this.squareSize / 2) + ') + ")");' +
+            'rotate(" + a + " " + (soulx + ' + (this.squareSize / 2) + ') + " " + (souly + ' + (this.squareSize / 2) + ') + ")");' +
             '}' +
             'requestAnimationFrame(moveSoul);' +
             '}' +
             'if (souls.length > 0) {' +
             'requestAnimationFrame(moveSoul);' +
             '}';
+        console.log(script.textContent);
         document.getElementsByTagName('body')[0].appendChild(script);
-        document.getElementsByTagName('body')[0].removeChild(script);
+        // document.getElementsByTagName('body')[0].removeChild(script);
     }
     /**
      * Reset the zoom & pan level
