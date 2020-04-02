@@ -315,9 +315,8 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
         'if (souls.length > 0) {' +
             'requestAnimationFrame(moveSoul);' +
         '}';
-        console.log(script.textContent);
         document.getElementsByTagName('body')[0].appendChild(script);
-        // document.getElementsByTagName('body')[0].removeChild(script);
+        document.getElementsByTagName('body')[0].removeChild(script);
     }
 
     /**
