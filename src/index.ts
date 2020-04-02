@@ -3,6 +3,7 @@ import { Toast } from './toast';
 import { Environment } from './environment';
 import { HMapDesertData } from './data/hmap-desert-data';
 import { HMapRuinData } from './data/hmap-ruin-data';
+import { Log } from './log';
 
 declare const HMAP_DEVMODE: boolean;
 declare let HMAP: any;
@@ -25,11 +26,11 @@ if (typeof require != 'undefined') {
  * It's bootstrap time !!
  */
 (function() {
+    const logger = Log.get('BOOTSTRAP');
     try {
-
         const env = Environment.getInstance();
         env.devMode = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
-
+        logger.log('Devmode', env.devMode);
         // Create the styles for the fonts and some other styles
         const style = document.createElement('style');
         style.appendChild(document.createTextNode('\
@@ -95,6 +96,7 @@ if (typeof require != 'undefined') {
                 // start only when the fonts are loaded
                 const map = new HMap();
                 if (env.devMode === true) { // dev mode to play with the map
+                    logger.log('Devmode started with location = desert');
                     map.location = 'desert';
                     map.reloadMapWithData();
                     HMAP = map;
@@ -102,30 +104,37 @@ if (typeof require != 'undefined') {
                     HMAPRUINDATA = HMapRuinData;
                 } else {
                     // wait for js.JsMap to be ready
+                    logger.log('wait for js.JsMap to be ready');
                     let counterCheckJsMap = 0; // count the number of tries
                     const checkLocationKnown = setInterval(function() {
                         if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
                             clearInterval(checkLocationKnown);
+                            logger.log('Look for location (doors, desert or ruin)');
                             map.location = map.getCurrentLocation();
+                            logger.log('Location found : ', map.location);
+                            logger.log('Stop looking for the map and fetch data');
                             map.fetchMapData(); // intercept every ajax request haxe is doing to know if we should start the map or not
+                            logger.log('Datafetch, setup the interceptor');
                             setTimeout(() => map.setupInterceptor());
                         } else if (++counterCheckJsMap > 10) { // timeout 2s
                             clearInterval(checkLocationKnown);
+                            logger.log('Timeout looking for the map, nothing has been found');
+                            logger.log('Setup the interceptor, to start the map when flash data are detected');
                             map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
                         }
                     }, 200);
                 }
             } catch (err) {
-                console.error('HMap::bootstrap - loaded', err, err.message);
+                logger.error('HMap::bootstrap - loaded', err, err.message);
                 Toast.show('Hmap - An error occured. Check the console to see the message.');
             }
         }).catch((err) => {
-            console.error('HMap::promiseAll', err, err.message);
+            logger.error('HMap::promiseAll', err, err.message);
             Toast.show('Hmap - Cannot load the fonts. Try to reload the page by pressing CTRL + F5 or change your browser');
         });
 
     } catch (err) {
-        console.error('HMap::bootstrap', err, err.message);
+        logger.error('HMap::bootstrap', err, err.message);
         Toast.show('Hmap - An error occured. Check the console to see the message.');
     }
 })();

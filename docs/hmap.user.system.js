@@ -4162,10 +4162,96 @@ System.register("maps/abstract", ["imagesLoader"], function (exports_22, context
         }
     };
 });
-System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exports_23, context_23) {
+/**
+ * Logger class
+ */
+System.register("log", [], function (exports_23, context_23) {
     "use strict";
-    var grid_1, desert_1, ruin_1, HMap;
+    var Log, Logger;
     var __moduleName = context_23 && context_23.id;
+    return {
+        setters: [],
+        execute: function () {
+            Log = class Log {
+                static get(name) {
+                    if (!Log.loggers.has(name)) {
+                        Log.loggers.set(name, new Logger(name, true));
+                    }
+                    return Log.loggers.get(name);
+                }
+                static enable(name) {
+                    Log.get(name).enabled = true;
+                }
+                static disable(name) {
+                    Log.get(name).enabled = false;
+                }
+            };
+            exports_23("Log", Log);
+            Log.loggers = new Map();
+            Logger = class Logger {
+                constructor(name, enabled) {
+                    this.method = new Array();
+                    this.name = name;
+                    this.enabled = enabled;
+                }
+                enter(method) {
+                    this.method.push(method);
+                    this.log('Entering method', method);
+                }
+                leave(method) {
+                    this.log('Exiting method', method);
+                    this.method.pop();
+                }
+                log(...args) {
+                    if (this.enabled && console.log) {
+                        if (this.method.length !== 0) {
+                            let spaces = '';
+                            for (let i = 1; i < this.method.length; i++) {
+                                spaces += '\t';
+                            }
+                            console.log(spaces + this.name + '::' + this.method.slice(-1).pop() + ' >>', ...args);
+                        }
+                        else {
+                            console.log(this.name + ' >>', ...args);
+                        }
+                    }
+                }
+                warn(...args) {
+                    if (this.enabled && console.warn) {
+                        if (this.method.length !== 0) {
+                            let spaces = '';
+                            for (let i = 0; i < this.method.length; i++) {
+                                spaces += '\t';
+                            }
+                            console.warn(spaces + this.name + '::' + this.method.slice(-1).pop() + ' >>', ...args);
+                        }
+                        else {
+                            console.warn(this.name + ' >>', ...args);
+                        }
+                    }
+                }
+                error(...args) {
+                    if (console.error) {
+                        if (this.method.length !== 0) {
+                            let spaces = '';
+                            for (let i = 0; i < this.method.length; i++) {
+                                spaces += '\t';
+                            }
+                            console.error(spaces + this.name + '::' + this.method.slice(-1).pop() + ' >>', ...args);
+                        }
+                        else {
+                            console.error(this.name + ' >>', ...args);
+                        }
+                    }
+                }
+            };
+        }
+    };
+});
+System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin", "log"], function (exports_24, context_24) {
+    "use strict";
+    var grid_1, desert_1, ruin_1, log_1, logger, HMap;
+    var __moduleName = context_24 && context_24.id;
     return {
         setters: [
             function (grid_1_1) {
@@ -4176,9 +4262,13 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
             },
             function (ruin_1_1) {
                 ruin_1 = ruin_1_1;
+            },
+            function (log_1_1) {
+                log_1 = log_1_1;
             }
         ],
         execute: function () {
+            logger = log_1.Log.get('HMap');
             HMap = class HMap {
                 constructor(cssSelector) {
                     this.width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
@@ -4196,37 +4286,68 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                  * but up to date in the store
                  */
                 fetchMapData() {
+                    logger.enter('fetchMapData');
                     if (this.map === undefined) {
+                        logger.log('Map is undefined, start autobuild');
                         this.autoBuildMap();
                     }
                     // We will look for the flashmap, take the data, and bootstrap our map
+                    logger.log('Look for the flash data in the HTML code');
                     let counterCheckExists = 0;
                     const checkExist = setInterval(() => {
+                        logger.enter('fetchMapData::setInterval');
                         if (document.querySelector('#swfCont') !== null) {
+                            logger.log('Swfcontainer has been found');
                             clearInterval(checkExist);
                             let tempMapData;
-                            if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                                tempMapData = document.querySelector('#FlashMap').getAttribute('flashvars').substring(13);
+                            if (document.querySelector('#FlashMap') !== null || document.querySelector('#FlashExplo') !== null) { // if the flashmap is there
+                                logger.log('Flash is enabled on browser, flashmap/explo has been found, map data selected');
+                                let HTMLName = 'FlashMap';
+                                if (document.querySelector('#FlashExplo') !== null) {
+                                    HTMLName = 'FlashExplo';
+                                }
+                                const node = document.querySelector('#' + HTMLName);
+                                if (node.nodeName.toUpperCase() === 'OBJECT') {
+                                    tempMapData = document.querySelector('#' + HTMLName + ' param[name="flashvars"]').getAttribute('value').substring(13);
+                                }
+                                else {
+                                    tempMapData = node.getAttribute('flashvars').substring(13);
+                                }
                             }
                             else { // if this is only the JS code supposed to bootstrap flash
                                 if (document.querySelector('#gameLayout') !== null) {
+                                    logger.log('Flash seems disabled on this browser, go fetch the code supposed to bootstrap flash');
                                     const scriptStr = document.querySelector('#gameLayout').innerHTML;
-                                    const mapMarker = scriptStr.indexOf('mapLoader.swf');
+                                    logger.log('Look for desert map');
+                                    let mapMarker = scriptStr.indexOf('mapLoader.swf');
                                     if (mapMarker === -1) {
+                                        logger.log('Desert map not found, look for ruin map');
+                                        mapMarker = scriptStr.indexOf('exploLoader.swf');
+                                    }
+                                    if (mapMarker === -1) {
+                                        logger.log('No map found');
+                                        logger.leave('fetchMapData::setInterval');
                                         return;
                                     }
                                     const startVar = scriptStr.indexOf('data', mapMarker) + 8;
                                     const stopVar = scriptStr.indexOf('\');', startVar);
                                     tempMapData = scriptStr.substring(startVar, stopVar);
+                                    logger.log(startVar, stopVar, tempMapData);
+                                    logger.log('Encoded data found');
                                 }
                             }
+                            logger.log('Build map layers');
                             this.map.buildLayers();
+                            logger.log('Send the encoded data to the map');
                             this.map.completeDataReceived({ raw: tempMapData });
                         }
                         else if (++counterCheckExists === 100) {
+                            logger.log('Timeout, no flash data were found, stop fetchMapData');
                             clearInterval(checkExist); // timeout 10sec
                         }
+                        logger.leave('fetchMapData::setInterval');
                     }, 100); // 10 sec then give up
+                    logger.leave('fetchMapData');
                 }
                 /**
                  * Function used to setup the interceptor.
@@ -4234,6 +4355,7 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                  * and pass it back to haxe.
                  */
                 setupInterceptor() {
+                    logger.enter('setupInterceptor');
                     let _js;
                     // @ts-ignore : this thing is not known by the TS compiler
                     const page = window.wrappedJSObject;
@@ -4245,64 +4367,91 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                     }
                     if (_js && _js.XmlHttp && _js.XmlHttp.onData) { // tampermonkey
                         this.originalOnData = _js.XmlHttp.onData;
+                        logger.log('Bind datainterceptor');
                         _js.XmlHttp.onData = this.dataInterceptor.bind(this);
                     }
                     else {
                         throw new Error('HMap::setupInterceptor - Cannot find js.XmlHttp.onData');
                     }
+                    logger.leave('setupInterceptor');
                 }
                 /**
                  * Actual interceptor
                  */
                 dataInterceptor(data) {
+                    logger.enter('dataInterceptor');
                     this.originalOnData(data); // call the original method first
                     const currentLocation = this.getCurrentLocation();
-                    if (currentLocation === 'unknown') { // unknown location, make sure the HMap is removed from the DOM
+                    logger.log('Current location is ', currentLocation);
+                    if (currentLocation === 'unknown') { // unknown location, make sure HMap is removed from the DOM
                         this.location = 'unknown';
+                        logger.log('Unknown location, clear the map');
                         this.clearMap();
+                        logger.leave('dataInterceptor');
                         return;
                     }
                     // now we are in an interesting place for us, check if there is data for our map
-                    if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
+                    if (data.indexOf('js.JsMap.init') !== -1 ||
+                        data.indexOf('js.JsExplo.init') !== -1 ||
+                        data.indexOf('mapLoader.swf') !== -1 ||
+                        data.indexOf('exploLoader.swf') !== -1) {
+                        logger.log('Interesting elements have been found');
                         // if we changed location or we dont have jsmap.init in the message, reload the whole map
-                        if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1) {
+                        if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1 || data.indexOf('exploLoader.swf') !== -1) {
+                            logger.log('The location has changed or the swf keywords have been found');
                             this.location = currentLocation;
+                            logger.log('Clear the map');
                             this.clearMap();
+                            logger.log('Fetch the data');
                             this.fetchMapData(); // it will autobuild the map
                         }
                         else { // we are still on the same location
                             if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1) {
+                                logger.log('js.xxx.init code has been found');
                                 let startVar = 0;
                                 if (data.indexOf('js.JsMap.init') !== -1) {
                                     startVar = data.indexOf('js.JsMap.init') + 16;
+                                    logger.log('from the JsMap tag', startVar);
                                 }
                                 else {
-                                    startVar = data.indexOf('js.JsExplo.init') + 16;
+                                    startVar = data.indexOf('js.JsExplo.init') + 18;
+                                    logger.log('from the JsExplo tag', startVar);
                                 }
                                 const stopVar = data.indexOf('\',', startVar);
                                 const tempMapData = data.substring(startVar, stopVar);
+                                logger.log('Encoded data extracted from the message, send it to the map');
                                 this.map.partialDataReceived({ raw: tempMapData }); // just patch the data
                             }
                             else {
-                                console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet', data);
+                                logger.warn('this case hasn\'t been encoutered yet', data);
                             }
                         }
                     }
+                    logger.leave('dataInterceptor');
                 }
                 /**
                  * Guess on what page we are (outise or inside the town ) by parsing the URL
                  */
                 getCurrentLocation() {
+                    logger.enter('getCurrentLocation');
                     if (window.location.href.indexOf('outside') !== -1) {
+                        logger.log('"outside" detected in URL, load the desert map');
+                        logger.leave('getCurrentLocation');
                         return 'desert';
                     }
                     else if (window.location.href.indexOf('door') !== -1) {
+                        logger.log('"door" detected in URL, load the desert map in grid mode');
+                        logger.leave('getCurrentLocation');
                         return 'doors';
                     }
                     else if (window.location.href.indexOf('explo') !== -1) {
+                        logger.log('"explo" detected in URL, load the ruin map');
+                        logger.leave('getCurrentLocation');
                         return 'ruin';
                     }
                     else {
+                        logger.log('No location detected, return unknown');
+                        logger.leave('getCurrentLocation');
                         return 'unknown';
                     }
                 }
@@ -4310,69 +4459,91 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                  * Switch the map to a new type and reload
                  */
                 switchMapAndReload(type) {
+                    logger.enter('switchMapAndReload');
                     const store = this.map.mapData.data;
+                    logger.log('Clear the map');
                     this.clearMap();
+                    logger.log('Load the new map depending on the type');
                     if (type === 'desert') {
+                        logger.log('Type = desert, create a new desert map');
                         this.map = new desert_1.HMapDesertMap(this);
                     }
                     else if (type === 'grid') {
+                        logger.log('Type = grid, create a new grid map');
                         this.map = new grid_1.HMapGridMap(this);
                     }
                     else if (type === 'ruin') {
+                        logger.log('Type = ruin, create a new ruin map');
                         this.map = new ruin_1.HMapRuin(this);
                     }
+                    logger.log('Build the layers');
                     this.map.buildLayers();
+                    logger.log('Load the data');
                     this.map.completeDataReceived({ JSON: store });
+                    logger.leave('switchMapAndReload');
                 }
                 /**
                  * Rebuild the map with the JSON passed in argument. For debug mode only
                  */
                 reloadMapWithData(data) {
+                    logger.enter('reloadMapWithData');
+                    logger.log('Start by clearing the map');
                     this.clearMap();
                     this.target = undefined;
+                    logger.log('Then rebuild it');
                     this.autoBuildMap();
                     this.map.buildLayers();
                     this.map.completeDataReceived({ JSON: data });
+                    logger.leave('reloadMapWithData');
                 }
                 /**
                  * Clear the map to draw a new one (when we switch the map from desert to grid, etc.)
                  */
                 clearMap() {
+                    logger.enter('clearMap');
                     // destroy the dom element
                     const hmap = document.querySelector('#hmap');
+                    logger.log('destroy the DOM element');
                     if (hmap !== null && hmap.parentNode !== null) {
                         hmap.parentNode.removeChild(hmap);
                     }
                     // unset the objects
                     this.map = undefined;
+                    logger.log('unset map object');
+                    logger.leave('clearMap');
                 }
                 /**
                  * Choose the right type of map when it hasn't already been set
                  */
                 autoBuildMap() {
+                    logger.enter('autoBuildMap');
                     if (this.location === 'doors') { // in town
                         this.map = new grid_1.HMapGridMap(this);
                         this.map.mode = 'global'; // in town, we can see the global mode, not perso
+                        logger.log('Location is "doors", build the grid map in "doors" mode');
                     }
                     else if (this.location === 'desert') {
                         this.map = new desert_1.HMapDesertMap(this);
+                        logger.log('Location is "desert", build the desert map');
                     }
                     else if (this.location === 'ruin') {
                         this.map = new ruin_1.HMapRuin(this);
+                        logger.log('Location is "ruin", build the ruin map');
                     }
                     else {
                         throw new Error('HMap::autoBuildMap - could not detect location');
                     }
+                    logger.leave('autoBuildMap');
                 }
             };
-            exports_23("HMap", HMap);
+            exports_24("HMap", HMap);
         }
     };
 });
-System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data", "data/hmap-ruin-data"], function (exports_24, context_24) {
+System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data", "data/hmap-ruin-data", "log"], function (exports_25, context_25) {
     "use strict";
-    var hmap_1, toast_5, environment_5, hmap_desert_data_3, hmap_ruin_data_2, FontFaceObserver;
-    var __moduleName = context_24 && context_24.id;
+    var hmap_1, toast_5, environment_5, hmap_desert_data_3, hmap_ruin_data_2, log_2, FontFaceObserver;
+    var __moduleName = context_25 && context_25.id;
     return {
         setters: [
             function (hmap_1_1) {
@@ -4389,6 +4560,9 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
             },
             function (hmap_ruin_data_2_1) {
                 hmap_ruin_data_2 = hmap_ruin_data_2_1;
+            },
+            function (log_2_1) {
+                log_2 = log_2_1;
             }
         ],
         execute: function () {
@@ -4405,9 +4579,11 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
              * It's bootstrap time !!
              */
             (function () {
+                const logger = log_2.Log.get('BOOTSTRAP');
                 try {
                     const env = environment_5.Environment.getInstance();
                     env.devMode = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
+                    logger.log('Devmode', env.devMode);
                     // Create the styles for the fonts and some other styles
                     const style = document.createElement('style');
                     style.appendChild(document.createTextNode('\
@@ -4470,6 +4646,7 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
                             // start only when the fonts are loaded
                             const map = new hmap_1.HMap();
                             if (env.devMode === true) { // dev mode to play with the map
+                                logger.log('Devmode started with location = desert');
                                 map.location = 'desert';
                                 map.reloadMapWithData();
                                 HMAP = map;
@@ -4478,32 +4655,39 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
                             }
                             else {
                                 // wait for js.JsMap to be ready
+                                logger.log('wait for js.JsMap to be ready');
                                 let counterCheckJsMap = 0; // count the number of tries
                                 const checkLocationKnown = setInterval(function () {
                                     if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
                                         clearInterval(checkLocationKnown);
+                                        logger.log('Look for location (doors, desert or ruin)');
                                         map.location = map.getCurrentLocation();
+                                        logger.log('Location found : ', map.location);
+                                        logger.log('Stop looking for the map and fetch data');
                                         map.fetchMapData(); // intercept every ajax request haxe is doing to know if we should start the map or not
+                                        logger.log('Datafetch, setup the interceptor');
                                         setTimeout(() => map.setupInterceptor());
                                     }
                                     else if (++counterCheckJsMap > 10) { // timeout 2s
                                         clearInterval(checkLocationKnown);
+                                        logger.log('Timeout looking for the map, nothing has been found');
+                                        logger.log('Setup the interceptor, to start the map when flash data are detected');
                                         map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
                                     }
                                 }, 200);
                             }
                         }
                         catch (err) {
-                            console.error('HMap::bootstrap - loaded', err, err.message);
+                            logger.error('HMap::bootstrap - loaded', err, err.message);
                             toast_5.Toast.show('Hmap - An error occured. Check the console to see the message.');
                         }
                     }).catch((err) => {
-                        console.error('HMap::promiseAll', err, err.message);
+                        logger.error('HMap::promiseAll', err, err.message);
                         toast_5.Toast.show('Hmap - Cannot load the fonts. Try to reload the page by pressing CTRL + F5 or change your browser');
                     });
                 }
                 catch (err) {
-                    console.error('HMap::bootstrap', err, err.message);
+                    logger.error('HMap::bootstrap', err, err.message);
                     toast_5.Toast.show('Hmap - An error occured. Check the console to see the message.');
                 }
             })();
