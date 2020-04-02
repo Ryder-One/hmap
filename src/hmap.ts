@@ -76,6 +76,7 @@ export class HMap {
                     const node  = document.querySelector('#' + HTMLName);
                     if(node!.nodeName.toUpperCase() === 'OBJECT') {
                         tempMapData = document.querySelector('#' + HTMLName + ' param[name="flashvars"]')!.getAttribute('value')!.substring(13);
+
                     } else {
                         tempMapData = node!.getAttribute('flashvars')!.substring(13);
                     }
