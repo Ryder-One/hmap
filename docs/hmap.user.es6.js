@@ -103,8 +103,8 @@ const abstract_1 = require("./abstract");
  * passed to flash, and expose it in a JSON format with lots of accessors
  */
 class HMapDesertData extends abstract_1.HMapData {
-    constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
-        super(mapDataPayload, scavengerMode, scoutMode);
+    constructor(mapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
+        super(mapDataPayload, scavengerMode, scoutMode, shamanMode);
         this.neighbours = new neighbours_1.HMapNeighbours();
         this.buildings = new Map();
         this.users = new Map();
@@ -302,6 +302,7 @@ class HMapDesertData extends abstract_1.HMapData {
                         1 : (random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? random_1.HMapRandom.getRandomIntegerNoSeed(2, 62) : 0);
                     bid = random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? -1 : bid;
                     buildings.push({ _id: bid, _n: 'Building ' + bid });
+                    console.log('ShamanMode ' + shamanMode);
                     this._fakeData._details.push({
                         _c: bid,
                         _s: shamanMode === true ? random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 1 : false,
@@ -2225,9 +2226,8 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
             'if (souls.length > 0) {' +
             'requestAnimationFrame(moveSoul);' +
             '}';
-        console.log(script.textContent);
         document.getElementsByTagName('body')[0].appendChild(script);
-        // document.getElementsByTagName('body')[0].removeChild(script);
+        document.getElementsByTagName('body')[0].removeChild(script);
     }
     /**
      * Reset the zoom & pan level

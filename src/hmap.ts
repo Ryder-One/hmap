@@ -58,7 +58,7 @@ export class HMap {
 
                 let tempMapData;
                 if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                    const node  = document.querySelector('#FlashMap');
+                    const node = document.querySelector('#FlashMap');
                     if(node!.nodeName.toUpperCase() === 'OBJECT') {
                         tempMapData = document.querySelector('#FlashMap param[name="flashvars"]')!.getAttribute('value')!.substring(13);
                     } else {

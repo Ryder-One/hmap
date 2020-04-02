@@ -2978,9 +2978,8 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                         'if (souls.length > 0) {' +
                         'requestAnimationFrame(moveSoul);' +
                         '}';
-                    console.log(script.textContent);
                     document.getElementsByTagName('body')[0].appendChild(script);
-                    // document.getElementsByTagName('body')[0].removeChild(script);
+                    document.getElementsByTagName('body')[0].removeChild(script);
                 }
                 /**
                  * Reset the zoom & pan level
@@ -4347,9 +4346,9 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                             clearInterval(checkExist);
                             let tempMapData;
                             if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                                const node = document.querySelector('#FlashMap');
-                                if (node.nodeName.toUpperCase() === 'OBJECT') {
-                                    tempMapData = document.querySelector('#FlashMap param[name="flashvars"]').getAttribute('value').substring(13);
+                                let node = document.querySelector('#FlashMap');
+                                if (node.nodeName.toUpperCase() == "OBJECT") {
+                                    tempMapData = document.querySelector("#FlashMap param[name='flashvars']").getAttribute("value").substring(13);
                                 }
                                 else {
                                     tempMapData = node.getAttribute('flashvars').substring(13);
