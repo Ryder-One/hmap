@@ -66,17 +66,17 @@ export class HMap {
 
                 let tempMapData;
                 if (document.querySelector('#FlashMap') !== null || document.querySelector('#FlashExplo') !== null) { // if the flashmap is there
-                    logger.log('Flash is enabled on browser, flashmap/explo has been found, map data selected');
+                    logger.log('The flash bootstrap has been launched and flashmap/explo has been found, map data selected');
 
-                    let HTMLName = 'FlashMap';
-                    if (document.querySelector('#FlashExplo') !== null) {
+                    let HTMLName = 'FlashMap'; // by default we look for the desert map
+                    if (document.querySelector('#FlashExplo') !== null) { // but if the ruin map is present in the HTML, we look for this instead
                         HTMLName = 'FlashExplo';
                     }
-
-                    const node  = document.querySelector('#' + HTMLName);
+                    logger.log('HTMLName', HTMLName);
+                    const node  = document.querySelector('#' + HTMLName); // extract the data in the flashvars attribute
+                    logger.log(node);
                     if(node!.nodeName.toUpperCase() === 'OBJECT') {
                         tempMapData = document.querySelector('#' + HTMLName + ' param[name="flashvars"]')!.getAttribute('value')!.substring(13);
-
                     } else {
                         tempMapData = node!.getAttribute('flashvars')!.substring(13);
                     }
@@ -105,7 +105,7 @@ export class HMap {
                 }
                 logger.log('Build map layers');
                 this.map!.buildLayers();
-                logger.log('Send the encoded data to the map');
+                logger.log('Send the encoded data to the map', {raw: tempMapData});
                 this.map!.completeDataReceived({raw: tempMapData});
 
             } else if (++counterCheckExists === 100) {

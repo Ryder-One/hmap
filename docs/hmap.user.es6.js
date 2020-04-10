@@ -720,9 +720,21 @@ class HMap {
                 logger.log('Swfcontainer has been found');
                 clearInterval(checkExist);
                 let tempMapData;
-                if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                    logger.log('Flash is enabled on browser, flashmap has been found, map data selected');
-                    tempMapData = document.querySelector('#FlashMap').getAttribute('flashvars').substring(13);
+                if (document.querySelector('#FlashMap') !== null || document.querySelector('#FlashExplo') !== null) { // if the flashmap is there
+                    logger.log('The flash bootstrap has been launched and flashmap/explo has been found, map data selected');
+                    let HTMLName = 'FlashMap'; // by default we look for the desert map
+                    if (document.querySelector('#FlashExplo') !== null) { // but if the ruin map is present in the HTML, we look for this instead
+                        HTMLName = 'FlashExplo';
+                    }
+                    logger.log('HTMLName', HTMLName);
+                    const node = document.querySelector('#' + HTMLName); // extract the data in the flashvars attribute
+                    logger.log(node);
+                    if (node.nodeName.toUpperCase() === 'OBJECT') {
+                        tempMapData = document.querySelector('#' + HTMLName + ' param[name="flashvars"]').getAttribute('value').substring(13);
+                    }
+                    else {
+                        tempMapData = node.getAttribute('flashvars').substring(13);
+                    }
                 }
                 else { // if this is only the JS code supposed to bootstrap flash
                     if (document.querySelector('#gameLayout') !== null) {
@@ -742,12 +754,13 @@ class HMap {
                         const startVar = scriptStr.indexOf('data', mapMarker) + 8;
                         const stopVar = scriptStr.indexOf('\');', startVar);
                         tempMapData = scriptStr.substring(startVar, stopVar);
+                        logger.log(startVar, stopVar, tempMapData);
                         logger.log('Encoded data found');
                     }
                 }
                 logger.log('Build map layers');
                 this.map.buildLayers();
-                logger.log('Send the encoded data to the map');
+                logger.log('Send the encoded data to the map', { raw: tempMapData });
                 this.map.completeDataReceived({ raw: tempMapData });
             }
             else if (++counterCheckExists === 100) {
