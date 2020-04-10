@@ -14,13 +14,13 @@ export abstract class HMapData<DataJSON, LocalDataJSON> {
 
     get prettyData(): string { return JSON.stringify(this.data, undefined, 4); }
 
-    constructor(mapDataPayload?: HMapDataPayload, scavengerMode = false, scoutMode = false) {
+    constructor(mapDataPayload?: HMapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
         if (mapDataPayload && mapDataPayload.raw) {
             this.data = this.decode(mapDataPayload.raw) as DataJSON;
         } else if (mapDataPayload && mapDataPayload.JSON) {
             this.data = mapDataPayload.JSON as DataJSON;
         } else {
-            this.data = this.fakeData(true, scavengerMode, scoutMode);
+            this.data = this.fakeData(true, scavengerMode, scoutMode, shamanMode);
         }
     }
 
@@ -80,7 +80,7 @@ export abstract class HMapData<DataJSON, LocalDataJSON> {
     /**
      * create a fake JSON to debug the map
      */
-    abstract fakeData(force: boolean, scavengerMode: boolean, scoutMode: boolean): DataJSON;
+    abstract fakeData(force: boolean, scavengerMode: boolean, scoutMode: boolean, shamanMode: boolean): DataJSON;
 
     /**
      * Decode the url encoded flashvar

@@ -746,7 +746,7 @@ System.register("data/abstract", [], function (exports_8, context_8) {
              * passed to flash, and expose it in a JSON format with lots of accessors
              */
             HMapData = class HMapData {
-                constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
+                constructor(mapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
                     if (mapDataPayload && mapDataPayload.raw) {
                         this.data = this.decode(mapDataPayload.raw);
                     }
@@ -754,7 +754,7 @@ System.register("data/abstract", [], function (exports_8, context_8) {
                         this.data = mapDataPayload.JSON;
                     }
                     else {
-                        this.data = this.fakeData(true, scavengerMode, scoutMode);
+                        this.data = this.fakeData(true, scavengerMode, scoutMode, shamanMode);
                     }
                 }
                 get prettyData() { return JSON.stringify(this.data, undefined, 4); }
@@ -2379,8 +2379,8 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
              * passed to flash, and expose it in a JSON format with lots of accessors
              */
             HMapDesertData = class HMapDesertData extends abstract_6.HMapData {
-                constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
-                    super(mapDataPayload, scavengerMode, scoutMode);
+                constructor(mapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
+                    super(mapDataPayload, scavengerMode, scoutMode, shamanMode);
                     this.neighbours = new neighbours_1.HMapNeighbours();
                     this.buildings = new Map();
                     this.users = new Map();
@@ -2524,7 +2524,7 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                 /**
                  * create a fake JSON to debug the map
                  */
-                fakeData(force = false, scavengerMode, scoutMode) {
+                fakeData(force = false, scavengerMode, scoutMode, shamanMode) {
                     if (this._fakeData !== undefined && force === false) {
                         return this._fakeData;
                     }
@@ -2578,9 +2578,10 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                                     1 : (random_5.HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? random_5.HMapRandom.getRandomIntegerNoSeed(2, 62) : 0);
                                 bid = random_5.HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? -1 : bid;
                                 buildings.push({ _id: bid, _n: 'Building ' + bid });
+                                console.log('ShamanMode ' + shamanMode);
                                 this._fakeData._details.push({
                                     _c: bid,
-                                    _s: false,
+                                    _s: shamanMode === true ? random_5.HMapRandom.getRandomIntegerNoSeed(0, 10) === 1 : false,
                                     _t: random_5.HMapRandom.getRandomIntegerNoSeed(0, 12),
                                     _z: random_5.HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? random_5.HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
                                     _nvt: view
@@ -2744,6 +2745,7 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                     const availableSize = minWidthHeight - 25 - this.spaceBetweenSquares * mapData.size.height;
                     this.squareSize = Math.floor(availableSize / mapData.size.height);
                     this.padding = Math.floor((minWidthHeight - this.spaceBetweenSquares * mapData.size.height - this.squareSize * mapData.size.height) / 2);
+                    const soulsData = [];
                     for (let i = 0, j = mapData.details.length; i < j; i++) {
                         const position = mapData.getCoordinates(i);
                         const currentPos = (position.y === mapData.position.y && position.x === mapData.position.x); // position is current positon
@@ -2818,6 +2820,71 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                                 });
                             }
                         }
+                        // There is a soul on the position
+                        if (mapData.details[i]._s) {
+                            // Points for the path to move the soul
+                            // We add 4 points that are current position, left position, top position and top-left position
+                            // Like on the flash version
+                            const points = [
+                                {
+                                    x: x + (this.squareSize),
+                                    y: y + (this.squareSize)
+                                },
+                                {
+                                    x: x - this.squareSize,
+                                    y: y + this.squareSize
+                                },
+                                {
+                                    x: x + this.squareSize,
+                                    y: y - this.squareSize
+                                },
+                                {
+                                    x: x - this.squareSize,
+                                    y: y - this.squareSize
+                                }
+                            ];
+                            for (let ipoint = 0; ipoint < 2; ipoint++) {
+                                points.push({
+                                    x: random_6.HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize),
+                                    y: y - this.squareSize
+                                });
+                            }
+                            for (let ipoint = 0; ipoint < 2; ipoint++) {
+                                points.push({
+                                    x: random_6.HMapRandom.getRandomIntegerNoSeed(x - this.squareSize, x + this.squareSize),
+                                    y: y + this.squareSize
+                                });
+                            }
+                            for (let ipoint = 0; ipoint < 2; ipoint++) {
+                                points.push({
+                                    x: x + this.squareSize,
+                                    y: random_6.HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize)
+                                });
+                            }
+                            for (let ipoint = 0; ipoint < 2; ipoint++) {
+                                points.push({
+                                    x: x - this.squareSize,
+                                    y: random_6.HMapRandom.getRandomIntegerNoSeed(y - this.squareSize, y + this.squareSize)
+                                });
+                            }
+                            let pathString = 'M ';
+                            const origLength = points.length;
+                            for (let ipoint = 0; ipoint < origLength; ipoint++) {
+                                const point = points.splice(random_6.HMapRandom.getRandomIntegerNoSeed(0, points.length), 1)[0];
+                                pathString += point.x + ' ' + point.y;
+                                if (ipoint < origLength - 1) {
+                                    pathString += ' L ';
+                                }
+                            }
+                            pathString += ' Z';
+                            soulsData.push({
+                                path: pathString,
+                                soul: {
+                                    x: x,
+                                    y: y
+                                }
+                            });
+                        }
                         // display tags
                         if (map.displayTags) {
                             const tag = mapData.details[i]._t;
@@ -2836,10 +2903,83 @@ System.register("layers/svg-grid", ["random", "layers/abstract", "lang"], functi
                             target.setAttributeNS(null, 'class', 'hmap-target');
                         }
                     } // iterate over the grid
+                    // Iterate through all the souls we must display
+                    // We do it at the end so the images are above everything in the grid
+                    for (let i = 0; i < soulsData.length; i++) {
+                        const pathString = soulsData[i].path;
+                        const path = this.path(pathString);
+                        path.setAttributeNS(null, 'style', 'fill: none');
+                        path.setAttributeNS(null, 'class', 'hmap-soul-path');
+                        const imgsoul = this.imgFromObj('tag_12', soulsData[i].soul.x, soulsData[i].soul.y, undefined, undefined, this.squareSize, this.squareSize);
+                        imgsoul.setAttributeNS(null, 'class', 'hmap-soul');
+                    }
                     this.svg.appendChild(this.g);
                     if (oldGroup) {
                         window.setTimeout(() => this.svg.removeChild(oldGroup), 100);
                     }
+                    // Creating JS client-side to move the souls' images
+                    const script = document.createElement('script');
+                    script.setAttributeNS(null, 'type', 'application/javascript');
+                    script.setAttributeNS(null, 'id', 'moveSoulScript');
+                    script.textContent = 'var counter = 0;' +
+                        'var direction = true;' + // Sens of the movment
+                        'var svgContainer = document.getElementById("hmap");' + // Reference to the enclosing div
+                        'var ns = "http://www.w3.org/2000/svg";' +
+                        'var souls = svgContainer.getElementsByClassName("hmap-soul");' + // List of all the souls images
+                        'function moveSoul() {' +
+                        // Check to see where the souls are journeys to determine
+                        // if they arrived at the end
+                        'if (parseInt(counter,10) === 1) {' +
+                        // we've hit the end! +
+                        'direction = false;' +
+                        '} else if (parseInt(counter,10) < 0) {' +
+                        'direction = true;' +
+                        '}' +
+                        // Moving toward the path
+                        'if(direction) {' +
+                        'counter += 0.0005;' +
+                        '} else {' +
+                        'counter -= 0.0005;' +
+                        '}' +
+                        /* Now the magic part. We are able to call .getPointAtLength on the paths to return
+                        the coordinates at any point along their lengths. We then simply set the souls to be positioned
+                        at these coordinates, incrementing along the lengths of the paths */
+                        'for(var i = 0 ; i < souls.length ; i++){' +
+                        // We get the new X and Y for the transformation property
+                        'var path = souls[i].previousSibling;' +
+                        'var pathLength = path.getTotalLength();' +
+                        // The transformation is relative to the original point
+                        'var newX = path.getPointAtLength(counter * pathLength).x;' +
+                        'var newY = path.getPointAtLength(counter * pathLength).y;' +
+                        'var transfX = parseFloat(newX - souls[i].getAttribute("x") - ' + (this.squareSize / 2) + ');' +
+                        'var transfY = parseFloat(newY - souls[i].getAttribute("y") - ' + (this.squareSize / 2) + ');' +
+                        // Now the best part : we try to rotate the image according to the movement
+                        'var oldTransf = souls[i].getAttribute("transform");' +
+                        'var oldX = parseInt(souls[i].getAttribute("x"));' +
+                        'var oldY = parseInt(souls[i].getAttribute("y"));' +
+                        'if (oldTransf != null) {' +
+                        'var regex = /translate\\(([0-9-.]+),([0-9-.]+)\\)/;' +
+                        'if (oldTransf.match(regex) != null && oldTransf.match(regex).length > 1) { ' +
+                        'oldX += parseFloat(oldTransf.match(regex)[1]);' +
+                        'oldY += parseFloat(oldTransf.match(regex)[2]);' +
+                        '}' +
+                        '}' +
+                        'var h = Math.sqrt(Math.pow(newX - oldX, 2) + Math.pow(newY - oldY, 2));' +
+                        'var c = Math.abs(newX - oldX);' +
+                        'var a = Math.acos(c / h) * 180 / Math.PI;' +
+                        'var soulx = parseInt(souls[i].getAttribute("x"));' +
+                        'var souly = parseInt(souls[i].getAttribute("y"));' +
+                        'souls[i].setAttribute("transform", "' +
+                        'translate("+ transfX  + "," + transfY + ") ' +
+                        'rotate(" + a + " " + (soulx + ' + (this.squareSize / 2) + ') + " " + (souly + ' + (this.squareSize / 2) + ') + ")");' +
+                        '}' +
+                        'requestAnimationFrame(moveSoul);' +
+                        '}' +
+                        'if (souls.length > 0) {' +
+                        'requestAnimationFrame(moveSoul);' +
+                        '}';
+                    document.getElementsByTagName('body')[0].appendChild(script);
+                    document.getElementsByTagName('body')[0].removeChild(script);
                 }
                 /**
                  * Reset the zoom & pan level
@@ -4206,7 +4346,13 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                             clearInterval(checkExist);
                             let tempMapData;
                             if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                                tempMapData = document.querySelector('#FlashMap').getAttribute('flashvars').substring(13);
+                                let node = document.querySelector('#FlashMap');
+                                if (node.nodeName.toUpperCase() == "OBJECT") {
+                                    tempMapData = document.querySelector("#FlashMap param[name='flashvars']").getAttribute("value").substring(13);
+                                }
+                                else {
+                                    tempMapData = node.getAttribute('flashvars').substring(13);
+                                }
                             }
                             else { // if this is only the JS code supposed to bootstrap flash
                                 if (document.querySelector('#gameLayout') !== null) {
@@ -4277,7 +4423,7 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                                     startVar = data.indexOf('js.JsMap.init') + 16;
                                 }
                                 else {
-                                    startVar = data.indexOf('js.JsExplo.init') + 16;
+                                    startVar = data.indexOf('js.JsExplo.init') + 18;
                                 }
                                 const stopVar = data.indexOf('\',', startVar);
                                 const tempMapData = data.substring(startVar, stopVar);

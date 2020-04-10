@@ -90,8 +90,8 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     get view(): Array<number|null> { return this.data._view; }
     get townName(): string { return this.data._city; }
 
-    constructor(mapDataPayload?: HMapDataPayload, scavengerMode = false, scoutMode = false) {
-        super(mapDataPayload, scavengerMode, scoutMode);
+    constructor(mapDataPayload?: HMapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
+        super(mapDataPayload, scavengerMode, scoutMode, shamanMode);
         this.buildNeighbours();
         this.town = this.findTown();
         this.cacheBuildingsNames();
@@ -223,7 +223,7 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     /**
      * create a fake JSON to debug the map
      */
-    fakeData(force = false, scavengerMode: boolean, scoutMode: boolean): HMapDesertDataJSON {
+    fakeData(force = false, scavengerMode: boolean, scoutMode: boolean, shamanMode: boolean): HMapDesertDataJSON {
         if (this._fakeData !== undefined && force === false) {
             return this._fakeData;
         } else {
@@ -282,9 +282,11 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
 
                     buildings.push({_id: bid, _n: 'Building ' + bid});
 
+                    console.log('ShamanMode ' + shamanMode);
+
                     this._fakeData._details.push({
                         _c: bid,
-                        _s: false,
+                        _s: shamanMode === true ? HMapRandom.getRandomIntegerNoSeed(0, 10) === 1 : false,
                         _t: HMapRandom.getRandomIntegerNoSeed(0, 12),
                         _z: HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
                         _nvt: view
