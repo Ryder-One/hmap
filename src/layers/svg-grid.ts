@@ -60,6 +60,16 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
             const x = this.padding + position.x * (this.squareSize + this.spaceBetweenSquares);
             const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
 
+            if (mapData.details[i] === undefined || mapData.details[i] === null) {
+                mapData.details[i] = {
+                    _z: 0,
+                    _c: 0,
+                    _s: false,
+                    _nvt: 1,
+                    _t: 0
+                };
+            }
+
             // color or hatch the position
             let visionArray = mapData.global;
             if (map.mode === 'personal') {
@@ -72,6 +82,7 @@ export class HMapSVGGridLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMap
             if ( currentPos ) {
                 strokeColor = '#d8fe6e';
             }
+
             if (mapData.details[i]._z > 9) {
                 fillColor = '#8f340b';
             } else if (mapData.details[i]._z > 5) {

@@ -383,7 +383,10 @@ class HMapDesertData extends abstract_1.HMapData {
      */
     findTown() {
         for (let index = 0, length = this.data._details.length; index < length; index++) {
-            if (this.data._details[index]._c === 1) {
+            if (this.data._details[index] === undefined || this.data._details[index] === null) {
+                continue;
+            }
+            if (this.data._details[index] !== undefined && this.data._details[index]._c === 1) {
                 return this.getCoordinates(index);
             }
         }
@@ -1999,6 +2002,15 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
             const currentPos = (position.y === mapData.position.y && position.x === mapData.position.x); // position is current positon
             const x = this.padding + position.x * (this.squareSize + this.spaceBetweenSquares);
             const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
+            if (mapData.details[i] === undefined || mapData.details[i] === null) {
+                mapData.details[i] = {
+                    _z: 0,
+                    _c: -1,
+                    _s: false,
+                    _nvt: 1,
+                    _t: 0
+                };
+            }
             // color or hatch the position
             let visionArray = mapData.global;
             if (map.mode === 'personal') {

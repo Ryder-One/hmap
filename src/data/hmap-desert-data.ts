@@ -367,7 +367,10 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
      */
     private findTown(): HMapPoint {
         for (let index = 0, length = this.data._details.length; index < length; index++) {
-            if (this.data._details[index]._c === 1) {
+            if (this.data._details[index] === undefined || this.data._details[index] === null) {
+                continue;
+            }
+            if (this.data._details[index] !== undefined && this.data._details[index]._c === 1) {
                 return this.getCoordinates(index);
             }
         }
