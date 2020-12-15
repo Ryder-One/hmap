@@ -2005,7 +2005,7 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
             if (mapData.details[i] === undefined || mapData.details[i] === null) {
                 mapData.details[i] = {
                     _z: 0,
-                    _c: -1,
+                    _c: 0,
                     _s: false,
                     _nvt: 1,
                     _t: 0
