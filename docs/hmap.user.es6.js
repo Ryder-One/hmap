@@ -238,6 +238,15 @@ class HMapDesertData extends abstract_1.HMapData {
                 }
                 const N = new neighbours_1.HMapNeighbour(X, Y, p, outbounds, this.getIndex({ x: X, y: Y }), false, 0);
                 if (!N.outbounds) {
+                    if (this.data._details[N.index] === undefined || this.data._details[N.index] === null) {
+                        this.data._details[N.index] = {
+                            _c: 0,
+                            _nvt: 1,
+                            _s: false,
+                            _t: 0,
+                            _z: 0
+                        };
+                    }
                     N.building = (this.data._details[N.index]._c !== null) ? this.data._details[N.index]._c : 0;
                     N.view = this.isPositionDiscovered({ x: X, y: Y });
                 }
@@ -2005,7 +2014,7 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
             if (mapData.details[i] === undefined || mapData.details[i] === null) {
                 mapData.details[i] = {
                     _z: 0,
-                    _c: -1,
+                    _c: 0,
                     _s: false,
                     _nvt: 1,
                     _t: 0
