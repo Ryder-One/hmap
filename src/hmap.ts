@@ -69,10 +69,17 @@ export class HMap {
 
                         const scriptStr = document.querySelector('#gameLayout')!.innerHTML;
                         const mapMarker = scriptStr.indexOf('mapLoader.swf');
-                        if (mapMarker === -1) {
-                            return;
+                        const exploMarker = scriptStr.indexOf("exploLoader.swf");
+                        if (mapMarker === -1 && exploMarker === -1) {
+                            return
                         }
-                        const startVar = scriptStr.indexOf('data', mapMarker) + 8;
+                        let startVar = -1
+                        if( mapMarker !== -1){
+                            startVar = scriptStr.indexOf("data", mapMarker) + 8;
+                        }else{
+                            var textSearch = "so.addVariable('data', '"
+                            startVar = scriptStr.indexOf(textSearch, mapMarker) + textSearch.length;
+                        }
                         const stopVar = scriptStr.indexOf('\');', startVar);
                         tempMapData = scriptStr.substring(startVar, stopVar);
                     }
