@@ -77,7 +77,7 @@ export class HMap {
                         if( mapMarker !== -1){
                             startVar = scriptStr.indexOf("data", mapMarker) + 8;
                         }else{
-                            var textSearch = "so.addVariable('data', '"
+                            const textSearch = "so.addVariable('data', '"
                             startVar = scriptStr.indexOf(textSearch, mapMarker) + textSearch.length;
                         }
                         const stopVar = scriptStr.indexOf('\');', startVar);
