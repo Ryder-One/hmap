@@ -369,26 +369,26 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 this.registredArrows.push(A);
             } else {
                 if (mapData.oxygen > 0) { // if we can move
-                    const direction = mapData.directions;
-                    if (direction[1] === true) {
+                    const directions = mapData.directions;
+                    if (directions[1] === true) {
                         offsetY = 15;
                         offsetX = - 41 + 150;
                         const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
                         this.registredArrows.push(A);
                     }
-                    if (direction[3] === true) {
+                    if (directions[3] === true) {
                         offsetY = 250;
                         offsetX = - 41 + 150;
                         const A = new HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
                         this.registredArrows.push(A);
                     }
-                    if (direction[2] === true) {
+                    if (directions[0] === true) {
                         offsetX = 230;
                         offsetY = - 14 + 150;
                         const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
                         this.registredArrows.push(A);
                     }
-                    if (direction[0] === true) {
+                    if (directions[2] === true) {
                         offsetX = -10;
                         offsetY = - 14 + 150;
                         const A = new HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
