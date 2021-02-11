@@ -113,7 +113,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
         const ruinLayer = this.layers.get('ruin-background') as HMapSVGRuinBackgroundLayer;
 
         if (Environment.getInstance().devMode === false) {
-            const url = 'move/x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
+            const url = 'explo/move?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
 
             let hx: any;
 
