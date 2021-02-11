@@ -230,10 +230,10 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
         try {
             // @ts-ignore
             const page = window.wrappedJSObject;
-            if (page !== undefined && page.StringTools && page.MapCommon && page.haxe) { // greasemonkey ...
+            if (page !== undefined && page.StringTools && page.ExploCommon && page.haxe) { // greasemonkey ...
                 st = page.StringTools;
                 hx = page.haxe;
-                ec = page.MapCommon;
+                ec = page.ExploCommon;
             } else if (StringTools && haxe && ExploCommon) { // tampermonkey
                 st = StringTools;
                 hx = haxe;
