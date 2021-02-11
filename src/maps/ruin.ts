@@ -134,7 +134,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
 
                 ruinLayer.easeMovement({ x: 300 * x, y: 300 * y }, () => {
                     if (data.indexOf('js.JsExplo.init') !== -1) {
-                        const startVar = data.indexOf('js.JsExplo.init') + 16;
+                        const startVar = data.indexOf('js.JsExplo.init') + 18;
                         const stopVar = data.indexOf('\',', startVar);
                         const tempMapData = data.substring(startVar, stopVar);
 
@@ -215,7 +215,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 this.hmap.originalOnData!(data); // we are sure the function has been set
 
                 if (data.indexOf('js.JsExplo.init') !== -1) {
-                    const startVar = data.indexOf('js.JsExplo.init') + 16;
+                    const startVar = data.indexOf('js.JsExplo.init') + 18;
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
 
@@ -262,7 +262,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 this.hmap.originalOnData!(data); // we are sure the function has been set
 
                 if (data.indexOf('js.JsExplo.init') !== -1) {
-                    const startVar = data.indexOf('js.JsExplo.init') + 16;
+                    const startVar = data.indexOf('js.JsExplo.init') + 18;
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
 
