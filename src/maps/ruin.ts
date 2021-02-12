@@ -195,7 +195,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
 
         if (Environment.getInstance().devMode === false) {
 
-            const url = 'enterRoom?' + js.JsExplo.sh;
+            const url = 'explo/enterRoom?' + js.JsExplo.sh;
 
             let hx: any;
 
@@ -242,7 +242,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
     exitRoom() {
 
         if (Environment.getInstance().devMode === false) {
-            const url = 'leaveRoom?' + js.JsExplo.sh;
+            const url = 'explo/leaveRoom?' + js.JsExplo.sh;
 
             let hx: any;
 
