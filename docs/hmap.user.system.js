@@ -4346,9 +4346,9 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin"], function (exp
                             clearInterval(checkExist);
                             let tempMapData;
                             if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                                let node = document.querySelector('#FlashMap');
-                                if (node.nodeName.toUpperCase() == "OBJECT") {
-                                    tempMapData = document.querySelector("#FlashMap param[name='flashvars']").getAttribute("value").substring(13);
+                                const node = document.querySelector('#FlashMap');
+                                if (node.nodeName.toUpperCase() === 'OBJECT') {
+                                    tempMapData = document.querySelector('#FlashMap param[name="flashvars"]').getAttribute('value').substring(13);
                                 }
                                 else {
                                     tempMapData = node.getAttribute('flashvars').substring(13);

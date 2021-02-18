@@ -212,6 +212,15 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
                 const N = new HMapNeighbour(X, Y, p, outbounds, this.getIndex({ x: X, y: Y }), false, 0);
 
                 if (!N.outbounds) {
+                    if (this.data._details[N.index] === undefined || this.data._details[N.index] === null) {
+                        this.data._details[N.index] = {
+                            _c: 0,
+                            _nvt: 1,
+                            _s: false,
+                            _t: 0,
+                            _z: 0
+                        };
+                    }
                     N.building = (this.data._details[N.index]._c !== null) ? this.data._details[N.index]._c : 0;
                     N.view = this.isPositionDiscovered({ x: X, y: Y });
                 }
@@ -367,7 +376,10 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
      */
     private findTown(): HMapPoint {
         for (let index = 0, length = this.data._details.length; index < length; index++) {
-            if (this.data._details[index]._c === 1) {
+            if (this.data._details[index] === undefined || this.data._details[index] === null) {
+                continue;
+            }
+            if (this.data._details[index] !== undefined && this.data._details[index]._c === 1) {
                 return this.getCoordinates(index);
             }
         }

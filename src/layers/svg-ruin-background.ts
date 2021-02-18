@@ -477,7 +477,7 @@ export class HMapSVGRuinBackgroundLayer extends AbstractHMapLayer<HMapRuinDataJS
         const mapData = this.map.mapData as HMapRuinData;
         const directions = mapData.directions;
         const walls = new Array();
-        if (directions[0] === true) {
+        if (directions[2] === true) {
             walls.push('A');
             walls.push('B');
         } else {
@@ -489,7 +489,7 @@ export class HMapSVGRuinBackgroundLayer extends AbstractHMapLayer<HMapRuinDataJS
         } else {
             walls.push('F');
         }
-        if (directions[2] === true) {
+        if (directions[0] === true) {
             walls.push('G');
             walls.push('H');
         } else {

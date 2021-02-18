@@ -238,6 +238,15 @@ class HMapDesertData extends abstract_1.HMapData {
                 }
                 const N = new neighbours_1.HMapNeighbour(X, Y, p, outbounds, this.getIndex({ x: X, y: Y }), false, 0);
                 if (!N.outbounds) {
+                    if (this.data._details[N.index] === undefined || this.data._details[N.index] === null) {
+                        this.data._details[N.index] = {
+                            _c: 0,
+                            _nvt: 1,
+                            _s: false,
+                            _t: 0,
+                            _z: 0
+                        };
+                    }
                     N.building = (this.data._details[N.index]._c !== null) ? this.data._details[N.index]._c : 0;
                     N.view = this.isPositionDiscovered({ x: X, y: Y });
                 }
@@ -383,7 +392,10 @@ class HMapDesertData extends abstract_1.HMapData {
      */
     findTown() {
         for (let index = 0, length = this.data._details.length; index < length; index++) {
-            if (this.data._details[index]._c === 1) {
+            if (this.data._details[index] === undefined || this.data._details[index] === null) {
+                continue;
+            }
+            if (this.data._details[index] !== undefined && this.data._details[index]._c === 1) {
                 return this.getCoordinates(index);
             }
         }
@@ -584,10 +596,10 @@ class HMapRuinData extends abstract_1.HMapData {
         try {
             // @ts-ignore
             const page = window.wrappedJSObject;
-            if (page !== undefined && page.StringTools && page.MapCommon && page.haxe) { // greasemonkey ...
+            if (page !== undefined && page.StringTools && page.ExploCommon && page.haxe) { // greasemonkey ...
                 st = page.StringTools;
                 hx = page.haxe;
-                ec = page.MapCommon;
+                ec = page.ExploCommon;
             }
             else if (StringTools && haxe && ExploCommon) { // tampermonkey
                 st = StringTools;
@@ -727,10 +739,18 @@ class HMap {
                     if (document.querySelector('#gameLayout') !== null) {
                         const scriptStr = document.querySelector('#gameLayout').innerHTML;
                         const mapMarker = scriptStr.indexOf('mapLoader.swf');
-                        if (mapMarker === -1) {
+                        const exploMarker = scriptStr.indexOf('exploLoader.swf');
+                        if (mapMarker === -1 && exploMarker === -1) {
                             return;
                         }
-                        const startVar = scriptStr.indexOf('data', mapMarker) + 8;
+                        let startVar = -1;
+                        if (mapMarker !== -1) {
+                            startVar = scriptStr.indexOf('data', mapMarker) + 8;
+                        }
+                        else {
+                            const textSearch = 'so.addVariable(\'data\', \'';
+                            startVar = scriptStr.indexOf(textSearch, mapMarker) + textSearch.length;
+                        }
                         const stopVar = scriptStr.indexOf('\');', startVar);
                         tempMapData = scriptStr.substring(startVar, stopVar);
                     }
@@ -1999,6 +2019,15 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
             const currentPos = (position.y === mapData.position.y && position.x === mapData.position.x); // position is current positon
             const x = this.padding + position.x * (this.squareSize + this.spaceBetweenSquares);
             const y = this.padding / 2 + position.y * (this.squareSize + this.spaceBetweenSquares);
+            if (mapData.details[i] === undefined || mapData.details[i] === null) {
+                mapData.details[i] = {
+                    _z: 0,
+                    _c: 0,
+                    _s: false,
+                    _nvt: 1,
+                    _t: 0
+                };
+            }
             // color or hatch the position
             let visionArray = mapData.global;
             if (map.mode === 'personal') {
@@ -2952,7 +2981,7 @@ class HMapSVGRuinBackgroundLayer extends abstract_1.AbstractHMapLayer {
         const mapData = this.map.mapData;
         const directions = mapData.directions;
         const walls = new Array();
-        if (directions[0] === true) {
+        if (directions[2] === true) {
             walls.push('A');
             walls.push('B');
         }
@@ -2966,7 +2995,7 @@ class HMapSVGRuinBackgroundLayer extends abstract_1.AbstractHMapLayer {
         else {
             walls.push('F');
         }
-        if (directions[2] === true) {
+        if (directions[0] === true) {
             walls.push('G');
             walls.push('H');
         }
@@ -3849,7 +3878,7 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
                 this.hmap.originalOnData(data); // we are sure the function has been set
                 ruinLayer.easeMovement({ x: 300 * x, y: 300 * y }, () => {
                     if (data.indexOf('js.JsExplo.init') !== -1) {
-                        const startVar = data.indexOf('js.JsExplo.init') + 16;
+                        const startVar = data.indexOf('js.JsExplo.init') + 18;
                         const stopVar = data.indexOf('\',', startVar);
                         const tempMapData = data.substring(startVar, stopVar);
                         this.partialDataReceived({ raw: tempMapData });
@@ -3917,7 +3946,7 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
             r.onData = (data) => {
                 this.hmap.originalOnData(data); // we are sure the function has been set
                 if (data.indexOf('js.JsExplo.init') !== -1) {
-                    const startVar = data.indexOf('js.JsExplo.init') + 16;
+                    const startVar = data.indexOf('js.JsExplo.init') + 18;
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
                     this.partialDataReceived({ raw: tempMapData });
@@ -3956,7 +3985,7 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
             r.onData = (data) => {
                 this.hmap.originalOnData(data); // we are sure the function has been set
                 if (data.indexOf('js.JsExplo.init') !== -1) {
-                    const startVar = data.indexOf('js.JsExplo.init') + 16;
+                    const startVar = data.indexOf('js.JsExplo.init') + 18;
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
                     this.partialDataReceived({ raw: tempMapData });
@@ -4053,26 +4082,26 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
             }
             else {
                 if (mapData.oxygen > 0) { // if we can move
-                    const direction = mapData.directions;
-                    if (direction[1] === true) {
+                    const directions = mapData.directions;
+                    if (directions[1] === true) {
                         offsetY = 15;
                         offsetX = -41 + 150;
                         const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'top', 0, false);
                         this.registredArrows.push(A);
                     }
-                    if (direction[3] === true) {
+                    if (directions[3] === true) {
                         offsetY = 250;
                         offsetX = -41 + 150;
                         const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX, offsetY, 83, 28, 'bottom', 180, false);
                         this.registredArrows.push(A);
                     }
-                    if (direction[2] === true) {
+                    if (directions[0] === true) {
                         offsetX = 230;
                         offsetY = -14 + 150;
                         const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'right', 90, false);
                         this.registredArrows.push(A);
                     }
-                    if (direction[0] === true) {
+                    if (directions[2] === true) {
                         offsetX = -10;
                         offsetY = -14 + 150;
                         const A = new arrow_1.HMapArrow(offsetX, offsetY, offsetX + 27, offsetY - 27, 28, 83, 'left', 270, false);
