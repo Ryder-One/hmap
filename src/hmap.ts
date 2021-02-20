@@ -133,7 +133,8 @@ export class HMap {
         }
 
         // now we are in an interesting place for us, check if there is data for our map
-        if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1 || data.indexOf('exploLoader.swf') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
+        if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1 ||
+		data.indexOf('exploLoader.swf') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
             // if we changed location or we dont have jsmap.init in the message, reload the whole map
             if (currentLocation !== this.location || data.indexOf('exploLoader.swf') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
                 this.location = currentLocation;
