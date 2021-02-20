@@ -10,6 +10,7 @@ declare let HMAP: any;
 declare let HMAPDESERTDATA: any;
 declare let HMAPRUINDATA: any;
 declare let LOCAL_FONTFACEOBSERVER: any;
+declare let ENVIRONMENT: any;
 
 // deal with the "require" nighmare
 let FontFaceObserver: any;
@@ -20,7 +21,6 @@ if (typeof require != 'undefined') {
 } else {
     console.error('HMap::bootstrap', 'Cannot load fontface observer');
 }
-
 
 /**
  * It's bootstrap time !!
@@ -102,6 +102,7 @@ if (typeof require != 'undefined') {
                     HMAP = map;
                     HMAPDESERTDATA = HMapDesertData;
                     HMAPRUINDATA = HMapRuinData;
+                    ENVIRONMENT = Environment;
                 } else {
                     // wait for js.JsMap to be ready
                     logger.log('wait for js.JsMap to be ready');

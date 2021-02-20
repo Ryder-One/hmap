@@ -11,6 +11,7 @@ import { HMapDesertDataJSON, HMapDesertLocalDataJSON, HMapDesertData } from '../
 import { HMapPoint } from '../hmap';
 import { HMapDataPayload } from '../data/abstract';
 import { HMapImagesLoader } from '../imagesLoader';
+import { HMapRandom } from '../random';
 
 declare let haxe: any;
 declare let js: any;
@@ -186,7 +187,7 @@ export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDeser
 
                 // fake the move with already known data
                 const fakeData = {
-                    _neigDrops: [],
+                    _neigDrops: new Array(),
                     _neig: new Array(),
                     _state: false,
                     _c: (this.mapData!.data._details[newIndex]._c) ? this.mapData!.data._details[newIndex]._c : 0,
@@ -197,25 +198,34 @@ export class HMapDesertMap extends HMapAbstractMap<HMapDesertDataJSON, HMapDeser
                     _zid: 42424545
                 };
 
-                if (newIndex - mapData.size.height > 0) {
-                    fakeData._neig.push(this.mapData!.data._details[newIndex - mapData.size.height]._z);
-                } else {
-                    fakeData._neig.push(0);
+                if (Environment.getInstance().scoutMode) {
+                    if (newIndex - mapData.size.height > 0) {
+                        fakeData._neig.push(this.mapData!.data._details[newIndex - mapData.size.height]._z);
+                    } else {
+                        fakeData._neig.push(0);
+                    }
+                    if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
+                        fakeData._neig.push(this.mapData!.data._details[newIndex + 1]._z);
+                    } else {
+                        fakeData._neig.push(0);
+                    }
+                    if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
+                        fakeData._neig.push(this.mapData!.data._details[newIndex + mapData.size.height]._z);
+                    } else {
+                        fakeData._neig.push(0);
+                    }
+                    if (newIndex - 1 > 0) {
+                        fakeData._neig.push(this.mapData!.data._details[newIndex - 1]._z);
+                    } else {
+                        fakeData._neig.push(0);
+                    }
                 }
-                if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
-                    fakeData._neig.push(this.mapData!.data._details[newIndex + 1]._z);
-                } else {
-                    fakeData._neig.push(0);
-                }
-                if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
-                    fakeData._neig.push(this.mapData!.data._details[newIndex + mapData.size.height]._z);
-                } else {
-                    fakeData._neig.push(0);
-                }
-                if (newIndex - 1 > 0) {
-                    fakeData._neig.push(this.mapData!.data._details[newIndex - 1]._z);
-                } else {
-                    fakeData._neig.push(0);
+
+                if (Environment.getInstance().scavengerMode === true) {
+                    fakeData._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
+                    fakeData._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
+                    fakeData._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
+                    fakeData._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
                 }
 
                 this.partialDataReceived({ JSON: fakeData });

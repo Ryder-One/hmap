@@ -2,6 +2,7 @@ import { HMapNeighbour, HMapPosition, HMapNeighbours } from '../neighbours';
 import { HMapRandom } from '../random';
 import { HMapPoint, HMapSize } from '../hmap';
 import { HMapData, HMapDataPayload } from './abstract';
+import { Environment } from '../environment';
 
 // declared in host page
 declare const haxe: any;
@@ -90,8 +91,8 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     get view(): Array<number|null> { return this.data._view; }
     get townName(): string { return this.data._city; }
 
-    constructor(mapDataPayload?: HMapDataPayload, scavengerMode = false, scoutMode = false) {
-        super(mapDataPayload, scavengerMode, scoutMode);
+    constructor(mapDataPayload?: HMapDataPayload) {
+        super(mapDataPayload);
         this.buildNeighbours();
         this.town = this.findTown();
         this.cacheBuildingsNames();
@@ -223,7 +224,7 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
     /**
      * create a fake JSON to debug the map
      */
-    fakeData(force = false, scavengerMode: boolean, scoutMode: boolean): HMapDesertDataJSON {
+    fakeData(force = false): HMapDesertDataJSON {
         if (this._fakeData !== undefined && force === false) {
             return this._fakeData;
         } else {
@@ -304,7 +305,7 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
             this._fakeData._global = this._fakeData._view;
             this._fakeData._b = buildings;
 
-            if (scoutMode === true) {
+            if (Environment.getInstance().scoutMode === true) {
                 this._fakeData._r._neig = new Array();
                 if (townIndex - mapSize > 0) {
                     this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
@@ -328,7 +329,7 @@ export class HMapDesertData extends HMapData<HMapDesertDataJSON, HMapDesertLocal
                 }
             }
 
-            if (scavengerMode === true) {
+            if (Environment.getInstance().scavengerMode === true) {
                 this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
                 this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));
                 this._fakeData._r._neigDrops.push(HMapRandom.getOneOfNoSeed([null, true, false]));

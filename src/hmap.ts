@@ -4,6 +4,10 @@ import { HMapDesertMap } from './maps/desert';
 import { HMapRuin } from './maps/ruin';
 import { Log } from './log';
 
+export function notNull(variable: any) {
+    return variable !== null && variable !== undefined;
+}
+
 const logger = Log.get('HMap');
 
 export interface HMapPoint {

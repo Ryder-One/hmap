@@ -35,12 +35,22 @@ System.register("environment", [], function (exports_2, context_2) {
             Environment = class Environment {
                 constructor() {
                     this._devMode = false;
+                    this._scoutMode = false;
+                    this._scavengerMode = false;
                 }
                 get devMode() { return this._devMode; }
+                get scoutMode() { return this._scoutMode; }
+                get scavengerMode() { return this._scavengerMode; }
                 get dev() { return this._devMode; }
                 get d() { return this._devMode; }
                 set devMode(dev) {
                     this._devMode = dev;
+                }
+                set scavengerMode(scavenger) {
+                    this._scavengerMode = scavenger;
+                }
+                set scoutMode(scout) {
+                    this._scoutMode = scout;
                 }
                 get url() {
                     if (this.devMode === true) {
@@ -746,7 +756,7 @@ System.register("data/abstract", [], function (exports_8, context_8) {
              * passed to flash, and expose it in a JSON format with lots of accessors
              */
             HMapData = class HMapData {
-                constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
+                constructor(mapDataPayload) {
                     if (mapDataPayload && mapDataPayload.raw) {
                         this.data = this.decode(mapDataPayload.raw);
                     }
@@ -754,7 +764,7 @@ System.register("data/abstract", [], function (exports_8, context_8) {
                         this.data = mapDataPayload.JSON;
                     }
                     else {
-                        this.data = this.fakeData(true, scavengerMode, scoutMode);
+                        this.data = this.fakeData(true);
                     }
                 }
                 get prettyData() { return JSON.stringify(this.data, undefined, 4); }
@@ -2357,9 +2367,9 @@ System.register("imagesLoader", ["environment", "toast"], function (exports_14, 
         }
     };
 });
-System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract"], function (exports_15, context_15) {
+System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract", "environment"], function (exports_15, context_15) {
     "use strict";
-    var neighbours_1, random_5, abstract_6, HMapDesertData;
+    var neighbours_1, random_5, abstract_6, environment_3, HMapDesertData;
     var __moduleName = context_15 && context_15.id;
     return {
         setters: [
@@ -2371,6 +2381,9 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
             },
             function (abstract_6_1) {
                 abstract_6 = abstract_6_1;
+            },
+            function (environment_3_1) {
+                environment_3 = environment_3_1;
             }
         ],
         execute: function () {
@@ -2379,8 +2392,8 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
              * passed to flash, and expose it in a JSON format with lots of accessors
              */
             HMapDesertData = class HMapDesertData extends abstract_6.HMapData {
-                constructor(mapDataPayload, scavengerMode = false, scoutMode = false) {
-                    super(mapDataPayload, scavengerMode, scoutMode);
+                constructor(mapDataPayload) {
+                    super(mapDataPayload);
                     this.neighbours = new neighbours_1.HMapNeighbours();
                     this.buildings = new Map();
                     this.users = new Map();
@@ -2524,7 +2537,7 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                 /**
                  * create a fake JSON to debug the map
                  */
-                fakeData(force = false, scavengerMode, scoutMode) {
+                fakeData(force = false) {
                     if (this._fakeData !== undefined && force === false) {
                         return this._fakeData;
                     }
@@ -2599,7 +2612,7 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                         }
                         this._fakeData._global = this._fakeData._view;
                         this._fakeData._b = buildings;
-                        if (scoutMode === true) {
+                        if (environment_3.Environment.getInstance().scoutMode === true) {
                             this._fakeData._r._neig = new Array();
                             if (townIndex - mapSize > 0) {
                                 this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
@@ -2626,7 +2639,7 @@ System.register("data/hmap-desert-data", ["neighbours", "random", "data/abstract
                                 this._fakeData._r._neig.push(0);
                             }
                         }
-                        if (scavengerMode === true) {
+                        if (environment_3.Environment.getInstance().scavengerMode === true) {
                             this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
                             this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
                             this._fakeData._r._neigDrops.push(random_5.HMapRandom.getOneOfNoSeed([null, true, false]));
@@ -3157,7 +3170,7 @@ System.register("layers/svg-glass-static", ["layers/abstract"], function (export
 });
 System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "environment", "lang", "layers/svg-loading", "layers/svg-glass-static", "data/hmap-desert-data", "imagesLoader"], function (exports_18, context_18) {
     "use strict";
-    var toast_3, abstract_9, svg_grid_1, environment_3, lang_4, svg_loading_2, svg_glass_static_1, hmap_desert_data_1, imagesLoader_4, HMapGridMap;
+    var toast_3, abstract_9, svg_grid_1, environment_4, lang_4, svg_loading_2, svg_glass_static_1, hmap_desert_data_1, imagesLoader_4, HMapGridMap;
     var __moduleName = context_18 && context_18.id;
     return {
         setters: [
@@ -3170,8 +3183,8 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
             function (svg_grid_1_1) {
                 svg_grid_1 = svg_grid_1_1;
             },
-            function (environment_3_1) {
-                environment_3 = environment_3_1;
+            function (environment_4_1) {
+                environment_4 = environment_4_1;
             },
             function (lang_4_1) {
                 lang_4 = lang_4_1;
@@ -3246,14 +3259,14 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                             hmapMenu.appendChild(displayTagsButton);
                             if (!this.displayTags) {
                                 const uncheckIcon = document.createElement('img');
-                                uncheckIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/uncheck.png');
+                                uncheckIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/uncheck.png');
                                 uncheckIcon.style.marginRight = '3px';
                                 displayTagsButton.appendChild(uncheckIcon);
                                 displayTagsButton.append(lang_4.HMapLang.get('markersbutton'));
                             }
                             else {
                                 const checkIcon = document.createElement('img');
-                                checkIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/check.png');
+                                checkIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/check.png');
                                 checkIcon.style.marginRight = '3px';
                                 displayTagsButton.appendChild(checkIcon);
                                 displayTagsButton.append(lang_4.HMapLang.get('markersbutton'));
@@ -3266,14 +3279,14 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                             hmapMenu.appendChild(modeButton);
                             if (this.mode !== 'global') {
                                 const uncheckIcon = document.createElement('img');
-                                uncheckIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/uncheck.png');
+                                uncheckIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/uncheck.png');
                                 uncheckIcon.style.marginRight = '3px';
                                 modeButton.appendChild(uncheckIcon);
                                 modeButton.append(lang_4.HMapLang.get('modebutton'));
                             }
                             else {
                                 const checkIcon = document.createElement('img');
-                                checkIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/check.png');
+                                checkIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/check.png');
                                 checkIcon.style.marginRight = '3px';
                                 modeButton.appendChild(checkIcon);
                                 modeButton.append(lang_4.HMapLang.get('modebutton'));
@@ -3372,7 +3385,7 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                     if (this.displayTags) {
                         this.displayTags = false;
                         const uncheckIcon = document.createElement('img');
-                        uncheckIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/uncheck.png');
+                        uncheckIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/uncheck.png');
                         uncheckIcon.style.marginRight = '3px';
                         hmapTagButton.appendChild(uncheckIcon);
                         hmapTagButton.append(lang_4.HMapLang.get('markersbutton'));
@@ -3381,7 +3394,7 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                     else {
                         this.displayTags = true;
                         const checkIcon = document.createElement('img');
-                        checkIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/check.png');
+                        checkIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/check.png');
                         checkIcon.style.marginRight = '3px';
                         hmapTagButton.appendChild(checkIcon);
                         hmapTagButton.append(lang_4.HMapLang.get('markersbutton'));
@@ -3403,7 +3416,7 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                                 hmapModeButton.removeChild(hmapModeButton.lastChild);
                             }
                             const uncheckIcon = document.createElement('img');
-                            uncheckIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/uncheck.png');
+                            uncheckIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/uncheck.png');
                             uncheckIcon.style.marginRight = '3px';
                             hmapModeButton.appendChild(uncheckIcon);
                             hmapModeButton.append(lang_4.HMapLang.get('modebutton'));
@@ -3417,7 +3430,7 @@ System.register("maps/grid", ["toast", "maps/abstract", "layers/svg-grid", "envi
                                 hmapModeButton.removeChild(hmapModeButton.lastChild);
                             }
                             const checkIcon = document.createElement('img');
-                            checkIcon.setAttribute('src', environment_3.Environment.getInstance().url + '/assets/check.png');
+                            checkIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/check.png');
                             checkIcon.style.marginRight = '3px';
                             hmapModeButton.appendChild(checkIcon);
                             hmapModeButton.append(lang_4.HMapLang.get('modebutton'));
@@ -3642,9 +3655,9 @@ System.register("layers/svg-desert-background", ["layers/abstract", "random"], f
         }
     };
 });
-System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], function (exports_20, context_20) {
+System.register("layers/svg-desert-foreground", ["layers/abstract", "lang", "hmap"], function (exports_20, context_20) {
     "use strict";
-    var abstract_11, lang_5, HMapSVGDesertForegroundLayer;
+    var abstract_11, lang_5, hmap_1, HMapSVGDesertForegroundLayer;
     var __moduleName = context_20 && context_20.id;
     return {
         setters: [
@@ -3653,6 +3666,9 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
             },
             function (lang_5_1) {
                 lang_5 = lang_5_1;
+            },
+            function (hmap_1_1) {
+                hmap_1 = hmap_1_1;
             }
         ],
         execute: function () {
@@ -3722,44 +3738,45 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
                         };
                     }
                     // scout class
-                    if (mapData.scoutArray && mapData.scoutArray.length === 4) {
-                        if (mapData.neighbours.neighbours.get('top_center').outbounds === false) {
+                    if (mapData.scoutArray && mapData.scoutArray.length > 0) {
+                        if (hmap_1.notNull(mapData.scoutArray[0]) && mapData.neighbours.neighbours.get('top_center').outbounds === false) {
+                            console.log('SCOUT1');
                             this.text(148, 30, '' + mapData.scoutArray[0], 'hmap-text-green');
                         }
-                        if (mapData.neighbours.neighbours.get('middle_right').outbounds === false) {
+                        if (hmap_1.notNull(mapData.scoutArray[1]) && mapData.neighbours.neighbours.get('middle_right').outbounds === false) {
                             this.text(270, 150, '' + mapData.scoutArray[1], 'hmap-text-green');
                         }
-                        if (mapData.neighbours.neighbours.get('bottom_center').outbounds === false) {
+                        if (hmap_1.notNull(mapData.scoutArray[2]) && mapData.neighbours.neighbours.get('bottom_center').outbounds === false) {
                             this.text(148, 270, '' + mapData.scoutArray[2], 'hmap-text-green');
                         }
-                        if (mapData.neighbours.neighbours.get('middle_left').outbounds === false) {
+                        if (hmap_1.notNull(mapData.scoutArray[3]) && mapData.neighbours.neighbours.get('middle_left').outbounds === false) {
                             this.text(30, 150, '' + mapData.scoutArray[3], 'hmap-text-green');
                         }
                     }
                     // scavenger class
-                    if (mapData.scavengerArray && mapData.scavengerArray.length === 4) {
-                        if (mapData.scavengerArray[0] === true) {
+                    if (mapData.scavengerArray && mapData.scavengerArray.length > 0) {
+                        if (hmap_1.notNull(mapData.scavengerArray[0]) && mapData.scavengerArray[0] === true) {
                             this.imgFromObj('shovel', 142, 24);
                         }
-                        else if (mapData.scavengerArray[0] === false) {
+                        else if (hmap_1.notNull(mapData.scavengerArray[0]) && mapData.scavengerArray[0] === false) {
                             this.imgFromObj('depleted', 142, 24);
                         }
-                        if (mapData.scavengerArray[1] === true) {
+                        if (hmap_1.notNull(mapData.scavengerArray[1]) && mapData.scavengerArray[1] === true) {
                             this.imgFromObj('shovel', 263, 142);
                         }
-                        else if (mapData.scavengerArray[1] === false) {
+                        else if (hmap_1.notNull(mapData.scavengerArray[1]) && mapData.scavengerArray[1] === false) {
                             this.imgFromObj('depleted', 263, 142);
                         }
-                        if (mapData.scavengerArray[2] === true) {
+                        if (hmap_1.notNull(mapData.scavengerArray[2]) && mapData.scavengerArray[2] === true) {
                             this.imgFromObj('shovel', 142, 256);
                         }
-                        else if (mapData.scavengerArray[2] === false) {
+                        else if (hmap_1.notNull(mapData.scavengerArray[2]) && mapData.scavengerArray[2] === false) {
                             this.imgFromObj('depleted', 142, 256);
                         }
-                        if (mapData.scavengerArray[3] === true) {
+                        if (hmap_1.notNull(mapData.scavengerArray[3]) && mapData.scavengerArray[3] === true) {
                             this.imgFromObj('shovel', 26, 142);
                         }
-                        else if (mapData.scavengerArray[3] === false) {
+                        else if (hmap_1.notNull(mapData.scavengerArray[3]) && mapData.scavengerArray[3] === false) {
                             this.imgFromObj('depleted', 26, 142);
                         }
                     }
@@ -3785,9 +3802,9 @@ System.register("layers/svg-desert-foreground", ["layers/abstract", "lang"], fun
         }
     };
 });
-System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/abstract", "layers/svg-desert-background", "layers/svg-loading", "layers/svg-desert-foreground", "data/hmap-desert-data", "imagesLoader"], function (exports_21, context_21) {
+System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/abstract", "layers/svg-desert-background", "layers/svg-loading", "layers/svg-desert-foreground", "data/hmap-desert-data", "imagesLoader", "random"], function (exports_21, context_21) {
     "use strict";
-    var arrow_2, toast_4, environment_4, lang_6, abstract_12, svg_desert_background_1, svg_loading_3, svg_desert_foreground_1, hmap_desert_data_2, imagesLoader_5, HMapDesertMap;
+    var arrow_2, toast_4, environment_5, lang_6, abstract_12, svg_desert_background_1, svg_loading_3, svg_desert_foreground_1, hmap_desert_data_2, imagesLoader_5, random_8, HMapDesertMap;
     var __moduleName = context_21 && context_21.id;
     return {
         setters: [
@@ -3797,8 +3814,8 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
             function (toast_4_1) {
                 toast_4 = toast_4_1;
             },
-            function (environment_4_1) {
-                environment_4 = environment_4_1;
+            function (environment_5_1) {
+                environment_5 = environment_5_1;
             },
             function (lang_6_1) {
                 lang_6 = lang_6_1;
@@ -3820,6 +3837,9 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
             },
             function (imagesLoader_5_1) {
                 imagesLoader_5 = imagesLoader_5_1;
+            },
+            function (random_8_1) {
+                random_8 = random_8_1;
             }
         ],
         execute: function () {
@@ -3871,7 +3891,7 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                             mapButton.onclick = this.onMapButtonClick.bind(this);
                             const mapIcon = document.createElement('img');
                             mapIcon.setAttribute('id', 'hmap-minimap-icon');
-                            mapIcon.setAttribute('src', environment_4.Environment.getInstance().url + '/assets/minimap.png');
+                            mapIcon.setAttribute('src', environment_5.Environment.getInstance().url + '/assets/minimap.png');
                             mapButton.appendChild(mapIcon);
                             mapButton.append(lang_6.HMapLang.get('mapbutton'));
                             mapButton.style.marginRight = '3px';
@@ -3932,7 +3952,7 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                         y = 1;
                     }
                     const bgLayer = this.layers.get('desert-background');
-                    if (environment_4.Environment.getInstance().devMode === false) {
+                    if (environment_5.Environment.getInstance().devMode === false) {
                         const url = 'outside/go?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsMap.sh;
                         let hx;
                         // @ts-ignore
@@ -3972,7 +3992,7 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                             const newIndex = mapData.index;
                             // fake the move with already known data
                             const fakeData = {
-                                _neigDrops: [],
+                                _neigDrops: new Array(),
                                 _neig: new Array(),
                                 _state: false,
                                 _c: (this.mapData.data._details[newIndex]._c) ? this.mapData.data._details[newIndex]._c : 0,
@@ -3982,29 +4002,37 @@ System.register("maps/desert", ["arrow", "toast", "environment", "lang", "maps/a
                                 _z: (this.mapData.data._details[newIndex]._z) ? this.mapData.data._details[newIndex]._z : 0,
                                 _zid: 42424545
                             };
-                            if (newIndex - mapData.size.height > 0) {
-                                fakeData._neig.push(this.mapData.data._details[newIndex - mapData.size.height]._z);
+                            if (environment_5.Environment.getInstance().scoutMode) {
+                                if (newIndex - mapData.size.height > 0) {
+                                    fakeData._neig.push(this.mapData.data._details[newIndex - mapData.size.height]._z);
+                                }
+                                else {
+                                    fakeData._neig.push(0);
+                                }
+                                if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
+                                    fakeData._neig.push(this.mapData.data._details[newIndex + 1]._z);
+                                }
+                                else {
+                                    fakeData._neig.push(0);
+                                }
+                                if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
+                                    fakeData._neig.push(this.mapData.data._details[newIndex + mapData.size.height]._z);
+                                }
+                                else {
+                                    fakeData._neig.push(0);
+                                }
+                                if (newIndex - 1 > 0) {
+                                    fakeData._neig.push(this.mapData.data._details[newIndex - 1]._z);
+                                }
+                                else {
+                                    fakeData._neig.push(0);
+                                }
                             }
-                            else {
-                                fakeData._neig.push(0);
-                            }
-                            if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
-                                fakeData._neig.push(this.mapData.data._details[newIndex + 1]._z);
-                            }
-                            else {
-                                fakeData._neig.push(0);
-                            }
-                            if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
-                                fakeData._neig.push(this.mapData.data._details[newIndex + mapData.size.height]._z);
-                            }
-                            else {
-                                fakeData._neig.push(0);
-                            }
-                            if (newIndex - 1 > 0) {
-                                fakeData._neig.push(this.mapData.data._details[newIndex - 1]._z);
-                            }
-                            else {
-                                fakeData._neig.push(0);
+                            if (environment_5.Environment.getInstance().scavengerMode === true) {
+                                fakeData._neigDrops.push(random_8.HMapRandom.getOneOfNoSeed([null, true, false]));
+                                fakeData._neigDrops.push(random_8.HMapRandom.getOneOfNoSeed([null, true, false]));
+                                fakeData._neigDrops.push(random_8.HMapRandom.getOneOfNoSeed([null, true, false]));
+                                fakeData._neigDrops.push(random_8.HMapRandom.getOneOfNoSeed([null, true, false]));
                             }
                             this.partialDataReceived({ JSON: fakeData });
                             this.moving = false; // allow another move
@@ -4252,6 +4280,10 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin", "log"], functi
     "use strict";
     var grid_1, desert_1, ruin_1, log_1, logger, HMap;
     var __moduleName = context_24 && context_24.id;
+    function notNull(variable) {
+        return variable !== null && variable !== undefined;
+    }
+    exports_24("notNull", notNull);
     return {
         setters: [
             function (grid_1_1) {
@@ -4544,18 +4576,18 @@ System.register("hmap", ["maps/grid", "maps/desert", "maps/ruin", "log"], functi
 });
 System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data", "data/hmap-ruin-data", "log"], function (exports_25, context_25) {
     "use strict";
-    var hmap_1, toast_5, environment_5, hmap_desert_data_3, hmap_ruin_data_2, log_2, FontFaceObserver;
+    var hmap_2, toast_5, environment_6, hmap_desert_data_3, hmap_ruin_data_2, log_2, FontFaceObserver;
     var __moduleName = context_25 && context_25.id;
     return {
         setters: [
-            function (hmap_1_1) {
-                hmap_1 = hmap_1_1;
+            function (hmap_2_1) {
+                hmap_2 = hmap_2_1;
             },
             function (toast_5_1) {
                 toast_5 = toast_5_1;
             },
-            function (environment_5_1) {
-                environment_5 = environment_5_1;
+            function (environment_6_1) {
+                environment_6 = environment_6_1;
             },
             function (hmap_desert_data_3_1) {
                 hmap_desert_data_3 = hmap_desert_data_3_1;
@@ -4583,7 +4615,7 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
             (function () {
                 const logger = log_2.Log.get('BOOTSTRAP');
                 try {
-                    const env = environment_5.Environment.getInstance();
+                    const env = environment_6.Environment.getInstance();
                     env.devMode = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
                     logger.log('Devmode', env.devMode);
                     // Create the styles for the fonts and some other styles
@@ -4646,7 +4678,7 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
                     Promise.all([visitor2.load(), economica.load()]).then(function () {
                         try {
                             // start only when the fonts are loaded
-                            const map = new hmap_1.HMap();
+                            const map = new hmap_2.HMap();
                             if (env.devMode === true) { // dev mode to play with the map
                                 logger.log('Devmode started with location = desert');
                                 map.location = 'desert';
@@ -4654,6 +4686,7 @@ System.register("index", ["hmap", "toast", "environment", "data/hmap-desert-data
                                 HMAP = map;
                                 HMAPDESERTDATA = hmap_desert_data_3.HMapDesertData;
                                 HMAPRUINDATA = hmap_ruin_data_2.HMapRuinData;
+                                ENVIRONMENT = environment_6.Environment;
                             }
                             else {
                                 // wait for js.JsMap to be ready
