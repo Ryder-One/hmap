@@ -225,6 +225,7 @@
 		var HMAP = null;
 		var HMAPDESERTDATA = null;
 		var HMAPRUINDATA = null;
+		var ENVIRONMENT = null;
 		var LOCAL_FONTFACEOBSERVER = FontFaceObserver;
 		var T = document.querySelector('#json-data');
 		if ( T !== null) {
@@ -270,7 +271,10 @@
 							const dataObj = new HMAPRUINDATA({raw: textbox.value});
 							data = dataObj.data;
 						} else {
-							const dataObj = new HMAPDESERTDATA({raw: textbox.value}, scavengerMode, scoutMode, shamanMode);
+							ENVIRONMENT.getInstance().scoutMode = scoutMode;
+							ENVIRONMENT.getInstance().scavengerMode = scavengerMode;
+							ENVIRONMENT.getInstance().shamanMode = shamanMode;
+							const dataObj = new HMAPDESERTDATA({raw: textbox.value});
 							data = dataObj.data;
 						}
 					} catch (err) {

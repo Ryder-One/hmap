@@ -1,6 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapArrow = void 0;
 /**
  * @TODO ATM this class is useless and will be replaced by an interface
  */
@@ -22,12 +23,13 @@ exports.HMapArrow = HMapArrow;
 },{}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapData = void 0;
 /**
  * This class is the store of the map. It handles the data originally
  * passed to flash, and expose it in a JSON format with lots of accessors
  */
 class HMapData {
-    constructor(mapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
+    constructor(mapDataPayload) {
         if (mapDataPayload && mapDataPayload.raw) {
             this.data = this.decode(mapDataPayload.raw);
         }
@@ -35,7 +37,7 @@ class HMapData {
             this.data = mapDataPayload.JSON;
         }
         else {
-            this.data = this.fakeData(true, scavengerMode, scoutMode, shamanMode);
+            this.data = this.fakeData(true);
         }
     }
     get prettyData() { return JSON.stringify(this.data, undefined, 4); }
@@ -95,16 +97,18 @@ exports.HMapData = HMapData;
 },{}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapDesertData = void 0;
 const neighbours_1 = require("../neighbours");
 const random_1 = require("../random");
 const abstract_1 = require("./abstract");
+const environment_1 = require("../environment");
 /**
  * This class is the store of the map. It handles the data originally
  * passed to flash, and expose it in a JSON format with lots of accessors
  */
 class HMapDesertData extends abstract_1.HMapData {
-    constructor(mapDataPayload, scavengerMode = false, scoutMode = false, shamanMode = false) {
-        super(mapDataPayload, scavengerMode, scoutMode, shamanMode);
+    constructor(mapDataPayload) {
+        super(mapDataPayload);
         this.neighbours = new neighbours_1.HMapNeighbours();
         this.buildings = new Map();
         this.users = new Map();
@@ -257,7 +261,7 @@ class HMapDesertData extends abstract_1.HMapData {
     /**
      * create a fake JSON to debug the map
      */
-    fakeData(force = false, scavengerMode, scoutMode, shamanMode) {
+    fakeData(force = false) {
         if (this._fakeData !== undefined && force === false) {
             return this._fakeData;
         }
@@ -311,10 +315,9 @@ class HMapDesertData extends abstract_1.HMapData {
                         1 : (random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? random_1.HMapRandom.getRandomIntegerNoSeed(2, 62) : 0);
                     bid = random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 5 ? -1 : bid;
                     buildings.push({ _id: bid, _n: 'Building ' + bid });
-                    console.log('ShamanMode ' + shamanMode);
                     this._fakeData._details.push({
                         _c: bid,
-                        _s: shamanMode === true ? random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 1 : false,
+                        _s: environment_1.Environment.getInstance().shamanMode === true ? random_1.HMapRandom.getRandomIntegerNoSeed(0, 10) === 1 : false,
                         _t: random_1.HMapRandom.getRandomIntegerNoSeed(0, 12),
                         _z: random_1.HMapRandom.getRandomIntegerNoSeed(0, 3) === 2 ? random_1.HMapRandom.getRandomIntegerNoSeed(0, 18) : 0,
                         _nvt: view
@@ -333,7 +336,7 @@ class HMapDesertData extends abstract_1.HMapData {
             }
             this._fakeData._global = this._fakeData._view;
             this._fakeData._b = buildings;
-            if (scoutMode === true) {
+            if (environment_1.Environment.getInstance().scoutMode === true) {
                 this._fakeData._r._neig = new Array();
                 if (townIndex - mapSize > 0) {
                     this._fakeData._r._neig.push(this._fakeData._details[townIndex - mapSize]._z);
@@ -360,7 +363,7 @@ class HMapDesertData extends abstract_1.HMapData {
                     this._fakeData._r._neig.push(0);
                 }
             }
-            if (scavengerMode === true) {
+            if (environment_1.Environment.getInstance().scavengerMode === true) {
                 this._fakeData._r._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
                 this._fakeData._r._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
                 this._fakeData._r._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
@@ -425,9 +428,10 @@ class HMapDesertData extends abstract_1.HMapData {
 }
 exports.HMapDesertData = HMapDesertData;
 
-},{"../neighbours":21,"../random":22,"./abstract":2}],4:[function(require,module,exports){
+},{"../environment":5,"../neighbours":22,"../random":23,"./abstract":2}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapRuinData = void 0;
 const abstract_1 = require("./abstract");
 const random_1 = require("../random");
 /**
@@ -664,18 +668,34 @@ class HMapRuinData extends abstract_1.HMapData {
 }
 exports.HMapRuinData = HMapRuinData;
 
-},{"../random":22,"./abstract":2}],5:[function(require,module,exports){
+},{"../random":23,"./abstract":2}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Environment = void 0;
 class Environment {
     constructor() {
         this._devMode = false;
+        this._scoutMode = false;
+        this._scavengerMode = false;
+        this._shamanMode = false;
     }
     get devMode() { return this._devMode; }
+    get scoutMode() { return this._scoutMode; }
+    get scavengerMode() { return this._scavengerMode; }
+    get shamanMode() { return this._shamanMode; }
     get dev() { return this._devMode; }
     get d() { return this._devMode; }
     set devMode(dev) {
         this._devMode = dev;
+    }
+    set scavengerMode(scavenger) {
+        this._scavengerMode = scavenger;
+    }
+    set shamanMode(shaman) {
+        this._shamanMode = shaman;
+    }
+    set scoutMode(scout) {
+        this._scoutMode = scout;
     }
     get url() {
         if (this.devMode === true) {
@@ -697,9 +717,16 @@ exports.Environment = Environment;
 },{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMap = exports.notNull = void 0;
 const grid_1 = require("./maps/grid");
 const desert_1 = require("./maps/desert");
 const ruin_1 = require("./maps/ruin");
+const log_1 = require("./log");
+function notNull(variable) {
+    return variable !== null && variable !== undefined;
+}
+exports.notNull = notNull;
+const logger = log_1.Log.get('HMap');
 class HMap {
     constructor(cssSelector) {
         this.width = 300; // for debug only, the value is 300 and there is a lot of hard coded values
@@ -717,19 +744,31 @@ class HMap {
      * but up to date in the store
      */
     fetchMapData() {
+        logger.enter('fetchMapData');
         if (this.map === undefined) {
+            logger.log('Map is undefined, start autobuild');
             this.autoBuildMap();
         }
         // We will look for the flashmap, take the data, and bootstrap our map
+        logger.log('Look for the flash data in the HTML code');
         let counterCheckExists = 0;
         const checkExist = setInterval(() => {
+            logger.enter('fetchMapData::setInterval');
             if (document.querySelector('#swfCont') !== null) {
+                logger.log('Swfcontainer has been found');
                 clearInterval(checkExist);
                 let tempMapData;
-                if (document.querySelector('#FlashMap') !== null) { // if the flashmap is there
-                    const node = document.querySelector('#FlashMap');
+                if (document.querySelector('#FlashMap') !== null || document.querySelector('#FlashExplo') !== null) { // if the flashmap is there
+                    logger.log('The flash bootstrap has been launched and flashmap/explo has been found, map data selected');
+                    let HTMLName = 'FlashMap'; // by default we look for the desert map
+                    if (document.querySelector('#FlashExplo') !== null) { // but if the ruin map is present in the HTML, we look for this instead
+                        HTMLName = 'FlashExplo';
+                    }
+                    logger.log('HTMLName', HTMLName);
+                    const node = document.querySelector('#' + HTMLName); // extract the data in the flashvars attribute
+                    logger.log(node);
                     if (node.nodeName.toUpperCase() === 'OBJECT') {
-                        tempMapData = document.querySelector('#FlashMap param[name="flashvars"]').getAttribute('value').substring(13);
+                        tempMapData = document.querySelector('#' + HTMLName + ' param[name="flashvars"]').getAttribute('value').substring(13);
                     }
                     else {
                         tempMapData = node.getAttribute('flashvars').substring(13);
@@ -737,10 +776,17 @@ class HMap {
                 }
                 else { // if this is only the JS code supposed to bootstrap flash
                     if (document.querySelector('#gameLayout') !== null) {
+                        logger.log('Flash seems disabled on this browser, go fetch the code supposed to bootstrap flash');
                         const scriptStr = document.querySelector('#gameLayout').innerHTML;
-                        const mapMarker = scriptStr.indexOf('mapLoader.swf');
-                        const exploMarker = scriptStr.indexOf('exploLoader.swf');
-                        if (mapMarker === -1 && exploMarker === -1) {
+                        logger.log('Look for desert map');
+                        let mapMarker = scriptStr.indexOf('mapLoader.swf');
+                        if (mapMarker === -1) {
+                            logger.log('Desert map not found, look for ruin map');
+                            mapMarker = scriptStr.indexOf('exploLoader.swf');
+                        }
+                        if (mapMarker === -1) {
+                            logger.log('No map found');
+                            logger.leave('fetchMapData::setInterval');
                             return;
                         }
                         let startVar = -1;
@@ -753,15 +799,22 @@ class HMap {
                         }
                         const stopVar = scriptStr.indexOf('\');', startVar);
                         tempMapData = scriptStr.substring(startVar, stopVar);
+                        logger.log(startVar, stopVar, tempMapData);
+                        logger.log('Encoded data found');
                     }
                 }
+                logger.log('Build map layers');
                 this.map.buildLayers();
+                logger.log('Send the encoded data to the map', { raw: tempMapData });
                 this.map.completeDataReceived({ raw: tempMapData });
             }
             else if (++counterCheckExists === 100) {
+                logger.log('Timeout, no flash data were found, stop fetchMapData');
                 clearInterval(checkExist); // timeout 10sec
             }
+            logger.leave('fetchMapData::setInterval');
         }, 100); // 10 sec then give up
+        logger.leave('fetchMapData');
     }
     /**
      * Function used to setup the interceptor.
@@ -769,6 +822,7 @@ class HMap {
      * and pass it back to haxe.
      */
     setupInterceptor() {
+        logger.enter('setupInterceptor');
         let _js;
         // @ts-ignore : this thing is not known by the TS compiler
         const page = window.wrappedJSObject;
@@ -780,64 +834,91 @@ class HMap {
         }
         if (_js && _js.XmlHttp && _js.XmlHttp.onData) { // tampermonkey
             this.originalOnData = _js.XmlHttp.onData;
+            logger.log('Bind datainterceptor');
             _js.XmlHttp.onData = this.dataInterceptor.bind(this);
         }
         else {
             throw new Error('HMap::setupInterceptor - Cannot find js.XmlHttp.onData');
         }
+        logger.leave('setupInterceptor');
     }
     /**
      * Actual interceptor
      */
     dataInterceptor(data) {
+        logger.enter('dataInterceptor');
         this.originalOnData(data); // call the original method first
         const currentLocation = this.getCurrentLocation();
-        if (currentLocation === 'unknown') { // unknown location, make sure the HMap is removed from the DOM
+        logger.log('Current location is ', currentLocation);
+        if (currentLocation === 'unknown') { // unknown location, make sure HMap is removed from the DOM
             this.location = 'unknown';
+            logger.log('Unknown location, clear the map');
             this.clearMap();
+            logger.leave('dataInterceptor');
             return;
         }
         // now we are in an interesting place for us, check if there is data for our map
-        if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1 || data.indexOf('mapLoader.swf') !== -1) {
+        if (data.indexOf('js.JsMap.init') !== -1 ||
+            data.indexOf('js.JsExplo.init') !== -1 ||
+            data.indexOf('mapLoader.swf') !== -1 ||
+            data.indexOf('exploLoader.swf') !== -1) {
+            logger.log('Interesting elements have been found');
             // if we changed location or we dont have jsmap.init in the message, reload the whole map
-            if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1) {
+            if (currentLocation !== this.location || data.indexOf('mapLoader.swf') !== -1 || data.indexOf('exploLoader.swf') !== -1) {
+                logger.log('The location has changed or the swf keywords have been found');
                 this.location = currentLocation;
+                logger.log('Clear the map');
                 this.clearMap();
+                logger.log('Fetch the data');
                 this.fetchMapData(); // it will autobuild the map
             }
             else { // we are still on the same location
                 if (data.indexOf('js.JsMap.init') !== -1 || data.indexOf('js.JsExplo.init') !== -1) {
+                    logger.log('js.xxx.init code has been found');
                     let startVar = 0;
                     if (data.indexOf('js.JsMap.init') !== -1) {
                         startVar = data.indexOf('js.JsMap.init') + 16;
+                        logger.log('from the JsMap tag', startVar);
                     }
                     else {
                         startVar = data.indexOf('js.JsExplo.init') + 18;
+                        logger.log('from the JsExplo tag', startVar);
                     }
                     const stopVar = data.indexOf('\',', startVar);
                     const tempMapData = data.substring(startVar, stopVar);
+                    logger.log('Encoded data extracted from the message, send it to the map');
                     this.map.partialDataReceived({ raw: tempMapData }); // just patch the data
                 }
                 else {
-                    console.warn('HMap::dataInterceptor - this case hasn\'t been encoutered yet', data);
+                    logger.warn('this case hasn\'t been encoutered yet', data);
                 }
             }
         }
+        logger.leave('dataInterceptor');
     }
     /**
      * Guess on what page we are (outise or inside the town ) by parsing the URL
      */
     getCurrentLocation() {
+        logger.enter('getCurrentLocation');
         if (window.location.href.indexOf('outside') !== -1) {
+            logger.log('"outside" detected in URL, load the desert map');
+            logger.leave('getCurrentLocation');
             return 'desert';
         }
         else if (window.location.href.indexOf('door') !== -1) {
+            logger.log('"door" detected in URL, load the desert map in grid mode');
+            logger.leave('getCurrentLocation');
             return 'doors';
         }
         else if (window.location.href.indexOf('explo') !== -1) {
+            logger.log('"explo" detected in URL, load the ruin map');
+            logger.leave('getCurrentLocation');
             return 'ruin';
         }
         else {
+            logger.log('No location detected, return unknown');
+            logger.leave('getCurrentLocation');
             return 'unknown';
         }
     }
@@ -845,66 +926,89 @@ class HMap {
      * Switch the map to a new type and reload
      */
     switchMapAndReload(type) {
+        logger.enter('switchMapAndReload');
         const store = this.map.mapData.data;
+        logger.log('Clear the map');
         this.clearMap();
+        logger.log('Load the new map depending on the type');
         if (type === 'desert') {
+            logger.log('Type = desert, create a new desert map');
             this.map = new desert_1.HMapDesertMap(this);
         }
         else if (type === 'grid') {
+            logger.log('Type = grid, create a new grid map');
             this.map = new grid_1.HMapGridMap(this);
         }
         else if (type === 'ruin') {
+            logger.log('Type = ruin, create a new ruin map');
             this.map = new ruin_1.HMapRuin(this);
         }
+        logger.log('Build the layers');
         this.map.buildLayers();
+        logger.log('Load the data');
         this.map.completeDataReceived({ JSON: store });
+        logger.leave('switchMapAndReload');
     }
     /**
      * Rebuild the map with the JSON passed in argument. For debug mode only
      */
     reloadMapWithData(data) {
+        logger.enter('reloadMapWithData');
+        logger.log('Start by clearing the map');
         this.clearMap();
         this.target = undefined;
+        logger.log('Then rebuild it');
         this.autoBuildMap();
         this.map.buildLayers();
         this.map.completeDataReceived({ JSON: data });
+        logger.leave('reloadMapWithData');
     }
     /**
      * Clear the map to draw a new one (when we switch the map from desert to grid, etc.)
      */
     clearMap() {
+        logger.enter('clearMap');
         // destroy the dom element
         const hmap = document.querySelector('#hmap');
+        logger.log('destroy the DOM element');
         if (hmap !== null && hmap.parentNode !== null) {
             hmap.parentNode.removeChild(hmap);
         }
         // unset the objects
         this.map = undefined;
+        logger.log('unset map object');
+        logger.leave('clearMap');
     }
     /**
      * Choose the right type of map when it hasn't already been set
      */
     autoBuildMap() {
+        logger.enter('autoBuildMap');
         if (this.location === 'doors') { // in town
             this.map = new grid_1.HMapGridMap(this);
             this.map.mode = 'global'; // in town, we can see the global mode, not perso
+            logger.log('Location is "doors", build the grid map in "doors" mode');
         }
         else if (this.location === 'desert') {
             this.map = new desert_1.HMapDesertMap(this);
+            logger.log('Location is "desert", build the desert map');
         }
         else if (this.location === 'ruin') {
             this.map = new ruin_1.HMapRuin(this);
+            logger.log('Location is "ruin", build the ruin map');
         }
         else {
             throw new Error('HMap::autoBuildMap - could not detect location');
         }
+        logger.leave('autoBuildMap');
     }
 }
 exports.HMap = HMap;
 
-},{"./maps/desert":18,"./maps/grid":19,"./maps/ruin":20}],7:[function(require,module,exports){
+},{"./log":17,"./maps/desert":19,"./maps/grid":20,"./maps/ruin":21}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapImagesLoader = void 0;
 const environment_1 = require("./environment");
 const toast_1 = require("./toast");
 /**
@@ -1110,9 +1214,10 @@ class HMapImagesLoader {
 }
 exports.HMapImagesLoader = HMapImagesLoader;
 
-},{"./environment":5,"./toast":23}],8:[function(require,module,exports){
+},{"./environment":5,"./toast":24}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapLang = void 0;
 const ruinNames = {
     'fr': {
         'bunker': [
@@ -1499,6 +1604,7 @@ exports.HMapLang = HMapLang;
 },{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractHMapLayer = void 0;
 const imagesLoader_1 = require("../imagesLoader");
 class AbstractHMapLayer {
     constructor(map) {
@@ -1605,6 +1711,7 @@ exports.AbstractHMapLayer = AbstractHMapLayer;
 },{"../imagesLoader":7}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGDesertBackgroundLayer = void 0;
 const abstract_1 = require("./abstract");
 const random_1 = require("../random");
 class HMapSVGDesertBackgroundLayer extends abstract_1.AbstractHMapLayer {
@@ -1800,11 +1907,13 @@ class HMapSVGDesertBackgroundLayer extends abstract_1.AbstractHMapLayer {
 }
 exports.HMapSVGDesertBackgroundLayer = HMapSVGDesertBackgroundLayer;
 
-},{"../random":22,"./abstract":9}],11:[function(require,module,exports){
+},{"../random":23,"./abstract":9}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGDesertForegroundLayer = void 0;
 const abstract_1 = require("./abstract");
 const lang_1 = require("../lang");
+const hmap_1 = require("../hmap");
 class HMapSVGDesertForegroundLayer extends abstract_1.AbstractHMapLayer {
     constructor(map) {
         super(map);
@@ -1871,44 +1980,44 @@ class HMapSVGDesertForegroundLayer extends abstract_1.AbstractHMapLayer {
             };
         }
         // scout class
-        if (mapData.scoutArray && mapData.scoutArray.length === 4) {
-            if (mapData.neighbours.neighbours.get('top_center').outbounds === false) {
+        if (mapData.scoutArray && mapData.scoutArray.length > 0) {
+            if (hmap_1.notNull(mapData.scoutArray[0]) && mapData.neighbours.neighbours.get('top_center').outbounds === false) {
                 this.text(148, 30, '' + mapData.scoutArray[0], 'hmap-text-green');
             }
-            if (mapData.neighbours.neighbours.get('middle_right').outbounds === false) {
+            if (hmap_1.notNull(mapData.scoutArray[1]) && mapData.neighbours.neighbours.get('middle_right').outbounds === false) {
                 this.text(270, 150, '' + mapData.scoutArray[1], 'hmap-text-green');
             }
-            if (mapData.neighbours.neighbours.get('bottom_center').outbounds === false) {
+            if (hmap_1.notNull(mapData.scoutArray[2]) && mapData.neighbours.neighbours.get('bottom_center').outbounds === false) {
                 this.text(148, 270, '' + mapData.scoutArray[2], 'hmap-text-green');
             }
-            if (mapData.neighbours.neighbours.get('middle_left').outbounds === false) {
+            if (hmap_1.notNull(mapData.scoutArray[3]) && mapData.neighbours.neighbours.get('middle_left').outbounds === false) {
                 this.text(30, 150, '' + mapData.scoutArray[3], 'hmap-text-green');
             }
         }
         // scavenger class
-        if (mapData.scavengerArray && mapData.scavengerArray.length === 4) {
-            if (mapData.scavengerArray[0] === true) {
+        if (mapData.scavengerArray && mapData.scavengerArray.length > 0) {
+            if (hmap_1.notNull(mapData.scavengerArray[0]) && mapData.scavengerArray[0] === true) {
                 this.imgFromObj('shovel', 142, 24);
             }
-            else if (mapData.scavengerArray[0] === false) {
+            else if (hmap_1.notNull(mapData.scavengerArray[0]) && mapData.scavengerArray[0] === false) {
                 this.imgFromObj('depleted', 142, 24);
             }
-            if (mapData.scavengerArray[1] === true) {
+            if (hmap_1.notNull(mapData.scavengerArray[1]) && mapData.scavengerArray[1] === true) {
                 this.imgFromObj('shovel', 263, 142);
             }
-            else if (mapData.scavengerArray[1] === false) {
+            else if (hmap_1.notNull(mapData.scavengerArray[1]) && mapData.scavengerArray[1] === false) {
                 this.imgFromObj('depleted', 263, 142);
             }
-            if (mapData.scavengerArray[2] === true) {
+            if (hmap_1.notNull(mapData.scavengerArray[2]) && mapData.scavengerArray[2] === true) {
                 this.imgFromObj('shovel', 142, 256);
             }
-            else if (mapData.scavengerArray[2] === false) {
+            else if (hmap_1.notNull(mapData.scavengerArray[2]) && mapData.scavengerArray[2] === false) {
                 this.imgFromObj('depleted', 142, 256);
             }
-            if (mapData.scavengerArray[3] === true) {
+            if (hmap_1.notNull(mapData.scavengerArray[3]) && mapData.scavengerArray[3] === true) {
                 this.imgFromObj('shovel', 26, 142);
             }
-            else if (mapData.scavengerArray[3] === false) {
+            else if (hmap_1.notNull(mapData.scavengerArray[3]) && mapData.scavengerArray[3] === false) {
                 this.imgFromObj('depleted', 26, 142);
             }
         }
@@ -1932,9 +2041,10 @@ class HMapSVGDesertForegroundLayer extends abstract_1.AbstractHMapLayer {
 }
 exports.HMapSVGDesertForegroundLayer = HMapSVGDesertForegroundLayer;
 
-},{"../lang":8,"./abstract":9}],12:[function(require,module,exports){
+},{"../hmap":6,"../lang":8,"./abstract":9}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGGlassStaticLayer = void 0;
 const abstract_1 = require("./abstract");
 /**
  * This layer is independant to avoid beeing moved by the zoom/pan behavior
@@ -1973,6 +2083,7 @@ exports.HMapSVGGlassStaticLayer = HMapSVGGlassStaticLayer;
 },{"./abstract":9}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGGridLayer = void 0;
 const random_1 = require("../random");
 const abstract_1 = require("./abstract");
 const lang_1 = require("../lang");
@@ -2523,9 +2634,10 @@ class HMapSVGGridLayer extends abstract_1.AbstractHMapLayer {
 }
 exports.HMapSVGGridLayer = HMapSVGGridLayer;
 
-},{"../lang":8,"../random":22,"./abstract":9}],14:[function(require,module,exports){
+},{"../lang":8,"../random":23,"./abstract":9}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGLoadingLayer = void 0;
 const abstract_1 = require("./abstract");
 /**
  * This layer is dedicated to the loading screen
@@ -2579,6 +2691,7 @@ exports.HMapSVGLoadingLayer = HMapSVGLoadingLayer;
 },{"./abstract":9}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGRuinBackgroundLayer = void 0;
 const abstract_1 = require("./abstract");
 const random_1 = require("../random");
 const imagesLoader_1 = require("../imagesLoader");
@@ -3043,9 +3156,10 @@ class HMapSVGRuinBackgroundLayer extends abstract_1.AbstractHMapLayer {
 }
 exports.HMapSVGRuinBackgroundLayer = HMapSVGRuinBackgroundLayer;
 
-},{"../imagesLoader":7,"../random":22,"./abstract":9}],16:[function(require,module,exports){
+},{"../imagesLoader":7,"../random":23,"./abstract":9}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapSVGRuinForegroundLayer = void 0;
 const abstract_1 = require("./abstract");
 const lang_1 = require("../lang");
 const random_1 = require("../random");
@@ -3166,9 +3280,91 @@ class HMapSVGRuinForegroundLayer extends abstract_1.AbstractHMapLayer {
 }
 exports.HMapSVGRuinForegroundLayer = HMapSVGRuinForegroundLayer;
 
-},{"../lang":8,"../random":22,"./abstract":9}],17:[function(require,module,exports){
+},{"../lang":8,"../random":23,"./abstract":9}],17:[function(require,module,exports){
+"use strict";
+/**
+ * Logger class
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Log = void 0;
+class Log {
+    static get(name) {
+        if (!Log.loggers.has(name)) {
+            Log.loggers.set(name, new Logger(name, true));
+        }
+        return Log.loggers.get(name);
+    }
+    static enable(name) {
+        Log.get(name).enabled = true;
+    }
+    static disable(name) {
+        Log.get(name).enabled = false;
+    }
+}
+exports.Log = Log;
+Log.loggers = new Map();
+class Logger {
+    constructor(name, enabled) {
+        this.method = new Array();
+        this.name = name;
+        this.enabled = enabled;
+    }
+    enter(method) {
+        this.method.push(method);
+        this.log('Entering method', method);
+    }
+    leave(method) {
+        this.log('Exiting method', method);
+        this.method.pop();
+    }
+    log(...args) {
+        if (this.enabled && console.log) {
+            if (this.method.length !== 0) {
+                let spaces = '';
+                for (let i = 1; i < this.method.length; i++) {
+                    spaces += '\t';
+                }
+                console.log(spaces + this.name + '::' + this.method.slice(-1).pop() + ' >>', ...args);
+            }
+            else {
+                console.log(this.name + ' >>', ...args);
+            }
+        }
+    }
+    warn(...args) {
+        if (this.enabled && console.warn) {
+            if (this.method.length !== 0) {
+                let spaces = '';
+                for (let i = 0; i < this.method.length; i++) {
+                    spaces += '\t';
+                }
+                console.warn(spaces + this.name + '::' + this.method.slice(-1).pop() + ' >>', ...args);
+            }
+            else {
+                console.warn(this.name + ' >>', ...args);
+            }
+        }
+    }
+    error(...args) {
+        if (console.error) {
+            if (this.method.length !== 0) {
+                let spaces = '';
+                for (let i = 0; i < this.method.length; i++) {
+                    spaces += '\t';
+                }
+                console.error(spaces + this.name + '::' + this.method.slice(-1).pop() + ' >>', ...args);
+            }
+            else {
+                console.error(this.name + ' >>', ...args);
+            }
+        }
+    }
+}
+
+},{}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapAbstractMap = void 0;
 const imagesLoader_1 = require("../imagesLoader");
 /**
  * The maps will be the components that will host all the HTML and the logic of the map itself
@@ -3213,9 +3409,10 @@ class HMapAbstractMap {
 }
 exports.HMapAbstractMap = HMapAbstractMap;
 
-},{"../imagesLoader":7}],18:[function(require,module,exports){
+},{"../imagesLoader":7}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapDesertMap = void 0;
 const arrow_1 = require("../arrow");
 const toast_1 = require("../toast");
 const environment_1 = require("../environment");
@@ -3226,6 +3423,7 @@ const svg_loading_1 = require("../layers/svg-loading");
 const svg_desert_foreground_1 = require("../layers/svg-desert-foreground");
 const hmap_desert_data_1 = require("../data/hmap-desert-data");
 const imagesLoader_1 = require("../imagesLoader");
+const random_1 = require("../random");
 class HMapDesertMap extends abstract_1.HMapAbstractMap {
     constructor() {
         super(...arguments);
@@ -3375,7 +3573,7 @@ class HMapDesertMap extends abstract_1.HMapAbstractMap {
                 const newIndex = mapData.index;
                 // fake the move with already known data
                 const fakeData = {
-                    _neigDrops: [],
+                    _neigDrops: new Array(),
                     _neig: new Array(),
                     _state: false,
                     _c: (this.mapData.data._details[newIndex]._c) ? this.mapData.data._details[newIndex]._c : 0,
@@ -3385,29 +3583,37 @@ class HMapDesertMap extends abstract_1.HMapAbstractMap {
                     _z: (this.mapData.data._details[newIndex]._z) ? this.mapData.data._details[newIndex]._z : 0,
                     _zid: 42424545
                 };
-                if (newIndex - mapData.size.height > 0) {
-                    fakeData._neig.push(this.mapData.data._details[newIndex - mapData.size.height]._z);
+                if (environment_1.Environment.getInstance().scoutMode) {
+                    if (newIndex - mapData.size.height > 0) {
+                        fakeData._neig.push(this.mapData.data._details[newIndex - mapData.size.height]._z);
+                    }
+                    else {
+                        fakeData._neig.push(0);
+                    }
+                    if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
+                        fakeData._neig.push(this.mapData.data._details[newIndex + 1]._z);
+                    }
+                    else {
+                        fakeData._neig.push(0);
+                    }
+                    if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
+                        fakeData._neig.push(this.mapData.data._details[newIndex + mapData.size.height]._z);
+                    }
+                    else {
+                        fakeData._neig.push(0);
+                    }
+                    if (newIndex - 1 > 0) {
+                        fakeData._neig.push(this.mapData.data._details[newIndex - 1]._z);
+                    }
+                    else {
+                        fakeData._neig.push(0);
+                    }
                 }
-                else {
-                    fakeData._neig.push(0);
-                }
-                if (newIndex + 1 < (mapData.size.width * mapData.size.height)) {
-                    fakeData._neig.push(this.mapData.data._details[newIndex + 1]._z);
-                }
-                else {
-                    fakeData._neig.push(0);
-                }
-                if (newIndex + mapData.size.height < (mapData.size.height * mapData.size.height)) {
-                    fakeData._neig.push(this.mapData.data._details[newIndex + mapData.size.height]._z);
-                }
-                else {
-                    fakeData._neig.push(0);
-                }
-                if (newIndex - 1 > 0) {
-                    fakeData._neig.push(this.mapData.data._details[newIndex - 1]._z);
-                }
-                else {
-                    fakeData._neig.push(0);
+                if (environment_1.Environment.getInstance().scavengerMode === true) {
+                    fakeData._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
+                    fakeData._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
+                    fakeData._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
+                    fakeData._neigDrops.push(random_1.HMapRandom.getOneOfNoSeed([null, true, false]));
                 }
                 this.partialDataReceived({ JSON: fakeData });
                 this.moving = false; // allow another move
@@ -3507,9 +3713,10 @@ class HMapDesertMap extends abstract_1.HMapAbstractMap {
 }
 exports.HMapDesertMap = HMapDesertMap;
 
-},{"../arrow":1,"../data/hmap-desert-data":3,"../environment":5,"../imagesLoader":7,"../lang":8,"../layers/svg-desert-background":10,"../layers/svg-desert-foreground":11,"../layers/svg-loading":14,"../toast":23,"./abstract":17}],19:[function(require,module,exports){
+},{"../arrow":1,"../data/hmap-desert-data":3,"../environment":5,"../imagesLoader":7,"../lang":8,"../layers/svg-desert-background":10,"../layers/svg-desert-foreground":11,"../layers/svg-loading":14,"../random":23,"../toast":24,"./abstract":18}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapGridMap = void 0;
 const toast_1 = require("../toast");
 const abstract_1 = require("./abstract");
 const svg_grid_1 = require("../layers/svg-grid");
@@ -3760,9 +3967,10 @@ class HMapGridMap extends abstract_1.HMapAbstractMap {
 }
 exports.HMapGridMap = HMapGridMap;
 
-},{"../data/hmap-desert-data":3,"../environment":5,"../imagesLoader":7,"../lang":8,"../layers/svg-glass-static":12,"../layers/svg-grid":13,"../layers/svg-loading":14,"../toast":23,"./abstract":17}],20:[function(require,module,exports){
+},{"../data/hmap-desert-data":3,"../environment":5,"../imagesLoader":7,"../lang":8,"../layers/svg-glass-static":12,"../layers/svg-grid":13,"../layers/svg-loading":14,"../toast":24,"./abstract":18}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapRuin = void 0;
 const abstract_1 = require("./abstract");
 const lang_1 = require("../lang");
 const svg_ruin_background_1 = require("../layers/svg-ruin-background");
@@ -4114,9 +4322,10 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
 }
 exports.HMapRuin = HMapRuin;
 
-},{"../arrow":1,"../data/hmap-ruin-data":4,"../environment":5,"../imagesLoader":7,"../lang":8,"../layers/svg-loading":14,"../layers/svg-ruin-background":15,"../layers/svg-ruin-foreground":16,"../random":22,"../toast":23,"./abstract":17}],21:[function(require,module,exports){
+},{"../arrow":1,"../data/hmap-ruin-data":4,"../environment":5,"../imagesLoader":7,"../lang":8,"../layers/svg-loading":14,"../layers/svg-ruin-background":15,"../layers/svg-ruin-foreground":16,"../random":23,"../toast":24,"./abstract":18}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapNeighbours = exports.HMapNeighbour = void 0;
 class HMapNeighbour {
     constructor(x, y, p, o, i, view, b) {
         this.offsetX = 0; // top left X coordinate
@@ -4153,9 +4362,10 @@ class HMapNeighbours {
 }
 exports.HMapNeighbours = HMapNeighbours;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HMapRandom = void 0;
 class HMapRandom {
     constructor(seed = 0) {
         this.seed = seed;
@@ -4223,9 +4433,10 @@ class HMapRandom {
 }
 exports.HMapRandom = HMapRandom;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Toast = void 0;
 /**
  * Toaster to display messages to the user; under used
  */
@@ -4276,7 +4487,7 @@ class Toast {
 exports.Toast = Toast;
 Toast.count = 0;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const hmap_1 = require("./hmap");
@@ -4284,6 +4495,7 @@ const toast_1 = require("./toast");
 const environment_1 = require("./environment");
 const hmap_desert_data_1 = require("./data/hmap-desert-data");
 const hmap_ruin_data_1 = require("./data/hmap-ruin-data");
+const log_1 = require("./log");
 // deal with the "require" nighmare
 let FontFaceObserver;
 if (typeof require != 'undefined') {
@@ -4299,9 +4511,11 @@ else {
  * It's bootstrap time !!
  */
 (function () {
+    const logger = log_1.Log.get('BOOTSTRAP');
     try {
         const env = environment_1.Environment.getInstance();
         env.devMode = (typeof HMAP_DEVMODE === 'undefined') ? false : (HMAP_DEVMODE) ? true : false;
+        logger.log('Devmode', env.devMode);
         // Create the styles for the fonts and some other styles
         const style = document.createElement('style');
         style.appendChild(document.createTextNode('\
@@ -4364,45 +4578,54 @@ else {
                 // start only when the fonts are loaded
                 const map = new hmap_1.HMap();
                 if (env.devMode === true) { // dev mode to play with the map
+                    logger.log('Devmode started with location = desert');
                     map.location = 'desert';
                     map.reloadMapWithData();
                     HMAP = map;
                     HMAPDESERTDATA = hmap_desert_data_1.HMapDesertData;
                     HMAPRUINDATA = hmap_ruin_data_1.HMapRuinData;
+                    ENVIRONMENT = environment_1.Environment;
                 }
                 else {
                     // wait for js.JsMap to be ready
+                    logger.log('wait for js.JsMap to be ready');
                     let counterCheckJsMap = 0; // count the number of tries
                     const checkLocationKnown = setInterval(function () {
                         if (map.getCurrentLocation() !== 'unknown') { // when we land on a page with the map already there, start the code
                             clearInterval(checkLocationKnown);
+                            logger.log('Look for location (doors, desert or ruin)');
                             map.location = map.getCurrentLocation();
+                            logger.log('Location found : ', map.location);
+                            logger.log('Stop looking for the map and fetch data');
                             map.fetchMapData(); // intercept every ajax request haxe is doing to know if we should start the map or not
+                            logger.log('Datafetch, setup the interceptor');
                             setTimeout(() => map.setupInterceptor());
                         }
                         else if (++counterCheckJsMap > 10) { // timeout 2s
                             clearInterval(checkLocationKnown);
+                            logger.log('Timeout looking for the map, nothing has been found');
+                            logger.log('Setup the interceptor, to start the map when flash data are detected');
                             map.setupInterceptor(); // intercept every ajax request haxe is doing to know if we should start the map or not
                         }
                     }, 200);
                 }
             }
             catch (err) {
-                console.error('HMap::bootstrap - loaded', err, err.message);
+                logger.error('HMap::bootstrap - loaded', err, err.message);
                 toast_1.Toast.show('Hmap - An error occured. Check the console to see the message.');
             }
         }).catch((err) => {
-            console.error('HMap::promiseAll', err, err.message);
+            logger.error('HMap::promiseAll', err, err.message);
             toast_1.Toast.show('Hmap - Cannot load the fonts. Try to reload the page by pressing CTRL + F5 or change your browser');
         });
     }
     catch (err) {
-        console.error('HMap::bootstrap', err, err.message);
+        logger.error('HMap::bootstrap', err, err.message);
         toast_1.Toast.show('Hmap - An error occured. Check the console to see the message.');
     }
 })();
 
-},{"./data/hmap-desert-data":3,"./data/hmap-ruin-data":4,"./environment":5,"./hmap":6,"./toast":23,"fontfaceobserver-es":25}],25:[function(require,module,exports){
+},{"./data/hmap-desert-data":3,"./data/hmap-ruin-data":4,"./environment":5,"./hmap":6,"./log":17,"./toast":24,"fontfaceobserver-es":26}],26:[function(require,module,exports){
 !function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e=e||self).FontFaceObserver=t()}(this,function(){"use strict";function n(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function i(e,t){for(var n=0;n<t.length;n++){var i=t[n];i.enumerable=i.enumerable||!1,i.configurable=!0,"value"in i&&(i.writable=!0),Object.defineProperty(e,i.key,i)}}function e(e,t,n){return t&&i(e.prototype,t),n&&i(e,n),e}function o(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}var l={maxWidth:"none",display:"inline-block",position:"absolute",height:"100%",width:"100%",overflow:"scroll",fontSize:"16px"},a={display:"inline-block",height:"200%",width:"200%",fontSize:"16px",maxWidth:"none"},s={maxWidth:"none",minWidth:"20px",minHeight:"20px",display:"inline-block",overflow:"hidden",position:"absolute",width:"auto",margin:"0",padding:"0",top:"-999px",whiteSpace:"nowrap",fontSynthesis:"none"},S=function(){function t(e){n(this,t),this.element=document.createElement("div"),this.element.setAttribute("aria-hidden","true"),this.element.appendChild(document.createTextNode(e)),this.collapsible=document.createElement("span"),this.expandable=document.createElement("span"),this.collapsibleInner=document.createElement("span"),this.expandableInner=document.createElement("span"),this.lastOffsetWidth=-1,Object.assign(this.collapsible.style,l),Object.assign(this.expandable.style,l),Object.assign(this.expandableInner.style,l),Object.assign(this.collapsibleInner.style,a),this.collapsible.appendChild(this.collapsibleInner),this.expandable.appendChild(this.expandableInner),this.element.appendChild(this.collapsible),this.element.appendChild(this.expandable)}return e(t,[{key:"getElement",value:function(){return this.element}},{key:"setFont",value:function(e){Object.assign(this.element.style,function(t){for(var e=1;e<arguments.length;e++){var n=null!=arguments[e]?arguments[e]:{},i=Object.keys(n);"function"==typeof Object.getOwnPropertySymbols&&(i=i.concat(Object.getOwnPropertySymbols(n).filter(function(e){return Object.getOwnPropertyDescriptor(n,e).enumerable}))),i.forEach(function(e){o(t,e,n[e])})}return t}({},s,{font:e}))}},{key:"getWidth",value:function(){return this.element.offsetWidth}},{key:"setWidth",value:function(e){this.element.style.width=e+"px"}},{key:"reset",value:function(){var e=this.getWidth(),t=e+100;return this.expandableInner.style.width=t+"px",this.expandable.scrollLeft=t,this.collapsible.scrollLeft=this.collapsible.scrollWidth+100,this.lastOffsetWidth!==e&&(this.lastOffsetWidth=e,!0)}},{key:"onScroll",value:function(e){this.reset()&&null!==this.element.parentNode&&e(this.lastOffsetWidth)}},{key:"onResize",value:function(e){var t=this;function n(){t.onScroll(e)}this.collapsible.addEventListener("scroll",n),this.expandable.addEventListener("scroll",n),this.reset()}}]),t}();var t=function(){function b(e){var t=1<arguments.length&&void 0!==arguments[1]?arguments[1]:{};return n(this,b),this.family=e,this.style=t.style||"normal",this.weight=t.weight||"normal",this.stretch=t.stretch||"normal",this}return e(b,null,[{key:"getUserAgent",value:function(){return window.navigator.userAgent}},{key:"getNavigatorVendor",value:function(){return window.navigator.vendor}},{key:"hasWebKitFallbackBug",value:function(){if(null===b.HAS_WEBKIT_FALLBACK_BUG){var e=/AppleWebKit\/([0-9]+)(?:\.([0-9]+))/.exec(b.getUserAgent());b.HAS_WEBKIT_FALLBACK_BUG=!!e&&(parseInt(e[1],10)<536||536===parseInt(e[1],10)&&parseInt(e[2],10)<=11)}return b.HAS_WEBKIT_FALLBACK_BUG}},{key:"hasSafari10Bug",value:function(){if(null===b.HAS_SAFARI_10_BUG)if(b.supportsNativeFontLoading()&&/Apple/.test(b.getNavigatorVendor())){var e=/AppleWebKit\/([0-9]+)(?:\.([0-9]+))(?:\.([0-9]+))/.exec(b.getUserAgent());b.HAS_SAFARI_10_BUG=!!e&&parseInt(e[1],10)<603}else b.HAS_SAFARI_10_BUG=!1;return b.HAS_SAFARI_10_BUG}},{key:"supportsNativeFontLoading",value:function(){return null===b.SUPPORTS_NATIVE_FONT_LOADING&&(b.SUPPORTS_NATIVE_FONT_LOADING=!!document.fonts),b.SUPPORTS_NATIVE_FONT_LOADING}},{key:"supportStretch",value:function(){if(null===b.SUPPORTS_STRETCH){var e=document.createElement("div");try{e.style.font="condensed 100px sans-serif"}catch(e){}b.SUPPORTS_STRETCH=""!==e.style.font}return b.SUPPORTS_STRETCH}}]),e(b,[{key:"load",value:function(e,t){var p=this,m=e||"BESbswy",g=0,y=t||b.DEFAULT_TIMEOUT,v=p.getTime();return new Promise(function(h,f){if(b.supportsNativeFontLoading()&&!b.hasSafari10Bug()){var e=new Promise(function(n,i){!function t(){var e=p.getTime();y<=e-v?i(new Error(y+"ms timeout exceeded")):document.fonts.load(p.getStyle('"'+p.family+'"'),m).then(function(e){1<=e.length?n():setTimeout(t,25)},i)}()}),t=new Promise(function(e,t){g=setTimeout(function(){t(new Error(y+"ms timeout exceeded"))},y)});Promise.race([t,e]).then(function(){clearTimeout(g),h(p)},f)}else n=function(){var i=new S(m),o=new S(m),l=new S(m),a=-1,s=-1,r=-1,e=-1,t=-1,n=-1,u=document.createElement("div");function c(){null!==u.parentNode&&u.parentNode.removeChild(u)}function d(){if((-1!=a&&-1!=s||-1!=a&&-1!=r||-1!=s&&-1!=r)&&(a==s||a==r||s==r)){if(b.hasWebKitFallbackBug()&&(a==e&&s==e&&r==e||a==t&&s==t&&r==t||a==n&&s==n&&r==n))return;c(),clearTimeout(g),h(p)}}u.dir="ltr",i.setFont(p.getStyle("sans-serif")),o.setFont(p.getStyle("serif")),l.setFont(p.getStyle("monospace")),u.appendChild(i.getElement()),u.appendChild(o.getElement()),u.appendChild(l.getElement()),document.body.appendChild(u),e=i.getWidth(),t=o.getWidth(),n=l.getWidth(),function e(){var t=p.getTime();if(y<=t-v)c(),f(new Error(y+"ms timeout exceeded"));else{var n=document.hidden;!0!==n&&void 0!==n||(a=i.getWidth(),s=o.getWidth(),r=l.getWidth(),d()),g=setTimeout(e,50)}}(),i.onResize(function(e){a=e,d()}),i.setFont(p.getStyle('"'+p.family+'",sans-serif')),o.onResize(function(e){s=e,d()}),o.setFont(p.getStyle('"'+p.family+'",serif')),l.onResize(function(e){r=e,d()}),l.setFont(p.getStyle('"'+p.family+'",monospace'))},document.body?n():document.addEventListener?document.addEventListener("DOMContentLoaded",function e(){document.removeEventListener("DOMContentLoaded",e),n()}):document.attachEvent("onreadystatechange",function e(){"interactive"!=document.readyState&&"complete"!=document.readyState||(document.detachEvent("onreadystatechange",e),n())});var n})}},{key:"getStyle",value:function(e){return[this.style,this.weight,b.supportStretch()?this.stretch:"","100px",e].join(" ")}},{key:"getTime",value:function(){return(new Date).getTime()}}]),b}();return o(t,"Ruler",S),o(t,"HAS_WEBKIT_FALLBACK_BUG",null),o(t,"HAS_SAFARI_10_BUG",null),o(t,"SUPPORTS_STRETCH",null),o(t,"SUPPORTS_NATIVE_FONT_LOADING",null),o(t,"DEFAULT_TIMEOUT",3e3),t});
 
-},{}]},{},[24]);
+},{}]},{},[25]);

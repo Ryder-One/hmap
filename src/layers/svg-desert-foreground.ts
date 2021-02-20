@@ -2,6 +2,7 @@ import { AbstractHMapLayer } from './abstract';
 import { HMapDesertMap } from '../maps/desert';
 import { HMapDesertDataJSON, HMapDesertLocalDataJSON, HMapDesertData } from '../data/hmap-desert-data';
 import { HMapLang } from '../lang';
+import { notNull } from '../hmap';
 
 export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDataJSON, HMapDesertLocalDataJSON> {
 
@@ -85,44 +86,44 @@ export class HMapSVGDesertForegroundLayer extends AbstractHMapLayer<HMapDesertDa
         }
 
         // scout class
-        if (mapData.scoutArray && mapData.scoutArray.length === 4) {
-            if (mapData.neighbours.neighbours.get('top_center')!.outbounds === false) {
+        if (mapData.scoutArray && mapData.scoutArray.length > 0) {
+            if (notNull(mapData.scoutArray[0]) && mapData.neighbours.neighbours.get('top_center')!.outbounds === false) {
                 this.text(148, 30, '' + mapData.scoutArray[0], 'hmap-text-green');
             }
-            if (mapData.neighbours.neighbours.get('middle_right')!.outbounds === false) {
+            if (notNull(mapData.scoutArray[1]) && mapData.neighbours.neighbours.get('middle_right')!.outbounds === false) {
                 this.text(270, 150, '' + mapData.scoutArray[1], 'hmap-text-green');
             }
-            if (mapData.neighbours.neighbours.get('bottom_center')!.outbounds === false) {
+            if (notNull(mapData.scoutArray[2]) && mapData.neighbours.neighbours.get('bottom_center')!.outbounds === false) {
                 this.text(148, 270, '' + mapData.scoutArray[2], 'hmap-text-green');
             }
-            if (mapData.neighbours.neighbours.get('middle_left')!.outbounds === false) {
+            if (notNull(mapData.scoutArray[3]) && mapData.neighbours.neighbours.get('middle_left')!.outbounds === false) {
                 this.text(30, 150, '' + mapData.scoutArray[3], 'hmap-text-green');
             }
         }
 
         // scavenger class
-        if (mapData.scavengerArray && mapData.scavengerArray.length === 4) {
-            if (mapData.scavengerArray[0] === true) {
+        if (mapData.scavengerArray && mapData.scavengerArray.length > 0) {
+            if (notNull(mapData.scavengerArray[0]) && mapData.scavengerArray[0] === true) {
                 this.imgFromObj('shovel', 142, 24);
-            } else if (mapData.scavengerArray[0] === false) {
+            } else if (notNull(mapData.scavengerArray[0]) && mapData.scavengerArray[0] === false) {
                 this.imgFromObj('depleted', 142, 24);
             }
 
-            if (mapData.scavengerArray[1] === true) {
+            if (notNull(mapData.scavengerArray[1]) && mapData.scavengerArray[1] === true) {
                 this.imgFromObj('shovel', 263, 142);
-            } else if (mapData.scavengerArray[1] === false) {
+            } else if (notNull(mapData.scavengerArray[1]) && mapData.scavengerArray[1] === false) {
                 this.imgFromObj('depleted', 263, 142);
             }
 
-            if (mapData.scavengerArray[2] === true) {
+            if (notNull(mapData.scavengerArray[2]) && mapData.scavengerArray[2] === true) {
                 this.imgFromObj('shovel', 142, 256);
-            } else if (mapData.scavengerArray[2] === false) {
+            } else if (notNull(mapData.scavengerArray[2]) && mapData.scavengerArray[2] === false) {
                 this.imgFromObj('depleted', 142, 256);
             }
 
-            if (mapData.scavengerArray[3] === true) {
+            if (notNull(mapData.scavengerArray[3]) && mapData.scavengerArray[3] === true) {
                 this.imgFromObj('shovel', 26, 142);
-            } else if (mapData.scavengerArray[3] === false) {
+            } else if (notNull(mapData.scavengerArray[3]) && mapData.scavengerArray[3] === false) {
                 this.imgFromObj('depleted', 26, 142);
             }
         }

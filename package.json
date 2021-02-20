@@ -1,6 +1,6 @@
 {
     "name": "hmap",
-    "version": "3.1.5",
+    "version": "3.1.6",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
         "lint": "npx eslint . --ext .ts",
@@ -17,21 +17,21 @@
     },
     "author": "RyderOne",
     "dependencies": {
-        "fontfaceobserver-es": "^3.3.1"
+        "fontfaceobserver-es": "^3.3.3"
     },
     "devDependencies": {
-        "@babel/cli": "^7.8.4",
-        "@babel/core": "^7.8.4",
-        "@babel/polyfill": "^7.8.3",
-        "@babel/preset-env": "^7.8.4",
-        "@types/node": "^13.7.5",
-        "@typescript-eslint/eslint-plugin": "^2.21.0",
-        "@typescript-eslint/parser": "^2.21.0",
-        "browser-sync": "^2.26.7",
-        "browserify": "^16.5.0",
+        "@babel/cli": "^7.12.17",
+        "@babel/core": "^7.12.17",
+        "@babel/polyfill": "^7.12.1",
+        "@babel/preset-env": "^7.12.17",
+        "@types/node": "^13.13.45",
+        "@typescript-eslint/eslint-plugin": "^2.34.0",
+        "@typescript-eslint/parser": "^2.34.0",
+        "browser-sync": "^2.26.14",
+        "browserify": "^16.5.2",
         "eslint": "^6.8.0",
-        "typescript": "^3.8.2",
-        "uglify-js": "^3.8.0"
+        "typescript": "^3.9.9",
+        "uglify-js": "^3.12.8"
     },
     "browserslist": "> 0.25%, not dead",
     "babel": {
