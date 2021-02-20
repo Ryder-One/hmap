@@ -1,6 +1,6 @@
 {
     "name": "hmap",
-    "version": "3.1.5",
+    "version": "3.1.6",
     "description": "Die2Nite HTML5 replacement map",
     "scripts": {
         "lint": "npx eslint . --ext .ts",
