@@ -195,7 +195,7 @@ export class HMapSVGRuinBackgroundLayer extends AbstractHMapLayer<HMapRuinDataJS
      */
     appendNextTile(shiftX: number, shiftY: number, dirs: Array<Boolean>) {
         const map = this.map as HMapRuin;
-        const directions = '' + (+dirs[0]) + (+dirs[1]) + (+dirs[2]) + (+dirs[3]);
+        const directions = '' + (+dirs[2]) + (+dirs[1]) + (+dirs[0]) + (+dirs[3]);
         this.imgFromObj(directions, shiftX * 300, shiftY * 300);
     }
 
