@@ -50,7 +50,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 // create the menu
                 const hmapMenu = document.createElement('div');
                 hmapMenu.setAttribute('id', 'hmap-menu');
-                hmapMenu.setAttribute('style', 'position:absolute;bottom:0px;z-index:10;height:20px;display:none');
+                hmapMenu.setAttribute('style', 'position:absolute;bottom:0px;z-index:999;height:20px;display:none');
                 hmap.appendChild(hmapMenu);
 
                 const debugButton = document.createElement('div');
