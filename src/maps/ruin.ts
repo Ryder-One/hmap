@@ -50,7 +50,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
                 // create the menu
                 const hmapMenu = document.createElement('div');
                 hmapMenu.setAttribute('id', 'hmap-menu');
-                hmapMenu.setAttribute('style', 'position:absolute;bottom:0px;z-index:10;height:20px;display:none');
+                hmapMenu.setAttribute('style', 'position:absolute;bottom:0px;z-index:999;height:20px;display:none');
                 hmap.appendChild(hmapMenu);
 
                 const debugButton = document.createElement('div');
@@ -113,7 +113,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
         const ruinLayer = this.layers.get('ruin-background') as HMapSVGRuinBackgroundLayer;
 
         if (Environment.getInstance().devMode === false) {
-            const url = 'move/x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
+            const url = 'explo/move?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
 
             let hx: any;
 
@@ -195,7 +195,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
 
         if (Environment.getInstance().devMode === false) {
 
-            const url = 'enterRoom?' + js.JsExplo.sh;
+            const url = 'explo/enterRoom?' + js.JsExplo.sh;
 
             let hx: any;
 
@@ -242,7 +242,7 @@ export class HMapRuin extends HMapAbstractMap<HMapRuinDataJSON, HMapRuinLocalDat
     exitRoom() {
 
         if (Environment.getInstance().devMode === false) {
-            const url = 'leaveRoom?' + js.JsExplo.sh;
+            const url = 'explo/leaveRoom?' + js.JsExplo.sh;
 
             let hx: any;
 

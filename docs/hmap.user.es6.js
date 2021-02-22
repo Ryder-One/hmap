@@ -572,7 +572,7 @@ class HMapRuinData extends abstract_1.HMapData {
     get width() { return this.data._w; }
     get position() { return { x: this.data._r._x, y: this.data._r._y }; }
     get directions() { return this.data._r._dirs; }
-    get directionsStr() { return '' + (+this.directions[0]) + (+this.directions[1]) + (+this.directions[2]) + (+this.directions[3]); }
+    get directionsStr() { return '' + (+this.directions[2]) + (+this.directions[1]) + (+this.directions[0]) + (+this.directions[3]); }
     get oxygen() { return this.data._r._o; }
     get ruinType() {
         if (this.data._k === 0) {
@@ -3132,13 +3132,13 @@ class HMapSVGRuinBackgroundLayer extends abstract_1.AbstractHMapLayer {
         const directions = mapData.directions;
         const zones = new Array();
         zones.push('Z5');
-        if (directions[0] === true) {
+        if (directions[2] === true) {
             zones.push('Z1');
         }
         if (directions[1] === true) {
             zones.push('Z2');
         }
-        if (directions[2] === true) {
+        if (directions[0] === true) {
             zones.push('Z3');
         }
         if (directions[3] === true) {
@@ -4068,7 +4068,7 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
         }
         const ruinLayer = this.layers.get('ruin-background');
         if (environment_1.Environment.getInstance().devMode === false) {
-            const url = 'move/x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
+            const url = 'explo/move?x=' + x + ';y=' + y + ';z=' + mapData.zoneId + js.JsExplo.sh;
             let hx;
             // @ts-ignore
             const page = window.wrappedJSObject;
@@ -4137,7 +4137,7 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
      */
     enterRoom() {
         if (environment_1.Environment.getInstance().devMode === false) {
-            const url = 'enterRoom?' + js.JsExplo.sh;
+            const url = 'explo/enterRoom?' + js.JsExplo.sh;
             let hx;
             // @ts-ignore
             const page = window.wrappedJSObject;
@@ -4176,7 +4176,7 @@ class HMapRuin extends abstract_1.HMapAbstractMap {
      */
     exitRoom() {
         if (environment_1.Environment.getInstance().devMode === false) {
-            const url = 'leaveRoom?' + js.JsExplo.sh;
+            const url = 'explo/leaveRoom?' + js.JsExplo.sh;
             let hx;
             // @ts-ignore
             const page = window.wrappedJSObject;

@@ -195,7 +195,7 @@ export class HMapSVGRuinBackgroundLayer extends AbstractHMapLayer<HMapRuinDataJS
      */
     appendNextTile(shiftX: number, shiftY: number, dirs: Array<Boolean>) {
         const map = this.map as HMapRuin;
-        const directions = '' + (+dirs[0]) + (+dirs[1]) + (+dirs[2]) + (+dirs[3]);
+        const directions = '' + (+dirs[2]) + (+dirs[1]) + (+dirs[0]) + (+dirs[3]);
         this.imgFromObj(directions, shiftX * 300, shiftY * 300);
     }
 
@@ -512,13 +512,13 @@ export class HMapSVGRuinBackgroundLayer extends AbstractHMapLayer<HMapRuinDataJS
         const directions = mapData.directions;
         const zones = new Array();
         zones.push('Z5');
-        if (directions[0] === true) {
+        if (directions[2] === true) {
             zones.push('Z1');
         }
         if (directions[1] === true) {
             zones.push('Z2');
         }
-        if (directions[2] === true) {
+        if (directions[0] === true) {
             zones.push('Z3');
         }
         if (directions[3] === true) {

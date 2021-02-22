@@ -146,44 +146,44 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
         ],
         [
             [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, false, false],
-            [false, false, false, true], [false, false, false, false], [false, false, true, true], [true, true, true, false],
+            [false, false, false, true], [false, false, false, false], [true, false, false, true], [true, true, true, false],
             [true, false, true, false], [true, false, true, false], [true, false, true, true], [true, false, true, false],
-            [true, false, false, true], [false, false, false, false], [false, false, false, false]
+            [false, false, true, true], [false, false, false, false], [false, false, false, false]
         ],
         [
-            [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, false, true, true],
-            [true, true, true, false], [true, false, true, false], [true, true, false, true], [false, false, false, false],
+            [false, false, false, false], [false, false, false, false], [false, false, false, false], [true, false, false, true],
+            [true, true, true, false], [true, false, true, false], [false, true, true, true], [false, false, false, false],
             [false, false, false, false], [false, false, false, false], [false, true, false, true], [false, false, false, false],
-            [false, true, true, true], [true, false, false, false], [false, false, false, false]
+            [true, true, false, true], [false, false, true, false], [false, false, false, false]
         ],
         [
             [false, false, false, false], [false, false, false, false], [false, false, false, false], [false, true, false, true],
-            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, false],
+            [false, false, false, false], [false, false, false, false], [true, true, false, false], [true, false, true, false],
             [true, false, true, false], [true, false, true, false], [true, true, true, true], [true, false, true, false],
-            [true, true, false, true], [false, false, false, false], [false, false, false, false]
+            [false, true, true, true], [false, false, false, false], [false, false, false, false]
         ],
         [
-            [false, false, true, true], [true, false, true, false], [true, false, true, false], [true, true, false, false],
+            [true, false, false, true], [true, false, true, false], [true, false, true, false], [false, true, true, false],
             [false, false, false, false], [false, false, false, true], [false, false, false, false], [false, false, false, false],
             [false, false, false, false], [false, false, false, false], [false, true, false, true], [false, false, false, false],
             [false, true, false, true], [false, false, false, false], [false, false, false, false]
         ],
         [
             [false, true, false, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
-            [false, false, false, false], [false, true, true, true], [true, false, true, false], [true, false, false, true],
-            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, false],
-            [true, true, true, false], [true, false, false, true], [false, false, false, false]
+            [false, false, false, false], [true, true, false, true], [true, false, true, false], [false, false, true, true],
+            [false, false, false, false], [false, false, false, false], [true, true, false, false], [true, false, true, false],
+            [true, true, true, false], [false, false, true, true], [false, false, false, false]
         ],
         [
-            [false, true, true, false], [true, false, true, false], [true, false, false, true], [false, false, false, false],
-            [false, false, false, false], [false, true, false, true], [false, false, false, false], [false, true, true, false],
-            [true, false, false, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
+            [true, true, false, false], [true, false, true, false], [false, false, true, true], [false, false, false, false],
+            [false, false, false, false], [false, true, false, true], [false, false, false, false], [true, true, false, false],
+            [false, false, true, true], [false, false, false, false], [false, false, false, false], [false, false, false, false],
             [false, false, false, false], [false, true, false, true], [false, false, false, false]
         ],
         [
-            [false, false, false, false], [false, false, false, false], [false, true, true, false], [true, false, true, true],
-            [true, false, true, false], [true, true, false, true], [false, false, false, false], [false, false, false, false],
-            [false, true, true, false], [true, false, true, true], [true, false, true, false], [true, false, false, true],
+            [false, false, false, false], [false, false, false, false], [true, true, false, false], [true, false, true, true],
+            [true, false, true, false], [false, true, true, true], [false, false, false, false], [false, false, false, false],
+            [true, true, false, false], [true, false, true, true], [true, false, true, false], [false, false, true, true],
             [false, false, false, false], [false, true, false, false], [false, false, false, false]
         ],
         [
@@ -198,7 +198,7 @@ export class HMapRuinData extends HMapData<HMapRuinDataJSON, HMapRuinLocalDataJS
     get width(): number { return this.data._w; }
     get position(): HMapPoint { return { x: this.data._r._x, y: this.data._r._y }; }
     get directions(): Array<Boolean> { return this.data._r._dirs; }
-    get directionsStr(): string { return '' + (+this.directions[0]) + (+this.directions[1]) + (+this.directions[2]) + (+this.directions[3]); }
+    get directionsStr(): string { return '' + (+this.directions[2]) + (+this.directions[1]) + (+this.directions[0]) + (+this.directions[3]); }
     get oxygen(): number { return this.data._r._o; }
     get ruinType(): HMapRuinType {
         if (this.data._k === 0) {
